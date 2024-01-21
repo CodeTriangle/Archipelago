@@ -1,8 +1,6 @@
 from dataclasses import dataclass, field
-import typing
-
 from .items import ItemData, ProgressiveItemChain, SingleItemData, ItemPoolEntry
-from .locations import AccessInfo, LocationData
+from .locations import LocationData
 from .regions import RegionsData
 from .condition import Condition
 

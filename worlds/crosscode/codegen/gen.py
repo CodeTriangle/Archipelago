@@ -219,6 +219,8 @@ class FileGenerator:
             room = data_out["quests"]
             room[quest_id] = { "mwids": codes }
 
+        data_out["shops"] = self.lists.shop_ids
+
         try:
             os.mkdir(self.data_out_dir)
         except FileExistsError:
