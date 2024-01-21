@@ -28,6 +28,7 @@ class ListInfo:
     reward_amounts: dict[str, int]
 
     variable_definitions: dict[str, dict[str, list[Condition]]]
+    shop_ids: dict[str, dict[int, int]]
 
     def __init__(self, ctx: Context):
         self.ctx = ctx
@@ -55,6 +56,8 @@ class ListInfo:
 
         self.variable_definitions = defaultdict(dict)
 
+        self.shop_ids = defaultdict(dict)
+
     def build(self):
         self.__add_item_data_list(self.ctx.rando_data["items"])
 
@@ -75,6 +78,8 @@ class ListInfo:
                 continue
 
             self.items_dict[name, 1] = ItemData(data, 1, BASE_ID + RESERVED_ITEM_IDS + data.item_id)
+
+        self.__add_shop_list(self.ctx.rando_data["shops"])
 
         self.__add_vars(self.ctx.rando_data["vars"])
 
@@ -151,6 +156,42 @@ class ListInfo:
         self.single_items_dict[name] = single_item
         if item is not None:
             self.items_dict[name, 1] = item
+
+    def __add_shop(self, shop_display_name: str, raw_shop: dict[str, typing.Any]):
+        shop_name = raw_shop["location"]["shop"]
+
+        metadata = raw_shop.get("metadata", None)
+        access_info = self.json_parser.parse_location_access_info(raw_shop)
+
+        id_map = self.shop_ids[shop_name]
+
+        for item_name in raw_shop["slots"]:
+            item_data = self.ctx.rando_data["items"][item_name]
+
+            if item_data["id"] in id_map:
+                continue
+
+            id_map[item_data["id"]] = self.current_location_code
+
+            location_name = f"{shop_display_name} - {item_name} Slot"
+
+            locid = self.__get_cached_location_id(location_name)
+
+            if locid is None:
+                locid = self.current_location_code
+                self.current_location_code += 1
+
+            self.locations_data[location_name] = LocationData(
+                name=location_name,
+                code=locid,
+                area=None,
+                metadata=metadata,
+                access=access_info,
+            )
+
+    def __add_shop_list(self, loc_list: dict[str, dict[str, typing.Any]]):
+        for name, raw_shop in loc_list.items():
+            self.__add_shop(name, raw_shop)
 
     def __add_item_data_list(self, item_list: dict[str, dict[str, typing.Any]]):
         for name, raw_item in item_list.items():

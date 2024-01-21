@@ -292,6 +292,12 @@ class CrossCodeWorld(World):
                     region.locations.append(location)
                     location.place_locked_item(Item(location.data.name, ItemClassification.progression, None, self.player))
 
+            if self.options.shop_rando.value:
+                for data, access_info in self.world_data.shops_data.values():
+                    if self.logic_mode in access_info.region and access_info.region[self.logic_mode] == name:
+                        location = CrossCodeLocation(self.player, data, access_info, self.logic_mode, self.region_dict)
+                        region.locations.append(location)
+
             if name in self.region_pack.excluded_regions:
                 for location in region.locations:
                     location.progress_type = LocationProgressType.EXCLUDED
@@ -445,5 +451,7 @@ class CrossCodeWorld(World):
                 "hiddenQuestRewardMode": self.options.hidden_quest_reward_mode.current_key,
                 "hiddenQuestObfuscationLevel": self.options.hidden_quest_obfuscation_level.current_key,
                 "questDialogHints": self.options.quest_dialog_hints.value,
+                "shopRando": self.options.shop_rando.value,
+                "shopDialogHints": self.options.shop_dialog_hints.value,
             }
         }
