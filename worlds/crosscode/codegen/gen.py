@@ -130,7 +130,7 @@ class FileGenerator:
             map_id = chest["location"]["mapId"]
 
             room = data_out["items"][map_name]
-            room["chests"][map_id] = { "mwids": codes }
+            room["chests"][map_id] = { "name": name, "mwids": codes }
 
         for name, cutscene in merged_data["cutscenes"].items():
             codes = get_codes(name)
@@ -160,6 +160,8 @@ class FileGenerator:
 
             room = data_out["quests"]
             room[quest_id] = { "mwids": codes }
+
+        data_out["shops"] = self.lists.shop_ids
 
         try:
             os.mkdir(self.data_out_dir)

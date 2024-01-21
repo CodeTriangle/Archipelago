@@ -22,7 +22,6 @@ class WorldBuilder:
     ctx: Context
     ast_generator: AstGenerator
     json_parser: JsonParser
-    current_location_code: int
 
     variable_definitions: dict[str, dict[str, list[Condition]]]
 
@@ -31,6 +30,7 @@ class WorldBuilder:
     region_packs: dict[str, RegionsData]
     locations_access: dict[str, tuple[LocationData, AccessInfo]]
     events_access: dict[str, tuple[LocationData, AccessInfo]]
+    shops_access: dict[str, tuple[LocationData, AccessInfo]]
     items_dict: dict[tuple[str, int], tuple[ItemData, dict[str, int]]]
 
     num_needed_items: dict[str,int]
@@ -40,7 +40,6 @@ class WorldBuilder:
         self.ctx = ctx
         self.ast_generator = AstGenerator()
         self.json_parser = JsonParser(self.ctx)
-        self.current_location_code = BASE_ID
 
         self.variable_definitions = defaultdict(dict)
 
@@ -55,7 +54,22 @@ class WorldBuilder:
         self.region_packs = {}
         self.locations_access = {}
         self.events_access = {}
+        self.shops_access = {}
         self.items_dict = {}
+
+    def __add_reward(self, raw_loc: dict[str, typing.Any], prefix: str | None = None):
+        for reward in raw_loc["reward"]:
+            item = self.json_parser.parse_reward(reward) 
+            key = (item.name, item.amount)
+            if key in self.items_dict:
+                item, quantity = self.items_dict[key]
+            else:
+                quantity = defaultdict(lambda: 0)
+                self.items_dict[key] = (item, quantity)
+
+            for mode in raw_loc["region"].keys():
+                true_mode = mode if prefix is None else f"{prefix}_{mode}"
+                quantity[true_mode] += 1
 
     def __add_location(self, name: str, raw_loc: dict[str, typing.Any], create_event=False):
         num_rewards = 1
@@ -64,16 +78,14 @@ class WorldBuilder:
                 raise RuntimeError(f"Error while adding location {name}: need one or more rewards (get rid of the entry if there are no rewards)")
             num_rewards = len(raw_loc["reward"])
 
-        access_info = None
+        access_info = self.json_parser.parse_location_access_info(raw_loc)
 
         for idx in range(num_rewards):
             full_name = name
             if num_rewards > 1:
                 full_name = full_name + f" - Reward {idx + 1}"
 
-            access_info = self.json_parser.parse_location_access_info(raw_loc)
             self.locations_access[full_name] = (locations_dict[full_name], access_info)
-            self.current_location_code += 1
 
         if access_info is not None and (num_rewards > 1 or create_event):
             event = events_dict[f"{name} (Event)"]
@@ -84,28 +96,36 @@ class WorldBuilder:
                 self.num_needed_items[mode] += 1
             return
 
-        for reward in raw_loc["reward"]:
-            item = self.json_parser.parse_reward(reward) 
-            key = (item.name, item.amount)
-            if key in self.items_dict:
-                item, quantity = self.items_dict[key]
-            else:
-                quantity = {}
-                self.items_dict[key] = (item, quantity)
-
-            for mode in raw_loc["region"].keys():
-                if access_info is not None and \
-                        access_info.region[mode] in self.region_packs[mode].excluded_regions:
-                    continue
-
-                if not mode in quantity:
-                    quantity[mode] = 1
-                else:
-                    quantity[mode] += 1
+        self.__add_reward(raw_loc)
 
     def __add_location_list(self, loc_list: dict[str, dict[str, typing.Any]], create_events=False):
         for name, raw_loc in loc_list.items():
             self.__add_location(name, raw_loc, create_events)
+
+    def __add_shop(self, shop_display_name: str, raw_shop: dict[str, typing.Any]):
+        access_info = self.json_parser.parse_location_access_info(raw_shop)
+
+        self.__add_reward(raw_shop, "shop")
+
+        ids = set()
+
+        for reward in raw_shop["reward"]:
+            item = self.json_parser.parse_reward(reward) 
+
+            item_data = self.ctx.rando_data["items"][item.name]
+
+            if item_data["id"] in ids:
+                continue
+
+            ids.add(item_data["id"])
+
+            full_name = f"{shop_display_name} - {item.name} Slot"
+
+            self.shops_access[full_name] = (locations_dict[full_name], access_info)
+
+    def __add_shop_list(self, loc_list: dict[str, dict[str, typing.Any]]):
+        for name, raw_shop in loc_list.items():
+            self.__add_shop(name, raw_shop)
 
     def __add_vars(self, variables: dict[str, dict[str, list[typing.Any]]]):
         for name, values in variables.items():
@@ -126,6 +146,7 @@ class WorldBuilder:
         self.__add_location_list(self.ctx.rando_data["cutscenes"])
         self.__add_location_list(self.ctx.rando_data["elements"])
         self.__add_location_list(self.ctx.rando_data["quests"], True)
+        self.__add_shop_list(self.ctx.rando_data["shops"])
 
         self.keyring_items = set(self.ctx.rando_data["keyringItems"])
 
@@ -144,6 +165,7 @@ class WorldBuilder:
             region_packs=self.region_packs,
             locations_data=self.locations_access,
             events_data=self.events_access,
+            shops_data=self.shops_access,
             num_needed_items=self.num_needed_items,
             items_dict=self.items_dict,
             keyring_items=self.keyring_items,

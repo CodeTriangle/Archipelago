@@ -1,3 +1,4 @@
+from collections import defaultdict
 import typing
 
 from .ast import AstGenerator
@@ -23,6 +24,8 @@ class ListInfo:
 
     reward_amounts: dict[str, int]
 
+    shop_ids: dict[str, dict[int, int]]
+
     def __init__(self, ctx: Context):
         self.ctx = ctx
 
@@ -34,8 +37,10 @@ class ListInfo:
 
         self.single_items_dict = {}
         self.items_dict = {}
-        
+
         self.reward_amounts = {}
+
+        self.shop_ids = defaultdict(dict)
 
     def build(self):
         self.__add_item_list(self.ctx.rando_data["items"])
@@ -45,6 +50,7 @@ class ListInfo:
             if "cutscenes" in file: self.__add_location_list(file["cutscenes"])
             if "elements" in file: self.__add_location_list(file["elements"])
             if "quests" in file: self.__add_location_list(file["quests"], True)
+            if "shops" in file: self.__add_shop_list(file["shops"])
 
         # Add any extra items (i.e. elements) that the JSON parser ran into
         self.single_items_dict.update(self.json_parser.single_items_dict)
@@ -113,6 +119,36 @@ class ListInfo:
     def __add_location_list(self, loc_list: dict[str, dict[str, typing.Any]], create_events=False):
         for name, raw_loc in loc_list.items():
             self.__add_location(name, raw_loc, create_events)
+
+    def __add_shop(self, shop_display_name: str, raw_shop: dict[str, typing.Any]):
+        shop_name = raw_shop["location"]["shop"]
+
+        id_map = self.shop_ids[shop_name]
+        for reward in raw_shop["reward"]:
+            item = self.json_parser.parse_reward(reward)
+            if item.amount != 1:
+                raise RuntimeError(f"Shop cannot sell more than one item in a slot (shop: {shop_name}, item: {item.name}")
+
+            key = (item.name, item.amount)
+            if key in self.items_dict:
+                item = self.items_dict[key]
+            else:
+                self.items_dict[key] = item
+
+            item_data = self.ctx.rando_data["items"][item.name]
+
+            if item_data["id"] in id_map:
+                continue
+
+            id_map[item_data["id"]] = self.current_location_code
+
+            location_name = f"{shop_display_name} - {item.name} Slot"
+            self.locations_data[location_name] = LocationData(location_name, self.current_location_code)
+            self.current_location_code += 1
+
+    def __add_shop_list(self, loc_list: dict[str, dict[str, typing.Any]]):
+        for name, raw_shop in loc_list.items():
+            self.__add_shop(name, raw_shop)
 
     def __add_item(self, name: str, raw_item: dict[str, typing.Any]):
         self.single_items_dict[name] = self.json_parser.parse_item_data(name, raw_item)

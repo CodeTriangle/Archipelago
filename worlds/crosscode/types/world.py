@@ -13,6 +13,7 @@ class WorldData:
 
     locations_data: dict[str, tuple[LocationData, AccessInfo]]
     events_data: dict[str, tuple[LocationData, AccessInfo]]
+    shops_data: dict[str, tuple[LocationData, AccessInfo]]
     num_needed_items: dict[str, int]
 
     items_dict: dict[tuple[str, int], tuple[ItemData, dict[str, int]]]

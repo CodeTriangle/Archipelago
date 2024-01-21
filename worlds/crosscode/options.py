@@ -43,7 +43,7 @@ class VTSkip(DefaultOnToggle):
 
 class QuestRando(Toggle):
     """
-    If enabled, all quests will be randomized along with chests and cutscene locations.
+    If enabled, all quest rewards will be added to the location list.
     """
     display_name = "Quest Randomization"
 
@@ -80,6 +80,18 @@ class HiddenQuestObfuscationLevel(Choice):
 class QuestDialogHints(DefaultOnToggle):
     """
     If enabled, upon viewing the quest dialog for a quest with rewards that are not hidden, corresponding hints are sent to the archipelago server.
+    """
+    display_name = "Quest Dialog Hints"
+
+class ShopRando(Toggle):
+    """
+    If enabled, all shops will be added to the location list.
+    """
+    display_name = "Quest Randomization"
+
+class ShopDialogHints(DefaultOnToggle):
+    """
+    If enabled, upon opening the dialog for a shop, corresponding hints are sent to the Archipelago server.
     """
     display_name = "Quest Dialog Hints"
 
@@ -210,6 +222,8 @@ class CrossCodeOptions(PerGameCommonOptions):
     hidden_quest_reward_mode: HiddenQuestRewardMode
     hidden_quest_obfuscation_level: HiddenQuestObfuscationLevel
     quest_dialog_hints: QuestDialogHints
+    shop_rando: ShopRando
+    shop_dialog_hints: ShopDialogHints
     start_with_green_leaf_shade: StartWithGreenLeafShade
     start_with_chest_detector: StartWithChestDetector
     keyrings: Keyrings

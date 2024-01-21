@@ -216,6 +216,12 @@ class CrossCodeWorld(World):
                     region.locations.append(location)
                     location.place_locked_item(Item(location.data.name, ItemClassification.progression, None, self.player))
 
+            if self.options.shop_rando.value:
+                for data, access_info in self.world_data.shops_data.values():
+                    if self.logic_mode in access_info.region and access_info.region[self.logic_mode] == name:
+                        location = CrossCodeLocation(self.player, data, access_info, self.logic_mode, self.region_dict)
+                        region.locations.append(location)
+
             if name in self.region_pack.excluded_regions:
                 for location in region.locations:
                     location.progress_type = LocationProgressType.EXCLUDED
@@ -242,10 +248,10 @@ class CrossCodeWorld(World):
         local_num_needed_items = self.world_data.num_needed_items[self.logic_mode]
 
         for (data, quantity) in self.world_data.items_dict.values():
-            if self.logic_mode not in quantity:
-                continue
-
             true_quantity = quantity[self.logic_mode]
+
+            if self.options.shop_rando.value and (key := "shop_" + self.logic_mode) in quantity:
+                true_quantity += quantity[key]
 
             if self.options.keyrings.value and data.item.name in self.world_data.keyring_items:
                 local_num_needed_items += true_quantity - 1
@@ -257,7 +263,7 @@ class CrossCodeWorld(World):
                 try:
                     idx = exclude.index(item)
                     exclude.pop(idx)
-                    self.multiworld.itempool.append(self.create_item("Sandwich x3"))
+                    self.multiworld.itempool.append(self.create_item("Sandwich"))
                     continue
                 except ValueError:
                     pass
@@ -277,7 +283,7 @@ class CrossCodeWorld(World):
                     self.multiworld.itempool.append(item)
 
         for _ in range(local_num_needed_items):
-            self.multiworld.itempool.append(self.create_item("Sandwich x3"))
+            self.multiworld.itempool.append(self.create_item("Sandwich"))
 
     def set_rules(self):
         for _, region in self.region_dict.items():
@@ -370,5 +376,7 @@ class CrossCodeWorld(World):
                 "hiddenQuestRewardMode": self.options.hidden_quest_reward_mode.current_key,
                 "hiddenQuestObfuscationLevel": self.options.hidden_quest_obfuscation_level.current_key,
                 "questDialogHints": self.options.quest_dialog_hints.value,
+                "shopRando": self.options.shop_rando.value,
+                "shopDialogHints": self.options.shop_dialog_hints.value,
             }
         }
