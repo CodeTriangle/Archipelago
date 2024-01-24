@@ -257,7 +257,7 @@ class CrossCodeWorld(World):
                 try:
                     idx = exclude.index(item)
                     exclude.pop(idx)
-                    self.multiworld.itempool.append(self.create_item("Sandwich x3"))
+                    self.multiworld.itempool.append(self.create_item("Sandwich"))
                     continue
                 except ValueError:
                     pass
@@ -277,7 +277,7 @@ class CrossCodeWorld(World):
                     self.multiworld.itempool.append(item)
 
         for _ in range(local_num_needed_items):
-            self.multiworld.itempool.append(self.create_item("Sandwich x3"))
+            self.multiworld.itempool.append(self.create_item("Sandwich"))
 
     def set_rules(self):
         for _, region in self.region_dict.items():
