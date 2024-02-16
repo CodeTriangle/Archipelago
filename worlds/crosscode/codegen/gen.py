@@ -97,8 +97,6 @@ class FileGenerator:
 
     def generate_mod_files(self):
         merged_data = deepcopy(self.ctx.rando_data)
-        for addon in self.ctx.addons.values():
-            merged_data = merge(merged_data, addon, True)
 
         data_out = {
             "items": defaultdict(lambda: defaultdict(dict)),

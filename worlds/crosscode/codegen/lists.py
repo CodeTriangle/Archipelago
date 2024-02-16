@@ -40,11 +40,12 @@ class ListInfo:
     def build(self):
         self.__add_item_list(self.ctx.rando_data["items"])
 
-        for file in [self.ctx.rando_data, *self.ctx.addons.values()]:
-            if "chests" in file: self.__add_location_list(file["chests"])
-            if "cutscenes" in file: self.__add_location_list(file["cutscenes"])
-            if "elements" in file: self.__add_location_list(file["elements"])
-            if "quests" in file: self.__add_location_list(file["quests"], True)
+        file = self.ctx.rando_data
+
+        if "chests" in file: self.__add_location_list(file["chests"])
+        if "cutscenes" in file: self.__add_location_list(file["cutscenes"])
+        if "elements" in file: self.__add_location_list(file["elements"])
+        if "quests" in file: self.__add_location_list(file["quests"], True)
 
         # Add any extra items (i.e. elements) that the JSON parser ran into
         self.single_items_dict.update(self.json_parser.single_items_dict)
