@@ -48,11 +48,18 @@ class RegionCondition(Condition):
 class AnyElementCondition(Condition):
     def satisfied(self, state: CollectionState, player: int, **kwargs) -> bool:
         return any([
-                state.has("Heat", player),
-                state.has("Cold", player),
-                state.has("Shock", player),
-                state.has("Wave", player),
+            state.has("Heat", player),
+            state.has("Cold", player),
+            state.has("Shock", player),
+            state.has("Wave", player),
         ])
+
+@dataclass
+class OrCondition(Condition):
+    subconditions: list[Condition]
+
+    def satisfied(self, state: CollectionState, player: int, **kwargs) -> bool:
+        return any(map(lambda x: x.satisfied(state, player, **kwargs), self.subconditions))
 
 @dataclass
 class VariableCondition(Condition):
