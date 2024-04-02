@@ -9,6 +9,7 @@ import json
 import jinja2
 
 from worlds.crosscode.codegen.merge import merge
+from worlds.crosscode.types.regions import RegionsData
 
 from .ast import AstGenerator
 from .context import Context, make_context_from_package
@@ -22,6 +23,7 @@ class FileGenerator:
     ctx: Context
     common_args: typing.Dict[str, typing.Any]
     lists: ListInfo
+    regions_data: dict[str, RegionsData]
     world_dir: str
     data_out_dir: str
 
@@ -41,6 +43,11 @@ class FileGenerator:
         else:
             self.lists = lists
             self.ctx = lists.ctx
+
+        self.regions_data = {
+            key: self.lists.json_parser.parse_regions_data(value)
+            for key, value in self.ctx.rando_data["regions"].items()
+        }
 
         self.world_dir = world_dir
         self.data_out_dir = data_out_dir
@@ -94,6 +101,32 @@ class FileGenerator:
 
         with open(os.path.join(self.world_dir, "items.py"), "w") as f:
             f.write(items_complete)
+
+        # REGIONS
+        template = self.environment.get_template("regions.template.py")
+
+        region_lists = {
+            mode: emit_list([ast.Constant(r) for r in regions.region_list])
+            for mode, regions in self.regions_data.items()
+        }
+
+        region_connections = {
+            mode: emit_list([
+                self.ast_generator.create_ast_call_region_connection(rc) for rc in regions.region_connections
+            ])
+            for mode, regions in self.regions_data.items()
+        }
+
+        regions_complete = template.render(
+            modes_string=", ".join([f'"{x}"' for x in self.ctx.rando_data["modes"]]),
+            region_packs=self.regions_data,
+            region_lists=region_lists,
+            region_connections=region_connections,
+            **self.common_args
+        )
+
+        with open(os.path.join(self.world_dir, "regions.py"), "w") as f:
+            f.write(regions_complete)
 
     def generate_mod_files(self):
         merged_data = deepcopy(self.ctx.rando_data)
