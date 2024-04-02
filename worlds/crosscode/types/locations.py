@@ -16,6 +16,7 @@ class LocationData:
     name: str
     code: typing.Optional[int]
     area: typing.Optional[str] = None
+    metadata: typing.Optional[dict[str, int | float | str]] = None
 
 class CrossCodeLocation(Location):
     game: str = "CrossCode"

@@ -79,6 +79,8 @@ class ListInfo:
 
         location_names: list[str] = []
 
+        metadata = raw_loc.get("metadata", None)
+
         for idx in range(num_rewards):
             full_name = name
             if num_rewards > 1:
@@ -86,7 +88,7 @@ class ListInfo:
 
             location_names.append(full_name)
 
-            loc = LocationData(full_name, self.current_location_code, area)
+            loc = LocationData(full_name, self.current_location_code, area, metadata)
             self.current_location_code += 1
 
             self.locations_data[full_name] = loc
@@ -96,7 +98,8 @@ class ListInfo:
             event = LocationData(
                 name=f"{name} (Event)",
                 code=None,
-                area=None
+                area=None,
+                metadata=metadata
             )
             self.events_data[event_name] = event
 

@@ -10,7 +10,12 @@ def merge(original: T, addon: T, patch=True) -> T:
 
         for key, value in addon.items():
             # regex key. we'll want to match it against all other keys.
-            if patch and key[0] == "/" and key[-1] == "/":
+            if patch and key == "*":
+                for key2, value2 in original.items():
+                    merge(value2, value, patch)
+
+            # glob key. matches every single other key.
+            elif patch and key[0] == "/" and key[-1] == "/":
                 pattern = re.compile(key[1:-1])
 
                 for key2, value2 in original.items():

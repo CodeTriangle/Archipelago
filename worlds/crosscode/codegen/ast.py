@@ -48,6 +48,15 @@ class AstGenerator:
         if data.area is not None:
             ast_item.keywords.append(ast.keyword(arg="area", value=ast.Constant(data.area)))
 
+        if data.metadata is not None:
+            ast_item.keywords.append(ast.keyword(
+                arg="metadata",
+                value=ast.Dict(
+                    keys=[ast.Constant(x) for x in data.metadata.keys()],
+                    values=[ast.Constant(x) for x in data.metadata.values()],
+                )
+            ))
+
         ast.fix_missing_locations(ast_item)
         return ast_item
 
