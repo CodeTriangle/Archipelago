@@ -176,13 +176,9 @@ class JsonParser:
             single_item = self.parse_item_data(name, item_overrides)
             self.single_items_dict[name] = single_item
 
-        combo_id = BASE_ID + RESERVED_ITEM_IDS + \
-            self.ctx.num_items * (amount - 1) + single_item.item_id
-
         return ItemData(
             item=single_item,
             amount=amount,
-            combo_id=combo_id,
         )
 
     def parse_element_reward(self, raw: list[typing.Any]) -> ItemData:
