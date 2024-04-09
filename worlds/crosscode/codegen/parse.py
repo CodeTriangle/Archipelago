@@ -139,6 +139,8 @@ class JsonParser:
 
         cls = get_item_classification(db_entry)
 
+        type = db_entry["type"]
+
         if "classification" in raw:
             cls_str = raw["classification"]
             if not hasattr(ItemClassification, cls_str):
@@ -148,13 +150,14 @@ class JsonParser:
         if raw.get("reserved", False):
             single_item = SingleItemData(
                 name=name,
-                item_id=-1,
+                item_id=-RESERVED_ITEM_IDS + item_id,
                 classification=cls,
+                unique=True,
             )
             item = ItemData(
                 item=single_item,
                 amount=1,
-                combo_id=BASE_ID + raw["id"],
+                combo_id=BASE_ID + item_id,
             )
 
             return single_item, item
@@ -162,8 +165,9 @@ class JsonParser:
             return (
                 SingleItemData(
                     name=name,
-                    item_id=raw["id"],
+                    item_id=item_id,
                     classification=cls,
+                    unique=raw.get("unique", not type == "CONS")
                 ),
                 None
             )

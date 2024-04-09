@@ -71,6 +71,7 @@ class CrossCodeWorld(World):
         f"{name} x{amount}" if amount > 1 else name: get_combo_id(data, amount)
         for name, data in single_items_dict.items()
         for amount in range(1, 11)
+        if not data.unique or amount == 1
     }
 
     location_name_to_id = {

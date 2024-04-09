@@ -82,6 +82,13 @@ class AstGenerator:
                 ),
             ]
         )
+
+        if data.unique:
+            ast_item.keywords.append(ast.keyword(
+                arg="unique",
+                value=ast.Constant(True)
+            ))
+
         ast.fix_missing_locations(ast_item)
         return ast_item
 
