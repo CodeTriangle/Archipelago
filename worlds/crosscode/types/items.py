@@ -1,3 +1,4 @@
+import re
 from ..codegen.util import BASE_ID, NUM_ITEMS, RESERVED_ITEM_IDS
 from dataclasses import dataclass, field
 import typing
@@ -11,6 +12,14 @@ class SingleItemData:
 
 def get_combo_id(item: SingleItemData, amount: int) -> int:
     return BASE_ID + RESERVED_ITEM_IDS + NUM_ITEMS * (amount - 1) + item.item_id
+
+def get_info_from_full_name(name: str) -> tuple[str, int]:
+    m = re.match(r"(.+) x(\d+)", name)
+    if m is None:
+        return name, 1
+    name, id = m.groups()
+    id = int(id)
+    return name, id
 
 @dataclass
 class ItemData:

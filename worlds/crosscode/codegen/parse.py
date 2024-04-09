@@ -132,7 +132,7 @@ class JsonParser:
 
         return AccessInfo(region, condition, clearance)
 
-    def parse_item_data(self, name: str, raw: dict[str, typing.Any]) -> SingleItemData:
+    def parse_item_data(self, name: str, raw: dict[str, typing.Any]) -> tuple[SingleItemData, ItemData | None]:
         item_id = raw["id"]
 
         db_entry = self.ctx.item_data[item_id]
@@ -145,11 +145,28 @@ class JsonParser:
                 raise JsonParserError(raw, cls_str, "item reward", "invalid classification")
             cls = getattr(ItemClassification, cls_str)
 
-        return SingleItemData(
-            name=name,
-            item_id=raw["id"],
-            classification=cls,
-        )
+        if raw.get("reserved", False):
+            single_item = SingleItemData(
+                name=name,
+                item_id=-1,
+                classification=cls,
+            )
+            item = ItemData(
+                item=single_item,
+                amount=1,
+                combo_id=BASE_ID + raw["id"],
+            )
+
+            return single_item, item
+        else:
+            return (
+                SingleItemData(
+                    name=name,
+                    item_id=raw["id"],
+                    classification=cls,
+                ),
+                None
+            )
 
     def parse_item_reward(self, raw: list[typing.Any]) -> ItemData:
         if len(raw) == 1:
@@ -169,70 +186,11 @@ class JsonParser:
         try:
             single_item = self.single_items_dict[name]
         except KeyError:
-            if name not in self.ctx.rando_data["items"]:
-                raise JsonParserError(raw, name, "item reward", "item does not exist in randomizer data")
-            item_overrides = self.ctx.rando_data["items"][name]
-
-            single_item = self.parse_item_data(name, item_overrides)
-            self.single_items_dict[name] = single_item
+            raise JsonParserError(raw, name, "item reward", "item does not exist in randomizer data")
 
         return ItemData(
             item=single_item,
             amount=amount,
-        )
-
-    def parse_element_reward(self, raw: list[typing.Any]) -> ItemData:
-        combo_id = BASE_ID
-
-        if len(raw) == 1:
-            el = raw[0]
-        else:
-            raise JsonParserError(raw, raw, "element reward", "expected one string")
-
-        try:
-            return self.items_dict[el, 1]
-        except KeyError:
-            pass
-
-        try:
-            single_item = self.single_items_dict[el]
-        except KeyError:
-            single_item = SingleItemData(el, 0, ItemClassification.progression)
-            self.single_items_dict[el] = single_item
-
-        try:
-            idx = ["Heat", "Cold", "Shock", "Wave"].index(el)
-            combo_id += idx
-        except:
-            raise RuntimeError("Error adding element: {el} not an element")
-
-        item = ItemData(
-            item=single_item,
-            amount=1,
-            combo_id=combo_id
-        )
-
-        self.items_dict[el, 1] = item
-        return item
-
-    def parse_sp_reward(self, raw: list[typing.Any]) -> ItemData:
-        try:
-            return self.items_dict[SP_UPGRADE_NAME, 1]
-        except KeyError:
-            pass
-
-        try:
-            single_item = self.single_items_dict[SP_UPGRADE_NAME]
-        except KeyError:
-            single_item = SingleItemData(SP_UPGRADE_NAME, 0, ItemClassification.progression)
-            self.single_items_dict[SP_UPGRADE_NAME] = single_item
-
-        combo_id = BASE_ID + SP_UPGRADE_ID_OFFSET
-
-        return ItemData(
-            item=single_item,
-            amount=1,
-            combo_id=combo_id,
         )
 
     def parse_reward(self, raw: list[typing.Any]) -> ItemData:
@@ -240,10 +198,6 @@ class JsonParser:
 
         if kind == "item":
             return self.parse_item_reward(info)
-        elif kind == "element":
-            return self.parse_element_reward(info)
-        elif kind == "sp":
-            return self.parse_sp_reward(info)
         else:
             raise RuntimeError(f"Error parsing reward {raw}: unrecognized type")
 

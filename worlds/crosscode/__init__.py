@@ -15,7 +15,7 @@ from .codegen.context import Context, make_context_from_package
 from .common import *
 from .logic import condition_satisfied, has_clearance
 
-from .types.items import CrossCodeItem
+from .types.items import CrossCodeItem, get_combo_id
 from .types.locations import CrossCodeLocation
 from .types.condition import Condition
 from .types.world import WorldData
@@ -26,7 +26,7 @@ loaded_correctly = True
 
 try:
     from .builder import WorldBuilder
-    from .items import single_items_dict, items_by_full_name
+    from .items import single_items_dict, items_dict, items_by_full_name
     from .locations import locations_data
 
 except Exception as e:
@@ -35,7 +35,7 @@ except Exception as e:
     traceback.print_exception(*sys.exc_info())
     print(e, file=sys.stderr)
     single_items_data = []
-    single_items_dict = []
+    single_items_dict = {}
     items_by_full_name = {}
     locations_data = []
     crosscode_options = {}
@@ -68,7 +68,9 @@ class CrossCodeWorld(World):
     # items exist. They could be generated from json or something else. They can
     # include events, but don't have to since events will be placed manually.
     item_name_to_id = {
-        key: value.combo_id for key, value in items_by_full_name.items()
+        f"{name} x{amount}" if amount > 1 else name: get_combo_id(data, amount)
+        for name, data in single_items_dict.items()
+        for amount in range(1, 11)
     }
 
     location_name_to_id = {

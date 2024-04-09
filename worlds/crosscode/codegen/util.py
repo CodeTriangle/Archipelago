@@ -25,23 +25,6 @@ Modifications to this file will not be kept.
 If you need to change something here, check out codegen.py and the templates directory.
 """
 
-K = typing.TypeVar("K")
-V = typing.TypeVar("V")
-
-class keydefaultdict(dict[K, V]):
-    default_factory: typing.Callable[[K], V] | None
-    def __init__(self, default_factory, *args, **kwargs):
-        self.default_factory = default_factory
-        super(dict, self).__init__(*args, **kwargs)
-
-    def __missing__(self, key):
-        if self.default_factory is None:
-            raise KeyError( key )
-        else:
-            ret = self[key] = self.default_factory(key)
-            return ret
-
-
 def get_json_object(package, filename: str):
     return json.loads(pkgutil.get_data(package, filename).decode())
 
