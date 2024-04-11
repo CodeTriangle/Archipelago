@@ -4,7 +4,7 @@ import ast
 from ..types.condition import Condition
 from ..types.locations import LocationData
 from ..types.regions import RegionConnection
-from ..types.items import ItemData, SingleItemData
+from ..types.items import ItemData, ItemPoolEntry, SingleItemData
 
 
 class AstGenerator:
@@ -118,6 +118,44 @@ class AstGenerator:
         ast.fix_missing_locations(ast_item)
         return ast_item
 
+    def create_ast_call_item_pool_entry(self, entry: ItemPoolEntry):
+        ast_item = ast.Call(
+            func=ast.Name("ItemPoolEntry"),
+            args=[],
+            keywords=[
+                ast.keyword(
+                    arg="item",
+                    value=ast.Subscript(
+                        value=ast.Name("items_dict"),
+                        slice=ast.Tuple(elts=[
+                            ast.Constant(entry.item.item.name),
+                            ast.Constant(entry.item.amount)]
+                        ),
+                        ctx=ast.Load()
+                    )
+                ),
+                ast.keyword(
+                    arg="quantity",
+                    value=ast.Constant(entry.quantity)
+                ),
+            ]
+        )
+
+        if entry.metadata is not None:
+            keys = [ast.Constant(k) for k in entry.metadata.keys()]
+            values = [ast.Constant(k) for k in entry.metadata.values()]
+
+            ast_item.keywords.append(ast.keyword(
+                arg="metadata",
+                value=ast.Dict(
+                    keys=keys,
+                    values=values,
+                )
+            ))
+
+        ast.fix_missing_locations(ast_item)
+        return ast_item
+        
     def create_ast_call_region_connection(self, conn: RegionConnection):
         ast_region = ast.Call(
             func=ast.Name("RegionConnection"),

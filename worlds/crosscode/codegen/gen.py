@@ -1,5 +1,6 @@
 from collections import defaultdict
 from copy import deepcopy
+from posixpath import commonpath
 import sys
 import typing
 import ast
@@ -101,6 +102,25 @@ class FileGenerator:
 
         with open(os.path.join(self.world_dir, "items.py"), "w") as f:
             f.write(items_complete)
+
+        # ITEM POOLS
+        template = self.environment.get_template("item_pools.template.py")
+
+        code_item_pools = {
+            name: emit_list([
+                self.ast_generator.create_ast_call_item_pool_entry(entry)
+                for entry in pool
+            ])
+            for name, pool in self.lists.item_pools.items()
+        }
+
+        item_pools_complete = template.render(
+            item_pools=code_item_pools,
+            **self.common_args
+        )
+
+        with open(os.path.join(self.world_dir, "item_pools.py"), "w") as f:
+            f.write(item_pools_complete)
 
         # REGIONS
         template = self.environment.get_template("regions.template.py")

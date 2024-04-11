@@ -34,6 +34,12 @@ class ItemData:
             self.combo_id = get_combo_id(self.item, self.amount)
         self.name = self.item.name if self.amount == 1 else f"{self.item.name} x{self.amount}"
 
+@dataclass
+class ItemPoolEntry:
+    item: ItemData
+    quantity: int
+    metadata: typing.Optional[dict[str, str | int | bool | None]] = None
+
 class CrossCodeItem(Item):
     game: str = "CrossCode"
     data: ItemData

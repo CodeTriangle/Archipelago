@@ -5,7 +5,7 @@ from .parse import JsonParser
 from .context import Context
 from .util import BASE_ID, RESERVED_ITEM_IDS
 
-from ..types.items import ItemData, SingleItemData
+from ..types.items import ItemData, SingleItemData, ItemPoolEntry
 from ..types.locations import LocationData
 
 
@@ -21,6 +21,8 @@ class ListInfo:
     single_items_dict: dict[str, SingleItemData]
     items_dict: dict[tuple[str, int], ItemData]
 
+    item_pools: dict[str, list[ItemPoolEntry]]
+
     reward_amounts: dict[str, int]
 
     def __init__(self, ctx: Context):
@@ -31,6 +33,8 @@ class ListInfo:
 
         self.single_items_dict = {}
         self.items_dict = {}
+
+        self.item_pools = {}
         
         self.reward_amounts = {}
 
@@ -38,7 +42,6 @@ class ListInfo:
         self.json_parser = JsonParser(self.ctx)
         self.json_parser.single_items_dict = self.single_items_dict
         self.json_parser.items_dict = self.items_dict
-
 
     def build(self):
         self.__add_item_data_list(self.ctx.rando_data["items"])
@@ -49,6 +52,8 @@ class ListInfo:
         if "cutscenes" in file: self.__add_location_list(file["cutscenes"])
         if "elements" in file: self.__add_location_list(file["elements"])
         if "quests" in file: self.__add_location_list(file["quests"], True)
+
+        self.__add_item_pool_list(file["itemPools"])
 
         # Add any extra items (i.e. elements) that the JSON parser ran into
         self.single_items_dict.update(self.json_parser.single_items_dict)
@@ -116,16 +121,27 @@ class ListInfo:
         for name, raw_item in item_list.items():
             self.__add_item_data(name, raw_item)
 
-    def __add_item_pool(self, pool: list[dict[str, typing.Any]]):
+    def __add_item_pool(self, name: str, raw: list[dict[str, typing.Any]]):
         pool = []
-        for data in pool:
-            self.__add_reward(data["item"])
+        for data in raw:
+            item = self.__add_reward(data["item"])
+            pool.append(ItemPoolEntry(
+                item=item,
+                quantity=data.get("quantity", 1),
+                metadata=data.get("metadata", None)
+            ))
 
-    def __add_reward(self, reward: list):
-        item = self.json_parser.parse_reward(reward) 
+        self.item_pools[name] = pool
+
+    def __add_item_pool_list(self, raw: dict[str, list[dict[str, typing.Any]]]):
+        for name, pool in raw.items():
+            self.__add_item_pool(name, pool)
+
+    def __add_reward(self, reward: list) -> ItemData:
+        item = self.json_parser.parse_reward(reward)
         key = (item.item.name, item.amount)
         if key in self.items_dict:
             item = self.items_dict[key]
         else:
             self.items_dict[key] = item
-
+        return item
