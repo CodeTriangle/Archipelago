@@ -85,6 +85,8 @@ class ListInfo:
 
         metadata = raw_loc.get("metadata", None)
 
+        access_info = self.json_parser.parse_location_access_info(raw_loc)
+
         for idx in range(num_rewards):
             full_name = name
             if num_rewards > 1:
@@ -92,7 +94,13 @@ class ListInfo:
 
             location_names.append(full_name)
 
-            loc = LocationData(full_name, self.current_location_code, area, metadata)
+            loc = LocationData(
+                name=full_name,
+                code=self.current_location_code,
+                area=area,
+                metadata=metadata,
+                access=access_info
+            )
             self.current_location_code += 1
 
             self.locations_data[full_name] = loc
@@ -103,7 +111,8 @@ class ListInfo:
                 name=f"{name} (Event)",
                 code=None,
                 area=None,
-                metadata=metadata
+                metadata=metadata,
+                access=access_info,
             )
             self.events_data[event_name] = event
 

@@ -2,7 +2,7 @@ import typing
 import ast
 
 from ..types.condition import Condition
-from ..types.locations import LocationData
+from ..types.locations import AccessInfo, LocationData
 from ..types.regions import RegionConnection
 from ..types.items import ItemData, ItemPoolEntry, SingleItemData
 
@@ -56,6 +56,9 @@ class AstGenerator:
                     values=[ast.Constant(x) for x in data.metadata.values()],
                 )
             ))
+
+        if data.access is not None:
+            ast_item.keywords.append(ast.keyword("access", self.create_ast_call_access_info(data.access)))
 
         ast.fix_missing_locations(ast_item)
         return ast_item
@@ -179,3 +182,25 @@ class AstGenerator:
         ast.fix_missing_locations(ast_region)
 
         return ast_region
+
+    def create_ast_call_access_info(self, access: AccessInfo):
+        ast_call = ast.Call(
+            func=ast.Name("AccessInfo"),
+            args=[],
+            keywords=[
+                ast.keyword(
+                    arg="region",
+                    value=ast.Constant(access.region)
+                ),
+            ]
+        )
+
+        if access.clearance != "Default":
+            ast_call.keywords.append(ast.keyword("clearance", ast.Constant(access.clearance)))
+
+        if access.cond is not None and access.cond != []:
+            ast_call.keywords.append(ast.keyword("cond", self.create_ast_call_condition_list(access.cond)))
+
+        ast.fix_missing_locations(ast_call)
+
+        return ast_call
