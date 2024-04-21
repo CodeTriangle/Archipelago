@@ -112,6 +112,8 @@ class CrossCodeWorld(World):
         for c in condition:
             if isinstance(c, LocationCondition):
                 name = c.location_name
+                if name in self.location_events:
+                    continue
                 location = self.create_location(name, event_from_location=True)
                 self.location_events[name] = location
                 self.region_dict[location.region].locations.append(location)
