@@ -19,6 +19,11 @@ class LocationData:
     area: typing.Optional[str] = None
     metadata: typing.Optional[dict[str, int | float | str]] = None
 
+    def __hash__(self):
+        # Every LocationData instance will have a unique name, so we should not
+        # need to use any other fields to hash it.
+        return hash(self.name)
+
 class CrossCodeLocation(Location):
     game: str = "CrossCode"
     data: LocationData

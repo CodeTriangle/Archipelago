@@ -14,7 +14,7 @@ from worlds.crosscode.types.regions import RegionsData
 
 from .ast import AstGenerator
 from .context import Context, make_context_from_package
-from .emit import emit_dict, emit_list
+from .emit import emit_dict, emit_list, emit_set
 from .util import BASE_ID, GENERATED_COMMENT, RESERVED_ITEM_IDS
 from .lists import ListInfo
 
@@ -93,10 +93,15 @@ class FileGenerator:
 
         code_item_dict = emit_dict(item_dict_items)
 
+        code_keyring_items = emit_set(
+            [ast.Constant(item) for item in self.ctx.rando_data["keyringItems"]]
+        )
+
         items_complete = template.render(
             single_items_dict=code_single_item_dict,
             items_dict=code_item_dict,
             num_items=self.ctx.num_items,
+            keyring_items=code_keyring_items,
             **self.common_args
         )
 
@@ -146,6 +151,25 @@ class FileGenerator:
         )
 
         with open(os.path.join(self.world_dir, "regions.py"), "w") as f:
+            f.write(regions_complete)
+
+        # VARS
+        template = self.environment.get_template("vars.template.py")
+
+        code_var_defs = defaultdict(dict)
+
+        for name, values in self.lists.variable_definitions.items():
+            for val, conds in values.items():
+                code_var_defs[name][val] = emit_list(
+                    [self.ast_generator.create_ast_call_condition(c) for c in conds]
+                )
+
+        regions_complete = template.render(
+            code_var_defs=code_var_defs,
+            **self.common_args
+        )
+
+        with open(os.path.join(self.world_dir, "vars.py"), "w") as f:
             f.write(regions_complete)
 
     def generate_mod_files(self):

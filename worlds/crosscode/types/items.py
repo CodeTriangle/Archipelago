@@ -34,6 +34,11 @@ class ItemData:
             self.combo_id = get_combo_id(self.item, self.amount)
         self.name = self.item.name if self.amount == 1 else f"{self.item.name} x{self.amount}"
 
+    def __hash__(self):
+        # Every ItemData instance will have a unique name, so we should not
+        # need to use any other field to hash it.
+        return hash(self.name)
+
 @dataclass
 class ItemPoolEntry:
     item: ItemData

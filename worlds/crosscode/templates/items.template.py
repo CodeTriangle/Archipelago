@@ -33,3 +33,5 @@ items_by_full_name: dict[str, ItemData] = keydefaultdict(
 Uses cache in items_dict for speedy access.
 Computes using the key if cache miss.
 """
+
+keyring_items = {{keyring_items}}

@@ -14,20 +14,25 @@ from .codegen.context import Context, make_context_from_package
 
 from .common import *
 from .logic import condition_satisfied, has_clearance
+from .regions import region_packs
 
-from .types.items import CrossCodeItem, get_combo_id
+from .types.items import CrossCodeItem
 from .types.locations import CrossCodeLocation
 from .types.condition import Condition
 from .types.world import WorldData
 from .types.regions import RegionsData
+from .types.metadata import IncludeOptions
+from .types.pools import Pools
 from .options import CrossCodeOptions, Reachability, addon_options
 
 loaded_correctly = True
 
 try:
     from .builder import WorldBuilder
-    from .items import single_items_dict, items_dict, items_by_full_name
-    from .locations import locations_data
+    from .items import single_items_dict, items_by_full_name, keyring_items
+    from .locations import locations_data, locations_dict
+    from .item_pools import item_pools
+    from .vars import variable_definitions
 
 except Exception as e:
     loaded_correctly = False
@@ -36,14 +41,18 @@ except Exception as e:
     print(e, file=sys.stderr)
     single_items_data = []
     single_items_dict = {}
+    keyring_items = set()
     items_by_full_name = {}
     locations_data = []
+    locations_dict = {}
     crosscode_options = {}
-
-world_data_dict: dict[typing.Any, WorldData] = {}
+    item_pools = {}
+    variable_definitions = {}
 
 class CrossCodeWebWorld(WebWorld):
     theme="ocean"
+
+pools_cache: dict[tuple, Pools] = {}
 
 class CrossCodeWorld(World):
     """CrossCode is a retro-inspired 2D Action RPG set in the distant future,
@@ -68,10 +77,7 @@ class CrossCodeWorld(World):
     # items exist. They could be generated from json or something else. They can
     # include events, but don't have to since events will be placed manually.
     item_name_to_id = {
-        f"{name} x{amount}" if amount > 1 else name: get_combo_id(data, amount)
-        for name, data in single_items_dict.items()
-        for amount in range(1, 11)
-        if not data.unique or amount == 1
+        key: value.combo_id for key, value in items_by_full_name.items()
     }
 
     location_name_to_id = {
@@ -93,17 +99,23 @@ class CrossCodeWorld(World):
 
     location_events: dict[str, Location]
 
-    world_data: WorldData
-
     variables: dict[str, list[str]]
 
-    addons: list[str]
+    pools: Pools
 
-    ctx: Context = make_context_from_package("worlds.crosscode", False)
+    def get_include_options(self) -> IncludeOptions:
+        """The metadata dict is a dict that will be matched against the
+        `metadata` fields in the ItemPoolEntry and Location classes to check
+        for inclusion.
+        """
+        return {
+            "questRandoOnly": bool(self.options.quest_rando.value),
+            "keyrings": bool(self.options.keyrings.value),
+        }
 
     def create_location(self, location: str, event_from_location=False) -> CrossCodeLocation:
-        data, access = self.world_data.locations_data[location]
-        return CrossCodeLocation(self.player, data, access, self.logic_mode, self.region_dict, event_from_location=event_from_location)
+        data = locations_dict[location]
+        return CrossCodeLocation(self.player, data, self.logic_mode, self.region_dict, event_from_location=event_from_location)
 
     def create_item(self, item: str) -> CrossCodeItem:
         return CrossCodeItem(self.player, items_by_full_name[item])
@@ -124,21 +136,20 @@ class CrossCodeWorld(World):
         if not loaded_correctly:
             raise RuntimeError("Attempting to generate a CrossCode World after unsuccessful code generation")
 
-        self.addons = [name for name in addon_options if getattr(self.options, name)]
+        self.include_options = self.get_include_options()
 
-        addonTuple = tuple(self.addons)
+        include_options_tuple = tuple(self.include_options.items())
 
-        if addonTuple in world_data_dict:
-            self.world_data = world_data_dict[addonTuple]
+        if include_options_tuple in pools_cache:
+            self.pools = pools_cache[include_options_tuple]
         else:
-            self.world_data = WorldBuilder(deepcopy(self.ctx)).build(self.addons)
-            world_data_dict[addonTuple] = self.world_data
+            pools_cache[include_options_tuple] = self.pools = Pools(self.include_options)
 
         self.variables = defaultdict(list)
 
         start_inventory = self.options.start_inventory.value
         self.logic_mode = self.options.logic_mode.current_key
-        self.region_pack = self.world_data.region_packs[self.logic_mode]
+        self.region_pack = region_packs[self.logic_mode]
 
         if self.options.vt_shade_lock.value in [1, 2]:
             self.variables["vtShadeLock"].append("shades")
@@ -176,8 +187,8 @@ class CrossCodeWorld(World):
         self.logic_dict = {
             "mode": self.logic_mode,
             "variables": self.variables,
-            "variable_definitions": self.world_data.variable_definitions,
-            "keyrings": self.world_data.keyring_items if self.options.keyrings.value else set(),
+            "variable_definitions": variable_definitions,
+            "keyrings": keyring_items if self.options.keyrings.value else set(),
         }
 
     def create_regions(self):
@@ -205,17 +216,17 @@ class CrossCodeWorld(World):
         self.multiworld.regions.append(menu_region)
 
         for name, region in self.region_dict.items():
-            for data, access_info in self.world_data.locations_data.values():
-                if self.logic_mode in access_info.region and access_info.region[self.logic_mode] == name:
-                    location = CrossCodeLocation(self.player, data, access_info, self.logic_mode, self.region_dict)
+            for data in self.pools.location_pool:
+                if self.logic_mode in data.access.region and data.access.region[self.logic_mode] == name:
+                    location = CrossCodeLocation(self.player, data, self.logic_mode, self.region_dict)
                     if location.data.area is not None:
                         self.dungeon_location_list[location.data.area].add(location)
                     region.locations.append(location)
-                    self.create_event_conditions(access_info.cond)
+                    self.create_event_conditions(data.access.cond)
 
             for data, access_info in self.world_data.events_data.values():
                 if self.logic_mode in access_info.region and access_info.region[self.logic_mode] == name:
-                    location = CrossCodeLocation(self.player, data, access_info, self.logic_mode, self.region_dict)
+                    location = CrossCodeLocation(self.player, data, self.logic_mode, self.region_dict)
                     region.locations.append(location)
                     location.place_locked_item(Item(location.data.name, ItemClassification.progression, None, self.player))
 
@@ -224,7 +235,7 @@ class CrossCodeWorld(World):
                     location.progress_type = LocationProgressType.EXCLUDED
 
         # also add any event conditions referenced in any possible value of a variable
-        for conds in self.world_data.variable_definitions.values():
+        for conds in variable_definitions.values():
             for cond in conds.values():
                 self.create_event_conditions(cond)
         

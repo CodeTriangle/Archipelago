@@ -1,3 +1,4 @@
+from collections import defaultdict
 import typing
 
 from .ast import AstGenerator
@@ -7,6 +8,7 @@ from .util import BASE_ID, RESERVED_ITEM_IDS
 
 from ..types.items import ItemData, SingleItemData, ItemPoolEntry
 from ..types.locations import LocationData
+from ..types.condition import Condition
 
 
 class ListInfo:
@@ -25,6 +27,8 @@ class ListInfo:
 
     reward_amounts: dict[str, int]
 
+    variable_definitions: dict[str, dict[str, list[Condition]]]
+
     def __init__(self, ctx: Context):
         self.ctx = ctx
 
@@ -42,6 +46,8 @@ class ListInfo:
         self.json_parser = JsonParser(self.ctx)
         self.json_parser.single_items_dict = self.single_items_dict
         self.json_parser.items_dict = self.items_dict
+
+        self.variable_definitions = defaultdict(dict)
 
     def build(self):
         self.__add_item_data_list(self.ctx.rando_data["items"])
@@ -63,6 +69,8 @@ class ListInfo:
                 continue
 
             self.items_dict[name, 1] = ItemData(data, 1, BASE_ID + RESERVED_ITEM_IDS + data.item_id)
+
+        self.__add_vars(self.ctx.rando_data["vars"])
 
     def __add_location(self, name: str, raw_loc: dict[str, typing.Any], create_event=False):
         num_rewards = 1
@@ -154,3 +162,8 @@ class ListInfo:
         else:
             self.items_dict[key] = item
         return item
+
+    def __add_vars(self, variables: dict[str, dict[str, list[typing.Any]]]):
+        for name, values in variables.items():
+            for value, conds in values.items():
+                self.variable_definitions[name][value] = self.json_parser.parse_condition(conds)
