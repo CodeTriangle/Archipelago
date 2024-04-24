@@ -28,7 +28,6 @@ from .options import CrossCodeOptions, Reachability, addon_options
 loaded_correctly = True
 
 try:
-    from .builder import WorldBuilder
     from .items import single_items_dict, items_by_full_name, keyring_items
     from .locations import locations_data, locations_dict
     from .item_pools import item_pools
