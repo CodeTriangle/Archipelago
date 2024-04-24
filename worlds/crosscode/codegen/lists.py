@@ -73,7 +73,11 @@ class ListInfo:
         self.__add_vars(self.ctx.rando_data["vars"])
 
     def __add_location(self, name: str, raw_loc: dict[str, typing.Any], create_event=False):
-        num_rewards = 1
+        dbentry = self.ctx.database["quests"][raw_loc["questid"]] if "questid" in raw_loc else {}
+        rewards = dbentry.get("rewards", {})
+        item_rewards = rewards.get("items", [])
+        num_rewards = max(1, len(item_rewards))
+
         found = False
 
         if name in self.reward_amounts:
