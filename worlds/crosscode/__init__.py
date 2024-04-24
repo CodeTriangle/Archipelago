@@ -298,10 +298,10 @@ class CrossCodeWorld(World):
             for loc in region.locations:
                 if not isinstance(loc, CrossCodeLocation):
                     continue
-                if loc.access.cond is not None:
-                    add_rule(loc, condition_satisfied(self.player, loc.access.cond, **self.logic_dict))
-                if loc.access.clearance != "Default":
-                    add_rule(loc, has_clearance(self.player, loc.access.clearance))
+                if loc.data.access.cond is not None:
+                    add_rule(loc, condition_satisfied(self.player, loc.data.access.cond, **self.logic_dict))
+                if loc.data.access.clearance != "Default":
+                    add_rule(loc, has_clearance(self.player, loc.data.access.clearance))
 
     def pre_fill(self):
         allowed_locations_by_item: dict[Item, set[CrossCodeLocation]] = {}

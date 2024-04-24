@@ -12,11 +12,11 @@ from .types.items import ItemData, SingleItemData
 num_items = 676
 
 single_items_dict: dict[str, SingleItemData] = {
-    'Heat': SingleItemData(item_id=-100, name='Heat', classification=ItemClassification.filler, unique=True),
-    'Cold': SingleItemData(item_id=-99, name='Cold', classification=ItemClassification.filler, unique=True),
-    'Shock': SingleItemData(item_id=-98, name='Shock', classification=ItemClassification.filler, unique=True),
-    'Wave': SingleItemData(item_id=-97, name='Wave', classification=ItemClassification.filler, unique=True),
-    'SP Upgrade': SingleItemData(item_id=-96, name='SP Upgrade', classification=ItemClassification.useful, unique=True),
+    'Heat': SingleItemData(item_id=-100, name='Heat', classification=ItemClassification.progression, unique=True),
+    'Cold': SingleItemData(item_id=-99, name='Cold', classification=ItemClassification.progression, unique=True),
+    'Shock': SingleItemData(item_id=-98, name='Shock', classification=ItemClassification.progression, unique=True),
+    'Wave': SingleItemData(item_id=-97, name='Wave', classification=ItemClassification.progression, unique=True),
+    'SP Upgrade': SingleItemData(item_id=-96, name='SP Upgrade', classification=ItemClassification.progression, unique=True),
     'Golden Triangle': SingleItemData(item_id=0, name='Golden Triangle', classification=ItemClassification.filler, unique=True),
     'Sandwich': SingleItemData(item_id=1, name='Sandwich', classification=ItemClassification.filler),
     'Green Leaf Tea': SingleItemData(item_id=2, name='Green Leaf Tea', classification=ItemClassification.filler),
@@ -1374,10 +1374,10 @@ Uses cache in items_dict for speedy access.
 Computes using the key if cache miss.
 """
 
-keyring_items = [
+keyring_items = {
     'Mine Key',
     "Faj'ro Key",
     "So'najiz Key",
     "Zir'vitar Key",
     "Krys'kajo Key",
-]
+}

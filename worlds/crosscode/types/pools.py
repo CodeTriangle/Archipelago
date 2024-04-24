@@ -66,8 +66,8 @@ class Pools:
         # These are manually coded for now.
         # The default is to include the item.
         # Return false if at any point it is discovered we shouldn't.
-        if not metadata.get("questRandoOnly", True):
-            return False
+        if metadata.get("questRandoOnly", False):
+            return self.options["questRandoOnly"]
 
         return True
 
