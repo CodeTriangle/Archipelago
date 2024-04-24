@@ -51,7 +51,7 @@ class CrossCodeItem(Item):
 
     def __init__(self, player: int, data: ItemData):
         super(CrossCodeItem, self).__init__(
-            data.item.name,
+            data.name,
             data.item.classification,
             data.combo_id,
             player,
