@@ -243,3 +243,7 @@ class FileGenerator:
 
         with open(os.path.join(self.data_out_dir, "data.json"), "w") as f:
             json.dump(data_out, f, indent='\t')
+
+        with open(os.path.join(self.data_out_dir, "locations.json"), "w") as f:
+            location_ids = { loc.name: loc.code for loc in self.lists.locations_data.values() }
+            json.dump(location_ids, f, indent='\t')

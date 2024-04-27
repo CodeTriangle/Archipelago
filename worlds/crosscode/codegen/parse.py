@@ -9,7 +9,7 @@ from .util import BASE_ID, RESERVED_ITEM_IDS, SP_UPGRADE_ID_OFFSET, SP_UPGRADE_N
 from ..types.items import ItemData, SingleItemData
 from ..types.locations import AccessInfo, Condition
 from ..types.regions import RegionConnection, RegionsData
-from ..types.condition import ItemCondition, LocationCondition, QuestCondition, RegionCondition, AnyElementCondition, VariableCondition
+from ..types.condition import ItemCondition, LocationCondition, QuestCondition, RegionCondition, AnyElementCondition, OrCondition, VariableCondition
 
 class JsonParserError(Exception):
     subject: typing.Any
@@ -90,6 +90,9 @@ class JsonParser:
             
             elif cond[0] == "any_element":
                 result.append(AnyElementCondition())
+
+            elif cond[0] in ("any", "or"):
+                result.append(OrCondition(self.parse_condition(cond[1:])))
 
             elif cond[0] == "var":
                 if num_args == 1:
