@@ -13,7 +13,7 @@ class ListInfo:
     ctx: Context
     ast_generator: AstGenerator
     json_parser: JsonParser
-    current_location_code: int = BASE_ID
+    current_location_code: int
 
     locations_data: dict[str, LocationData]
     events_data: dict[str, LocationData]
@@ -28,6 +28,9 @@ class ListInfo:
 
         self.ast_generator = AstGenerator()
         self.json_parser = JsonParser(self.ctx)
+        self.current_location_code = max(self.ctx.cached_location_ids.values(), default=BASE_ID)
+        if self.current_location_code != BASE_ID:
+            self.current_location_code += 1
 
         self.locations_data = {}
         self.events_data = {}
@@ -54,6 +57,9 @@ class ListInfo:
                 continue
 
             self.items_dict[name, 1] = ItemData(data, 1, BASE_ID + RESERVED_ITEM_IDS + data.item_id)
+
+    def __get_cached_location_id(self, name: str) -> typing.Optional[int]:
+        return self.ctx.cached_location_ids.get(name, None)
 
     def __add_location(self, name: str, raw_loc: dict[str, typing.Any], create_event=False):
         num_rewards = 1
@@ -85,8 +91,12 @@ class ListInfo:
 
             location_names.append(full_name)
 
-            loc = LocationData(full_name, self.current_location_code, area)
-            self.current_location_code += 1
+            locid = self.__get_cached_location_id(full_name)
+            if locid is None:
+                locid = self.current_location_code
+                self.current_location_code += 1
+
+            loc = LocationData(full_name, locid, area)
 
             self.locations_data[full_name] = loc
 
