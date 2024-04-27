@@ -215,6 +215,10 @@ class CrossCodeWorld(World):
         if self.options.start_with_chest_detector.value:
             start_inventory["Chest Detector"] = 1
 
+        if self.options.start_with_pet.value:
+            chosen_pet = self.pools.pull_items_from_pool("pets", self.random)[0]
+            start_inventory[chosen_pet.name] = 1
+
         self.pre_fill_any_dungeon_names = set()
         self.pre_fill_specific_dungeons_names = defaultdict(set)
 

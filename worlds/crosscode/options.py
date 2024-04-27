@@ -95,6 +95,12 @@ class StartWithChestDetector(DefaultOnToggle):
     """
     display_name = "Start with Chest Detector"
 
+class StartWithPet(DefaultOnToggle):
+    """
+    If enabled, the player will start with a random pet. This is just for fun.
+    """
+    display_name = "Start with Pet"
+
 class Keyrings(Toggle):
     """
     If enabled, all keys for each dungeon will be replaced with a singular item that unlocks every door in that dungeon.
@@ -274,6 +280,7 @@ class CrossCodeOptions(PerGameCommonOptions):
 
     start_with_green_leaf_shade: StartWithGreenLeafShade
     start_with_chest_detector: StartWithChestDetector
+    start_with_pet: StartWithPet
 
     keyrings: Keyrings
 
