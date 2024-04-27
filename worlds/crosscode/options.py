@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from Options import Choice, DefaultOnToggle, PerGameCommonOptions, Toggle
+from Options import Choice, DefaultOnToggle, PerGameCommonOptions, Toggle, Range
 
 class LogicMode(Choice):
     """
@@ -200,23 +200,94 @@ class ChestKeyShuffle(DungeonReachability):
         "wave-dng": { "Radiant Key" },
     }
 
+class CommonPoolWeight(Range):
+    """
+    Controls the likelihood of choosing a common filler item when filling the world.
+    """
+    display_name = "Common Pool Weight"
+
+    range_start = 0
+    range_end = 100
+    default = 42
+
+class RarePoolWeight(Range):
+    """
+    Controls the likelihood of choosing a rare filler item when filling the world.
+    """
+    display_name = "Rare Pool Weight"
+
+    range_start = 0
+    range_end = 100
+    default = 32
+
+class EpicPoolWeight(Range):
+    """
+    Controls the likelihood of choosing a epic filler item when filling the world.
+    """
+    display_name = "Epic Pool Weight"
+
+    range_start = 0
+    range_end = 100
+    default = 24
+
+class LegendaryPoolWeight(Range):
+    """
+    Controls the likelihood of choosing a legendary filler item when filling the world.
+    """
+    display_name = "Legendary Pool Weight"
+
+    range_start = 0
+    range_end = 100
+    default = 2
+
+class ConsumableWeight(Range):
+    """
+    Controls the likelihood of choosing a consumable item (as opposed to a drop).
+    """
+    display_name = "Consumable Weight"
+
+    range_start = 0
+    range_end = 100
+    default = 50
+
+class DropWeight(Range):
+    """
+    Controls the likelihood of choosing a drop item (as opposed to a consumable).
+    """
+    display_name = "Drop Weight"
+
+    range_start = 0
+    range_end = 100
+    default = 50
+
 @dataclass
 class CrossCodeOptions(PerGameCommonOptions):
     logic_mode: LogicMode
     vt_shade_lock: VTShadeLock
     vw_meteor_passage: VWMeteorPassage
     vt_skip: VTSkip
+
     quest_rando: QuestRando
     hidden_quest_reward_mode: HiddenQuestRewardMode
     hidden_quest_obfuscation_level: HiddenQuestObfuscationLevel
     quest_dialog_hints: QuestDialogHints
+
     start_with_green_leaf_shade: StartWithGreenLeafShade
     start_with_chest_detector: StartWithChestDetector
+
     keyrings: Keyrings
+
     shade_shuffle: ShadeShuffle
     element_shuffle: ElementShuffle
     small_key_shuffle: SmallKeyShuffle
     master_key_shuffle: MasterKeyShuffle
     chest_key_shuffle: ChestKeyShuffle
+
+    common_pool_weight: CommonPoolWeight
+    rare_pool_weight: RarePoolWeight
+    epic_pool_weight: EpicPoolWeight
+    legendary_pool_weight: LegendaryPoolWeight
+    consumable_weight: ConsumableWeight
+    drop_weight: DropWeight
 
 addon_options = ["quest_rando"]

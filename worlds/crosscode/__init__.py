@@ -1,5 +1,5 @@
 from copy import copy
-from collections import defaultdict
+from collections import defaultdict, Counter
 import traceback
 from copy import deepcopy
 import sys
@@ -16,13 +16,13 @@ from .common import *
 from .logic import condition_satisfied, has_clearance
 from .regions import region_packs
 
-from .types.items import CrossCodeItem
+from .types.items import ItemData, CrossCodeItem
 from .types.locations import CrossCodeLocation
 from .types.condition import Condition
 from .types.world import WorldData
 from .types.regions import RegionsData
 from .types.metadata import IncludeOptions
-from .types.pools import Pools
+from .types.pools import ItemPool, Pools
 from .options import CrossCodeOptions, Reachability, addon_options
 
 loaded_correctly = True
@@ -102,6 +102,18 @@ class CrossCodeWorld(World):
 
     pools: Pools
 
+    _filler_pool_names: list[str] = [
+        "fillerCommonCons",
+        "fillerCommonDrop",
+        "fillerRareCons",
+        "fillerRareDrop",
+        "fillerEpicCons",
+        "fillerEpicDrop",
+        "fillerLegendary",
+    ]
+
+    _filler_pool_weights: list[int]
+
     def get_include_options(self) -> IncludeOptions:
         """The metadata dict is a dict that will be matched against the
         `metadata` fields in the ItemPoolEntry and Location classes to check
@@ -118,6 +130,24 @@ class CrossCodeWorld(World):
 
     def create_item(self, item: str) -> CrossCodeItem:
         return CrossCodeItem(self.player, items_by_full_name[item])
+
+    def get_filler_pool_names(self, k=1) -> list[str]:
+        """Get a list of filler pools from which you can pull."""
+        return self.random.choices(self._filler_pool_names, cum_weights=self._filler_pool_weights, k=k)
+
+    def get_filler_item_name(self) -> str:
+        return self.pools.pull_items_from_pool(self.get_filler_pool_name(), self.random)[0].name
+
+    def get_filler_item_data(self, k=1) -> list[ItemData]:
+        """Get a list of item data instances chosen randomly from the weighted pools."""
+        pool_count = Counter(self.get_filler_pool_names(k))
+        result = []
+        for name, cnt in pool_count.items():
+            result.extend(self.pools.pull_items_from_pool(name, self.random, cnt))
+        return result
+
+    def get_filler_items(self, k=1) -> list[CrossCodeItem]:
+        return [CrossCodeItem(self.player, item) for item in self.get_filler_item_data(k)]
 
     def create_event_conditions(self, condition: typing.Optional[list[Condition]]):
         if condition is None:
@@ -143,6 +173,28 @@ class CrossCodeWorld(World):
             self.pools = pools_cache[include_options_tuple]
         else:
             pools_cache[include_options_tuple] = self.pools = Pools(self.include_options)
+
+        common = self.options.common_pool_weight.value
+        rare = self.options.rare_pool_weight.value
+        epic = self.options.epic_pool_weight.value
+        legendary = self.options.legendary_pool_weight.value
+        cons = self.options.consumable_weight.value
+        drop = self.options.drop_weight.value
+
+        self._filler_pool_weights = [
+            common * cons,
+            common * drop,
+            rare * cons,
+            rare * drop,
+            epic  * cons,
+            epic  * drop,
+            legendary * (cons + drop),
+        ]
+
+        # cumulative weights save work.
+        cumu = 0
+        for idx in range(len(self._filler_pool_weights)):
+            cumu = self._filler_pool_weights[idx] = cumu + self._filler_pool_weights[idx]
 
         self.variables = defaultdict(list)
 
@@ -288,9 +340,8 @@ class CrossCodeWorld(World):
                 if add_to_pool:
                     self.multiworld.itempool.append(item)
 
-        filler_items = self.pools.pull_items_from_pool("fillerCommon", self.random, num_needed_items)
-        for data in filler_items:
-            self.multiworld.itempool.append(CrossCodeItem(self.player, data))
+        # Add filler items to fill up the pool.
+        self.multiworld.itempool.extend(self.get_filler_items(num_needed_items))
 
     def set_rules(self):
         for _, region in self.region_dict.items():

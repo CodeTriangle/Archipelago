@@ -7,6 +7,8 @@ from .items import ItemData, ItemPoolEntry
 from ..item_pools import item_pools
 from ..locations import locations_data, events_data
 
+ItemPool = dict[ItemData, int]
+
 class Pools:
     """A class which stores information about item and location pools.
 
@@ -28,7 +30,7 @@ class Pools:
     options: IncludeOptions
     location_pool: set[LocationData]
     event_pool: set[LocationData]
-    item_pools: dict[str, dict[ItemData, int]]
+    item_pools: dict[str, ItemPool]
     _item_pool_lists: dict[str, tuple[list[ItemData], list[int]]]
 
     def __init__(self, opts: IncludeOptions):
@@ -37,6 +39,8 @@ class Pools:
         self.event_pool = set()
         self.item_pools = {}
         self._item_pool_lists = {}
+
+        weights = {}
 
         for loc in locations_data:
             if self.__should_include_location(loc):
@@ -54,8 +58,17 @@ class Pools:
 
             self.item_pools[name] = counter
 
+            cum_weights = []
+            cumu = 0
+
+            for qty in counter.values():
+                cum_weights.append(cumu + qty)
+                cumu += qty
+
+            weights[name] = cum_weights
+
         for name, pool in self.item_pools.items():
-            self._item_pool_lists[name] = (list(pool.keys()), list(pool.values()))
+            self._item_pool_lists[name] = (list(pool.keys()), weights[name])
 
     def __should_include_location(self, loc: LocationData) -> bool:
         # Technically the class allows metadata to be None.
@@ -83,4 +96,4 @@ class Pools:
 
     def pull_items_from_pool(self, name: str, rand: Random, k=1) -> list[ItemData]:
         population, weights = self._item_pool_lists[name]
-        return rand.choices(population, weights, k=k)
+        return rand.choices(population, cum_weights=weights, k=k)
