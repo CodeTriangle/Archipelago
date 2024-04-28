@@ -130,7 +130,7 @@ class FileGenerator:
             map_id = chest["location"]["mapId"]
 
             room = data_out["items"][map_name]
-            room["chests"][map_id] = { "mwids": codes }
+            room["chests"][map_id] = { "name": name, "mwids": codes }
 
         for name, cutscene in merged_data["cutscenes"].items():
             codes = get_codes(name)
