@@ -95,6 +95,22 @@ class StartWithChestDetector(DefaultOnToggle):
     """
     display_name = "Start with Chest Detector"
 
+class StartWithDiscs(Choice):
+    """
+    If set to a value other than "none", the player will start with the corresponding disc items.
+    Disc of Insight unlocks the records menu.
+    Disc of Flora unlocks the botany menu, allowing the player to start collecting plant samples from the beginning.
+    """
+
+    option_none = 0
+    option_insight = 1
+    option_flora = 2
+    option_both = 3
+
+    default = 1
+
+    display_name = "Start with Discs"
+
 class StartWithPet(DefaultOnToggle):
     """
     If enabled, the player will start with a random pet. This is just for fun.
@@ -280,6 +296,7 @@ class CrossCodeOptions(PerGameCommonOptions):
 
     start_with_green_leaf_shade: StartWithGreenLeafShade
     start_with_chest_detector: StartWithChestDetector
+    start_with_discs: StartWithDiscs
     start_with_pet: StartWithPet
 
     keyrings: Keyrings

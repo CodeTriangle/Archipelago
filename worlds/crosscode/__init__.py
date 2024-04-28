@@ -217,6 +217,11 @@ class CrossCodeWorld(World):
         if self.options.start_with_chest_detector.value:
             start_inventory["Chest Detector"] = 1
 
+        if self.options.start_with_discs.value & options.StartWithDiscs.option_insight:
+            start_inventory["Disc of Insight"] = 1
+        if self.options.start_with_discs.value & options.StartWithDiscs.option_flora:
+            start_inventory["Disc of Flora"] = 1
+
         if self.options.start_with_pet.value:
             chosen_pet = self.pools.pull_items_from_pool("pets", self.random)[0]
             start_inventory[chosen_pet.name] = 1
