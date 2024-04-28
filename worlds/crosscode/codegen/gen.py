@@ -1,5 +1,6 @@
 from collections import defaultdict
 from copy import deepcopy
+import logging
 from posixpath import commonpath
 import sys
 import typing
@@ -18,6 +19,7 @@ from .emit import emit_dict, emit_list, emit_set
 from .util import BASE_ID, GENERATED_COMMENT, RESERVED_ITEM_IDS
 from .lists import ListInfo
 
+cglogger = logging.getLogger("crosscode.codegen")
 
 class FileGenerator:
     environment: jinja2.Environment
@@ -231,7 +233,7 @@ class FileGenerator:
             codes = get_codes(name)
             quest_id = quest["questid"]
             if not quest_id in self.ctx.database["quests"]:
-                print(f"{quest_id} does not exist", sys.stderr)
+                cglogger.error(f"{quest_id} does not exist")
 
             room = data_out["quests"]
             room[quest_id] = { "mwids": codes }

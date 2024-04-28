@@ -1,11 +1,12 @@
-from copy import copy
-from collections import defaultdict, Counter
-import traceback
+from copy import cop, exc_infoTrue)rom collections import defaultdict, Counter
 from copy import deepcopy
 import sys
 import typing
+import logging
+
 from BaseClasses import ItemClassification, Location, LocationProgressType, Region, Item
 from Fill import fill_restrictive
+
 from worlds.AutoWorld import WebWorld, World
 from worlds.crosscode.types.condition import LocationCondition
 from worlds.generic.Rules import add_rule, set_rule
@@ -25,6 +26,8 @@ from .types.metadata import IncludeOptions
 from .types.pools import ItemPool, Pools
 from .options import CrossCodeOptions, Reachability, addon_options
 
+cclogger = logging.getLogger("world.crosscode")
+
 loaded_correctly = True
 
 try:
@@ -35,9 +38,7 @@ try:
 
 except Exception as e:
     loaded_correctly = False
-    print("Failed to import items, locations, or regions, probably due to faulty code generation.", file=sys.stderr)
-    traceback.print_exception(*sys.exc_info())
-    print(e, file=sys.stderr)
+    cclogger.fatal("Failed to import items, locations, or regions, probably due to faulty code generation.", exc_info=True)
     single_items_data = []
     single_items_dict = {}
     keyring_items = set()
@@ -416,10 +417,10 @@ class CrossCodeWorld(World):
         for item in all_items_list:
             all_state.remove(item)
 
-        print(f"master_key_shuffle: {self.options.master_key_shuffle}")
-        print(f"small_key_shuffle: {self.options.small_key_shuffle}")
-        print(f"element_shuffle: {self.options.element_shuffle}")
-        print(f"chest_key_shuffle: {self.options.chest_key_shuffle}")
+        cclogger.debug(f"master_key_shuffle: {self.options.master_key_shuffle}")
+        cclogger.debug(f"small_key_shuffle: {self.options.small_key_shuffle}")
+        cclogger.debug(f"element_shuffle: {self.options.element_shuffle}")
+        cclogger.debug(f"chest_key_shuffle: {self.options.chest_key_shuffle}")
 
         # Finally, fill!
         fill_restrictive(
@@ -430,7 +431,7 @@ class CrossCodeWorld(World):
             lock=True,
             single_player_placement=True,
             allow_partial=False,
-            on_place=lambda loc: print(f"{self.player}: {loc.name} <- {loc.item.name}")
+            on_place=lambda loc: cclogger.debug(f"{self.player}: {loc.name} <- {loc.item.name}")
         )
 
     def fill_slot_data(self):
