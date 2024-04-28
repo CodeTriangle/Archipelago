@@ -1,4 +1,5 @@
-from copy import cop, exc_infoTrue)rom collections import defaultdict, Counter
+from copy import copy
+from collections import defaultdict, Counter
 from copy import deepcopy
 import sys
 import typing
@@ -8,46 +9,25 @@ from BaseClasses import ItemClassification, Location, LocationProgressType, Regi
 from Fill import fill_restrictive
 
 from worlds.AutoWorld import WebWorld, World
-from worlds.crosscode.types.condition import LocationCondition
 from worlds.generic.Rules import add_rule, set_rule
 
 from .codegen.context import Context, make_context_from_package
 
 from .common import *
 from .logic import condition_satisfied, has_clearance
-from .regions import region_packs
+from .world_data import static_world_data
 
 from .types.items import ItemData, CrossCodeItem
 from .types.locations import CrossCodeLocation
-from .types.condition import Condition
+from .types.condition import *
 from .types.world import WorldData
 from .types.regions import RegionsData
 from .types.metadata import IncludeOptions
 from .types.pools import ItemPool, Pools
-from .options import CrossCodeOptions, Reachability, addon_options
+from .options import CrossCodeOptions, Reachability, StartWithDiscs, addon_options
+from worlds.crosscode import world_data
 
-cclogger = logging.getLogger("world.crosscode")
-
-loaded_correctly = True
-
-try:
-    from .items import single_items_dict, items_by_full_name, keyring_items
-    from .locations import locations_data, locations_dict
-    from .item_pools import item_pools
-    from .vars import variable_definitions
-
-except Exception as e:
-    loaded_correctly = False
-    cclogger.fatal("Failed to import items, locations, or regions, probably due to faulty code generation.", exc_info=True)
-    single_items_data = []
-    single_items_dict = {}
-    keyring_items = set()
-    items_by_full_name = {}
-    locations_data = []
-    locations_dict = {}
-    crosscode_options = {}
-    item_pools = {}
-    variable_definitions = {}
+cclogger = logging.getLogger(__name__)
 
 class CrossCodeWebWorld(WebWorld):
     theme="ocean"
@@ -64,6 +44,8 @@ class CrossCodeWorld(World):
     game = NAME
     web = CrossCodeWebWorld()
 
+    world_data: typing.ClassVar[WorldData] = static_world_data
+
     options_dataclass = CrossCodeOptions
     options: CrossCodeOptions
     topology_present = True
@@ -77,11 +59,11 @@ class CrossCodeWorld(World):
     # items exist. They could be generated from json or something else. They can
     # include events, but don't have to since events will be placed manually.
     item_name_to_id = {
-        key: value.combo_id for key, value in items_by_full_name.items()
+        key: value.combo_id for key, value in world_data.items_by_full_name.items()
     }
 
     location_name_to_id = {
-        location.name: location.code for location in locations_data if location.code is not None
+        location.name: location.code for location in world_data.locations_dict.values() if location.code is not None
     }
 
     region_dict: dict[str, Region]
@@ -126,11 +108,11 @@ class CrossCodeWorld(World):
         }
 
     def create_location(self, location: str, event_from_location=False) -> CrossCodeLocation:
-        data = locations_dict[location]
+        data = self.world_data.locations_dict[location]
         return CrossCodeLocation(self.player, data, self.logic_mode, self.region_dict, event_from_location=event_from_location)
 
     def create_item(self, item: str) -> CrossCodeItem:
-        return CrossCodeItem(self.player, items_by_full_name[item])
+        return CrossCodeItem(self.player, self.world_data.items_by_full_name[item])
 
     def get_filler_pool_names(self, k=1) -> list[str]:
         """Get a list of filler pools from which you can pull."""
@@ -165,9 +147,6 @@ class CrossCodeWorld(World):
                 location.place_locked_item(Item(location.name, ItemClassification.progression, None, self.player))
 
     def generate_early(self):
-        if not loaded_correctly:
-            raise RuntimeError("Attempting to generate a CrossCode World after unsuccessful code generation")
-
         self.include_options = self.get_include_options()
 
         include_options_tuple = tuple(self.include_options.items())
@@ -175,7 +154,7 @@ class CrossCodeWorld(World):
         if include_options_tuple in pools_cache:
             self.pools = pools_cache[include_options_tuple]
         else:
-            pools_cache[include_options_tuple] = self.pools = Pools(self.include_options)
+            pools_cache[include_options_tuple] = self.pools = Pools(self.world_data, self.include_options)
 
         common = self.options.common_pool_weight.value
         rare = self.options.rare_pool_weight.value
@@ -203,7 +182,7 @@ class CrossCodeWorld(World):
 
         start_inventory = self.options.start_inventory.value
         self.logic_mode = self.options.logic_mode.current_key
-        self.region_pack = region_packs[self.logic_mode]
+        self.region_pack = self.world_data.region_packs[self.logic_mode]
 
         if self.options.vt_shade_lock.value in [1, 2]:
             self.variables["vtShadeLock"].append("shades")
@@ -218,9 +197,9 @@ class CrossCodeWorld(World):
         if self.options.start_with_chest_detector.value:
             start_inventory["Chest Detector"] = 1
 
-        if self.options.start_with_discs.value & options.StartWithDiscs.option_insight:
+        if self.options.start_with_discs.value & StartWithDiscs.option_insight:
             start_inventory["Disc of Insight"] = 1
-        if self.options.start_with_discs.value & options.StartWithDiscs.option_flora:
+        if self.options.start_with_discs.value & StartWithDiscs.option_flora:
             start_inventory["Disc of Flora"] = 1
 
         if self.options.start_with_pet.value:
@@ -250,8 +229,8 @@ class CrossCodeWorld(World):
         self.logic_dict = {
             "mode": self.logic_mode,
             "variables": self.variables,
-            "variable_definitions": variable_definitions,
-            "keyrings": keyring_items,
+            "variable_definitions": self.world_data.variable_definitions,
+            "keyrings": self.world_data.keyring_items,
         }
 
     def create_regions(self):
@@ -298,7 +277,7 @@ class CrossCodeWorld(World):
                     location.progress_type = LocationProgressType.EXCLUDED
 
         # also add any event conditions referenced in any possible value of a variable
-        for conds in variable_definitions.values():
+        for conds in self.world_data.variable_definitions.values():
             for cond in conds.values():
                 self.create_event_conditions(cond)
 
@@ -316,7 +295,7 @@ class CrossCodeWorld(World):
 
         for data, quantity in self.pools.item_pools["required"].items():
             # if the item needs to be a keyring, limit its quantity to one.
-            if self.options.keyrings.value and data.item.name in keyring_items:
+            if self.options.keyrings.value and data.item.name in self.world_data.keyring_items:
                 quantity = 1
 
             for _ in range(quantity):
@@ -441,7 +420,7 @@ class CrossCodeWorld(World):
                 "vtShadeLock": self.options.vt_shade_lock.value,
                 "meteorPassage": self.options.vw_meteor_passage.value,
                 "vtSkip": self.options.vt_skip.value,
-                "keyrings": [single_items_dict[name].item_id for name in self.logic_dict["keyrings"]],
+                "keyrings": [self.world_data.single_items_dict[name].item_id for name in self.logic_dict["keyrings"]],
                 "questRando": self.options.quest_rando.value,
                 "hiddenQuestRewardMode": self.options.hidden_quest_reward_mode.current_key,
                 "hiddenQuestObfuscationLevel": self.options.hidden_quest_obfuscation_level.current_key,

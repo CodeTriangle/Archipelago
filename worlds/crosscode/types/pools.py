@@ -4,10 +4,11 @@ from random import Random
 from .metadata import IncludeOptions
 from .locations import LocationData
 from .items import ItemData, ItemPoolEntry
-from ..item_pools import item_pools
-from ..locations import locations_data, events_data
+from .world import WorldData
+
 
 ItemPool = dict[ItemData, int]
+
 
 class Pools:
     """A class which stores information about item and location pools.
@@ -33,7 +34,7 @@ class Pools:
     item_pools: dict[str, ItemPool]
     _item_pool_lists: dict[str, tuple[list[ItemData], list[int]]]
 
-    def __init__(self, opts: IncludeOptions):
+    def __init__(self, world_data: WorldData, opts: IncludeOptions):
         self.options = opts
         self.location_pool = set()
         self.event_pool = set()
@@ -42,15 +43,15 @@ class Pools:
 
         weights = {}
 
-        for loc in locations_data:
+        for loc in world_data.locations_dict.values():
             if self.__should_include_location(loc):
                 self.location_pool.add(loc)
 
-        for ev in events_data:
+        for ev in world_data.events_dict.values():
             if self.__should_include_location(ev):
                 self.event_pool.add(ev)
 
-        for name, pool in item_pools.items():
+        for name, pool in world_data.item_pools_template.items():
             counter = defaultdict(lambda: 0)
             for entry in pool:
                 if self.__should_include_item(entry):

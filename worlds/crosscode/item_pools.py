@@ -9,7 +9,7 @@ from .items import items_dict
 from .types.items import ItemData, ItemPoolEntry
 from .types.condition import *
 
-item_pools: dict[str, list[ItemPoolEntry]] = {
+item_pools_template: dict[str, list[ItemPoolEntry]] = {
     "required": [
         ItemPoolEntry(item=items_dict['Heat', 1], quantity=1),
         ItemPoolEntry(item=items_dict['Cold', 1], quantity=1),
