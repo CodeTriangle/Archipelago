@@ -1,5 +1,5 @@
 from copy import copy
-from collections import defaultdict
+from collections import defaultdict, Counter
 import traceback
 from copy import deepcopy
 import sys
@@ -14,20 +14,24 @@ from .codegen.context import Context, make_context_from_package
 
 from .common import *
 from .logic import condition_satisfied, has_clearance
+from .regions import region_packs
 
-from .types.items import CrossCodeItem
+from .types.items import ItemData, CrossCodeItem
 from .types.locations import CrossCodeLocation
 from .types.condition import Condition
 from .types.world import WorldData
 from .types.regions import RegionsData
+from .types.metadata import IncludeOptions
+from .types.pools import ItemPool, Pools
 from .options import CrossCodeOptions, Reachability, addon_options
 
 loaded_correctly = True
 
 try:
-    from .builder import WorldBuilder
-    from .items import single_items_dict, items_by_full_name
-    from .locations import locations_data
+    from .items import single_items_dict, items_by_full_name, keyring_items
+    from .locations import locations_data, locations_dict
+    from .item_pools import item_pools
+    from .vars import variable_definitions
 
 except Exception as e:
     loaded_correctly = False
@@ -35,15 +39,19 @@ except Exception as e:
     traceback.print_exception(*sys.exc_info())
     print(e, file=sys.stderr)
     single_items_data = []
-    single_items_dict = []
+    single_items_dict = {}
+    keyring_items = set()
     items_by_full_name = {}
     locations_data = []
+    locations_dict = {}
     crosscode_options = {}
-
-world_data_dict: dict[typing.Any, WorldData] = {}
+    item_pools = {}
+    variable_definitions = {}
 
 class CrossCodeWebWorld(WebWorld):
     theme="ocean"
+
+pools_cache: dict[tuple, Pools] = {}
 
 class CrossCodeWorld(World):
     """CrossCode is a retro-inspired 2D Action RPG set in the distant future,
@@ -90,20 +98,56 @@ class CrossCodeWorld(World):
 
     location_events: dict[str, Location]
 
-    world_data: WorldData
-
     variables: dict[str, list[str]]
 
-    addons: list[str]
+    pools: Pools
 
-    ctx: Context = make_context_from_package("worlds.crosscode", False)
+    _filler_pool_names: list[str] = [
+        "fillerCommonCons",
+        "fillerCommonDrop",
+        "fillerRareCons",
+        "fillerRareDrop",
+        "fillerEpicCons",
+        "fillerEpicDrop",
+        "fillerLegendary",
+    ]
+
+    _filler_pool_weights: list[int]
+
+    def get_include_options(self) -> IncludeOptions:
+        """The metadata dict is a dict that will be matched against the
+        `metadata` fields in the ItemPoolEntry and Location classes to check
+        for inclusion.
+        """
+        return {
+            "questRandoOnly": bool(self.options.quest_rando.value),
+            "keyrings": bool(self.options.keyrings.value),
+        }
 
     def create_location(self, location: str, event_from_location=False) -> CrossCodeLocation:
-        data, access = self.world_data.locations_data[location]
-        return CrossCodeLocation(self.player, data, access, self.logic_mode, self.region_dict, event_from_location=event_from_location)
+        data = locations_dict[location]
+        return CrossCodeLocation(self.player, data, self.logic_mode, self.region_dict, event_from_location=event_from_location)
 
     def create_item(self, item: str) -> CrossCodeItem:
         return CrossCodeItem(self.player, items_by_full_name[item])
+
+    def get_filler_pool_names(self, k=1) -> list[str]:
+        """Get a list of filler pools from which you can pull."""
+        return self.random.choices(self._filler_pool_names, cum_weights=self._filler_pool_weights, k=k)
+
+    def get_filler_item_name(self) -> str:
+        return self.pools.pull_items_from_pool(self.get_filler_pool_name(), self.random)[0].name
+
+    def get_filler_item_data(self, k=1) -> list[ItemData]:
+        """Get a list of item data instances chosen randomly from the weighted pools."""
+        pool_count = Counter(self.get_filler_pool_names(k))
+        result = []
+        for name, cnt in pool_count.items():
+            result.extend(self.pools.pull_items_from_pool(name, self.random, cnt))
+        return result
+
+    def get_filler_items(self, k=1) -> list[CrossCodeItem]:
+        return [CrossCodeItem(self.player, item) for item in self.get_filler_item_data(k)]
 
     def create_event_conditions(self, condition: typing.Optional[list[Condition]]):
         if condition is None:
@@ -123,21 +167,42 @@ class CrossCodeWorld(World):
         if not loaded_correctly:
             raise RuntimeError("Attempting to generate a CrossCode World after unsuccessful code generation")
 
-        self.addons = [name for name in addon_options if getattr(self.options, name)]
+        self.include_options = self.get_include_options()
 
-        addonTuple = tuple(self.addons)
+        include_options_tuple = tuple(self.include_options.items())
 
-        if addonTuple in world_data_dict:
-            self.world_data = world_data_dict[addonTuple]
+        if include_options_tuple in pools_cache:
+            self.pools = pools_cache[include_options_tuple]
         else:
-            self.world_data = WorldBuilder(deepcopy(self.ctx)).build(self.addons)
-            world_data_dict[addonTuple] = self.world_data
+            pools_cache[include_options_tuple] = self.pools = Pools(self.include_options)
+
+        common = self.options.common_pool_weight.value
+        rare = self.options.rare_pool_weight.value
+        epic = self.options.epic_pool_weight.value
+        legendary = self.options.legendary_pool_weight.value
+        cons = self.options.consumable_weight.value
+        drop = self.options.drop_weight.value
+
+        self._filler_pool_weights = [
+            common * cons,
+            common * drop,
+            rare * cons,
+            rare * drop,
+            epic  * cons,
+            epic  * drop,
+            legendary * (cons + drop),
+        ]
+
+        # cumulative weights save work.
+        cumu = 0
+        for idx in range(len(self._filler_pool_weights)):
+            cumu = self._filler_pool_weights[idx] = cumu + self._filler_pool_weights[idx]
 
         self.variables = defaultdict(list)
 
         start_inventory = self.options.start_inventory.value
         self.logic_mode = self.options.logic_mode.current_key
-        self.region_pack = self.world_data.region_packs[self.logic_mode]
+        self.region_pack = region_packs[self.logic_mode]
 
         if self.options.vt_shade_lock.value in [1, 2]:
             self.variables["vtShadeLock"].append("shades")
@@ -151,6 +216,10 @@ class CrossCodeWorld(World):
 
         if self.options.start_with_chest_detector.value:
             start_inventory["Chest Detector"] = 1
+
+        if self.options.start_with_pet.value:
+            chosen_pet = self.pools.pull_items_from_pool("pets", self.random)[0]
+            start_inventory[chosen_pet.name] = 1
 
         self.pre_fill_any_dungeon_names = set()
         self.pre_fill_specific_dungeons_names = defaultdict(set)
@@ -175,8 +244,8 @@ class CrossCodeWorld(World):
         self.logic_dict = {
             "mode": self.logic_mode,
             "variables": self.variables,
-            "variable_definitions": self.world_data.variable_definitions,
-            "keyrings": self.world_data.keyring_items if self.options.keyrings.value else set(),
+            "variable_definitions": variable_definitions,
+            "keyrings": keyring_items,
         }
 
     def create_regions(self):
@@ -204,17 +273,17 @@ class CrossCodeWorld(World):
         self.multiworld.regions.append(menu_region)
 
         for name, region in self.region_dict.items():
-            for data, access_info in self.world_data.locations_data.values():
-                if self.logic_mode in access_info.region and access_info.region[self.logic_mode] == name:
-                    location = CrossCodeLocation(self.player, data, access_info, self.logic_mode, self.region_dict)
+            for data in self.pools.location_pool:
+                if self.logic_mode in data.access.region and data.access.region[self.logic_mode] == name:
+                    location = CrossCodeLocation(self.player, data, self.logic_mode, self.region_dict)
                     if location.data.area is not None:
                         self.dungeon_location_list[location.data.area].add(location)
                     region.locations.append(location)
-                    self.create_event_conditions(access_info.cond)
+                    self.create_event_conditions(data.access.cond)
 
-            for data, access_info in self.world_data.events_data.values():
-                if self.logic_mode in access_info.region and access_info.region[self.logic_mode] == name:
-                    location = CrossCodeLocation(self.player, data, access_info, self.logic_mode, self.region_dict)
+            for data in self.pools.event_pool:
+                if self.logic_mode in data.access.region and data.access.region[self.logic_mode] == name:
+                    location = CrossCodeLocation(self.player, data, self.logic_mode, self.region_dict)
                     region.locations.append(location)
                     location.place_locked_item(Item(location.data.name, ItemClassification.progression, None, self.player))
 
@@ -223,47 +292,46 @@ class CrossCodeWorld(World):
                     location.progress_type = LocationProgressType.EXCLUDED
 
         # also add any event conditions referenced in any possible value of a variable
-        for conds in self.world_data.variable_definitions.values():
+        for conds in variable_definitions.values():
             for cond in conds.values():
                 self.create_event_conditions(cond)
-        
-        victory = Region("Floor ??", self.player, self.multiworld)
-        self.multiworld.regions.append(victory)
 
-        loc = Location(self.player, "The Creator", parent=victory)
-        victory.locations = [loc]
-
-        loc.place_locked_item(Item("Victory", ItemClassification.progression, None, self.player))
-
+        goal_region = self.region_dict[self.region_pack.goal_region]
+        goal = Location(self.player, "The Creator", parent=goal_region)
+        goal.place_locked_item(Item("Victory", ItemClassification.progression, None, self.player))
         self.multiworld.completion_condition[self.player] = lambda state: state.has("Victory", self.player)
-
-        self.region_dict[self.region_pack.goal_region].add_exits(["Floor ??"])
+        goal_region.locations.append(goal)
 
     def create_items(self):
         exclude = self.multiworld.precollected_items[self.player][:]
-        local_num_needed_items = self.world_data.num_needed_items[self.logic_mode]
 
-        for (data, quantity) in self.world_data.items_dict.values():
-            if self.logic_mode not in quantity:
-                continue
+        # initially, we need as many items as there are locations
+        num_needed_items = len(self.pools.location_pool)
 
-            true_quantity = quantity[self.logic_mode]
+        for data, quantity in self.pools.item_pools["required"].items():
+            # if the item needs to be a keyring, limit its quantity to one.
+            if self.options.keyrings.value and data.item.name in keyring_items:
+                quantity = 1
 
-            if self.options.keyrings.value and data.item.name in self.world_data.keyring_items:
-                local_num_needed_items += true_quantity - 1
-                true_quantity = 1
-
-            for _ in range(true_quantity):
+            for _ in range(quantity):
+                # create the item
                 item = CrossCodeItem(self.player, data)
 
                 try:
+                    # Check if the item is precollected.
+                    # If it is, we'll need a replacement for it.
                     idx = exclude.index(item)
                     exclude.pop(idx)
-                    self.multiworld.itempool.append(self.create_item("Sandwich"))
                     continue
                 except ValueError:
-                    pass
+                    # If we can't find the item in the precollected list, it
+                    # goes in the item pool and we need to add one less item.
+                    num_needed_items -= 1
 
+                # HOWEVER! We might not actually add the item to the pool.
+                # If the item is set to be in the player's own dungeons or
+                # its original dungeon, then we don't want to add it to the
+                # pool after all.
                 add_to_pool = True
 
                 if item.name in self.pre_fill_any_dungeon_names:
@@ -278,18 +346,18 @@ class CrossCodeWorld(World):
                 if add_to_pool:
                     self.multiworld.itempool.append(item)
 
-        for _ in range(local_num_needed_items):
-            self.multiworld.itempool.append(self.create_item("Sandwich"))
+        # Add filler items to fill up the pool.
+        self.multiworld.itempool.extend(self.get_filler_items(num_needed_items))
 
     def set_rules(self):
         for _, region in self.region_dict.items():
             for loc in region.locations:
                 if not isinstance(loc, CrossCodeLocation):
                     continue
-                if loc.access.cond is not None:
-                    add_rule(loc, condition_satisfied(self.player, loc.access.cond, **self.logic_dict))
-                if loc.access.clearance != "Default":
-                    add_rule(loc, has_clearance(self.player, loc.access.clearance))
+                if loc.data.access.cond is not None:
+                    add_rule(loc, condition_satisfied(self.player, loc.data.access.cond, **self.logic_dict))
+                if loc.data.access.clearance != "Default":
+                    add_rule(loc, has_clearance(self.player, loc.data.access.clearance))
 
     def pre_fill(self):
         allowed_locations_by_item: dict[Item, set[CrossCodeLocation]] = {}

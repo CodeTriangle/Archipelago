@@ -1,6 +1,6 @@
 {{generated_comment | indent("# ", True)}}
 
-from .types.locations import LocationData
+from .types.locations import LocationData, AccessInfo
 from .types.condition import *
 
 locations_data = {{locations_data}}
