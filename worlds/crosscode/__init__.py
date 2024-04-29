@@ -57,7 +57,7 @@ class CrossCodeWorld(World):
 
     options_dataclass = CrossCodeOptions
     options: CrossCodeOptions
-    topology_present = True
+    topology_present = False
 
     # ID of first item and location, could be hard-coded but code may be easier
     # to read with this as a propery.
