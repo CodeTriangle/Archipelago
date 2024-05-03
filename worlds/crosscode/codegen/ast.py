@@ -121,6 +121,18 @@ class AstGenerator:
         ast.fix_missing_locations(ast_item)
         return ast_item
 
+    def create_ast_call_item_ref(self, data: ItemData):
+        ast_item = ast.Subscript(
+            value=ast.Name("items_dict"),
+            slice=ast.Tuple(elts=[
+                ast.Constant(data.item.name),
+                ast.Constant(data.amount)]
+            ),
+            ctx=ast.Load()
+        )
+        ast.fix_missing_locations(ast_item)
+        return ast_item
+
     def create_ast_call_item_pool_entry(self, entry: ItemPoolEntry):
         ast_item = ast.Call(
             func=ast.Name("ItemPoolEntry"),
@@ -128,14 +140,7 @@ class AstGenerator:
             keywords=[
                 ast.keyword(
                     arg="item",
-                    value=ast.Subscript(
-                        value=ast.Name("items_dict"),
-                        slice=ast.Tuple(elts=[
-                            ast.Constant(entry.item.item.name),
-                            ast.Constant(entry.item.amount)]
-                        ),
-                        ctx=ast.Load()
-                    )
+                    value=self.create_ast_call_item_ref(entry.item),
                 ),
                 ast.keyword(
                     arg="quantity",
