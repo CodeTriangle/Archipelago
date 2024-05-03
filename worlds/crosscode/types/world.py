@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 import typing
 
-from .items import ItemData, SingleItemData, ItemPoolEntry
+from .items import ItemData, ProgressiveItemChain, SingleItemData, ItemPoolEntry
 from .locations import AccessInfo, LocationData
 from .regions import RegionsData
 from .condition import Condition
@@ -24,6 +24,10 @@ class WorldData:
 
     # item_pools.py
     item_pools_template: dict[str, list[ItemPoolEntry]]
+
+    # prog_items.py
+    progressive_chains: dict[str, ProgressiveItemChain]
+    progressive_items: dict[str, ItemData]
 
     # vars.py
     variable_definitions: dict[str, dict[str, list[Condition]]]

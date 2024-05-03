@@ -123,6 +123,30 @@ class Keyrings(Toggle):
     """
     display_name = "Keyrings"
 
+class ProgressiveAreaUnlocks(Choice):
+    """
+    If enabled, the items that unlock overworld areas and dungeons (including shades and some passes) will be made progressive.
+    [None] no areas are unlocked progressively.
+    [Dungeons] dungeons are unlocked progressively; overworld areas are not.
+    [Overworld] overworld areas are unlocked progressively; dungeons are not.
+    [Split] both dungeons and overworld areas are unlocked progressively in separate progressive chains.
+    [Combined] both dungeons and overworld areas are unlocked progressively from the same progressive chain.
+    """
+
+    display_name = "Progressive Area Unlocks"
+
+    # treat this option as a bitmask
+    # first bit: include dungeons
+    # second bit: include overworld
+    # third bit: combine pools
+    option_none = 0
+    option_dungeons = 1
+    option_overworld = 2
+    option_split = 3
+    option_combined = 7
+
+    default = 0
+
 class Reachability(Choice):
     option_own_world = 0
     option_different_world = 1
@@ -167,6 +191,7 @@ class ShadeShuffle(Reachability):
             "Green Leaf Shade", "Yellow Sand Shade", "Blue Ice Shade",
             "Red Flame Shade", "Purple Bolt Shade", "Azure Drop Shade",
             "Green Seed Shade", "Star Shade", "Meteor Shade",
+            "Progressive Area Unlock", "Progressive Overworld Area Unlock",
         }
     }
 
@@ -299,6 +324,7 @@ class CrossCodeOptions(PerGameCommonOptions):
     start_with_discs: StartWithDiscs
     start_with_pet: StartWithPet
 
+    progressive_area_unlocks: ProgressiveAreaUnlocks
     keyrings: Keyrings
 
     shade_shuffle: ShadeShuffle

@@ -24,7 +24,7 @@ from .types.world import WorldData
 from .types.regions import RegionsData
 from .types.metadata import IncludeOptions
 from .types.pools import ItemPool, Pools
-from .options import CrossCodeOptions, Reachability, StartWithDiscs, addon_options
+from .options import CrossCodeOptions, Reachability, StartWithDiscs, ProgressiveAreaUnlocks, addon_options
 from worlds.crosscode import world_data
 
 cclogger = logging.getLogger(__name__)
@@ -97,6 +97,8 @@ class CrossCodeWorld(World):
 
     _filler_pool_weights: list[int]
 
+    enabled_chain_names: set[str]
+
     def get_include_options(self) -> IncludeOptions:
         """The metadata dict is a dict that will be matched against the
         `metadata` fields in the ItemPoolEntry and Location classes to check
@@ -168,8 +170,8 @@ class CrossCodeWorld(World):
             common * drop,
             rare * cons,
             rare * drop,
-            epic  * cons,
-            epic  * drop,
+            epic * cons,
+            epic * drop,
             legendary * (cons + drop),
         ]
 
@@ -184,6 +186,21 @@ class CrossCodeWorld(World):
         self.logic_mode = self.options.logic_mode.current_key
         self.region_pack = self.world_data.region_packs[self.logic_mode]
 
+        self.enabled_chain_names = set()
+
+        green_leaf_shade_name = "Green Leaf Shade"
+
+        area_unlocks = self.options.progressive_area_unlocks.value
+        if area_unlocks & ProgressiveAreaUnlocks.option_combined:
+            self.enabled_chain_names.add("areaItemsAll")
+            green_leaf_shade_name = "Progressive Area Unlock"
+        else:
+            if area_unlocks & ProgressiveAreaUnlocks.option_dungeons:
+                self.enabled_chain_names.add("areaItemsDungeons")
+            if area_unlocks & ProgressiveAreaUnlocks.option_overworld:
+                self.enabled_chain_names.add("areaItemsOverworld")
+                green_leaf_shade_name = "Progressive Overworld Area Unlock"
+
         if self.options.vt_shade_lock.value in [1, 2]:
             self.variables["vtShadeLock"].append("shades")
         if self.options.vt_shade_lock.value in (1, 3):
@@ -192,7 +209,7 @@ class CrossCodeWorld(World):
             self.variables["vwPassage"].append("meteor")
 
         if self.options.start_with_green_leaf_shade.value:
-            start_inventory["Green Leaf Shade"] = 1
+            start_inventory[green_leaf_shade_name] = 1
 
         if self.options.start_with_chest_detector.value:
             start_inventory["Chest Detector"] = 1
@@ -293,6 +310,23 @@ class CrossCodeWorld(World):
         # initially, we need as many items as there are locations
         num_needed_items = len(self.pools.location_pool)
 
+        # items that have been replaced by progressive items
+        replaced = defaultdict(list)
+
+        # deal with progressive chains
+        for chain_name in self.enabled_chain_names:
+            chain = self.world_data.progressive_chains[chain_name]
+            # item_to_add is the "Progressive [X]" item
+            item_to_add = self.world_data.progressive_items[chain_name]
+
+            # item_to_skip is the item that will be replaced by a progressive.
+            for item_to_skip in chain.items:
+                item = CrossCodeItem(self.player, item_to_add)
+                # We note that we have replaced an item. When we create
+                # items in the pool, this indicates that one of them should
+                # use this item as a replacement.
+                replaced[item_to_skip.name].append(item)
+
         for data, quantity in self.pools.item_pools["required"].items():
             # if the item needs to be a keyring, limit its quantity to one.
             if self.options.keyrings.value and data.item.name in self.world_data.keyring_items:
@@ -312,6 +346,10 @@ class CrossCodeWorld(World):
                     # If we can't find the item in the precollected list, it
                     # goes in the item pool and we need to add one less item.
                     num_needed_items -= 1
+
+                # if there is an item to replace this with, do so.
+                if item.name in replaced and len(replaced[item.name]) > 0:
+                    item = replaced[item.name].pop()
 
                 # HOWEVER! We might not actually add the item to the pool.
                 # If the item is set to be in the player's own dungeons or
