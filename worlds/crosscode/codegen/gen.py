@@ -129,6 +129,36 @@ class FileGenerator:
         with open(os.path.join(self.world_dir, "item_pools.py"), "w") as f:
             f.write(item_pools_complete)
 
+        # PROG ITEMS
+        template = self.environment.get_template("prog_items.template.py")
+
+        code_prog_chain_names = {
+            name: chain.display_name for name, chain in self.lists.progressive_chains.items()
+        }
+
+        code_prog_items = emit_dict([
+            (ast.Constant(name), self.ast_generator.create_ast_call_item_ref(item))
+            for name, item in self.lists.progressive_items.items()
+        ])
+
+        code_prog_chain_lists = {
+            name: emit_list([
+                self.ast_generator.create_ast_call_item_ref(entry)
+                for entry in chain.items
+            ])
+            for name, chain in self.lists.progressive_chains.items()
+        }
+
+        item_pools_complete = template.render(
+            prog_chain_names=code_prog_chain_names,
+            prog_items=code_prog_items,
+            prog_chain_lists=code_prog_chain_lists,
+            **self.common_args
+        )
+
+        with open(os.path.join(self.world_dir, "prog_items.py"), "w") as f:
+            f.write(item_pools_complete)
+
         # REGIONS
         template = self.environment.get_template("regions.template.py")
 
