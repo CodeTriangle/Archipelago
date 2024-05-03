@@ -45,6 +45,11 @@ class ItemPoolEntry:
     quantity: int
     metadata: typing.Optional[dict[str, str | int | bool | None]] = None
 
+@dataclass
+class ProgressiveItemChain:
+    display_name: str
+    items: list[ItemData]
+
 class CrossCodeItem(Item):
     game: str = "CrossCode"
     data: ItemData

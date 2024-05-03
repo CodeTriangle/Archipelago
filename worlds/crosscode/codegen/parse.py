@@ -1,12 +1,12 @@
 import string
 import typing
 
-from BaseClasses import ItemClassification
+from BaseClasses import Item, ItemClassification
 
 from .context import Context
 from .util import BASE_ID, RESERVED_ITEM_IDS, SP_UPGRADE_ID_OFFSET, SP_UPGRADE_NAME, get_item_classification
 
-from ..types.items import ItemData, SingleItemData
+from ..types.items import ItemData, ProgressiveItemChain, SingleItemData
 from ..types.locations import AccessInfo, Condition
 from ..types.regions import RegionConnection, RegionsData
 from ..types.condition import ItemCondition, LocationCondition, QuestCondition, RegionCondition, AnyElementCondition, OrCondition, VariableCondition
@@ -135,7 +135,7 @@ class JsonParser:
 
         return AccessInfo(region, condition, clearance)
 
-    def parse_item_data(self, name: str, raw: dict[str, typing.Any]) -> tuple[SingleItemData, ItemData | None]:
+    def parse_item_data(self, name: str, raw: dict[str, typing.Any]) -> tuple[SingleItemData, ItemData]:
         item_id = raw["id"]
 
         db_entry = self.ctx.item_data[item_id]
@@ -162,18 +162,19 @@ class JsonParser:
                 amount=1,
                 combo_id=BASE_ID + item_id,
             )
-
-            return single_item, item
         else:
-            return (
-                SingleItemData(
-                    name=name,
-                    item_id=item_id,
-                    classification=cls,
-                    unique=raw.get("unique", not type == "CONS")
-                ),
-                None
+            single_item = SingleItemData(
+                name=name,
+                item_id=item_id,
+                classification=cls,
+                unique=raw.get("unique", not type == "CONS")
             )
+            item = ItemData(
+                item=single_item,
+                amount=1
+            )
+
+        return single_item, item
 
     def parse_item_reward(self, raw: list[typing.Any]) -> ItemData:
         if len(raw) == 1:
@@ -207,6 +208,27 @@ class JsonParser:
             return self.parse_item_reward(info)
         else:
             raise RuntimeError(f"Error parsing reward {raw}: unrecognized type")
+
+    def parse_progressive_chain(self, name: str, raw: dict[str, typing.Any]) -> ProgressiveItemChain:
+        display_name = raw.get("displayName", None)
+        if type(display_name) != str:
+            raise JsonParserError(raw, display_name, "progressive chain", f"Need string display name for chain {name}")
+
+        raw_items = raw.get("items", None)
+        if type(raw_items) != list:
+            raise JsonParserError(raw, raw_items, "progressive chain", f"Need list of items for chain {name}")
+
+        items: list[ItemData] = []
+        for entry in raw_items:
+            if "item" not in entry:
+                raise JsonParserError(entry, None, "progressive chain entry", "Need an 'item' property")
+
+            items.append(self.parse_reward(entry["item"]))
+
+        return ProgressiveItemChain(
+            display_name=display_name,
+            items=items,
+        )
 
     def parse_region_connection(self, raw: dict[str, typing.Any]) -> RegionConnection:
         if "from" not in raw:

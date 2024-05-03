@@ -6,7 +6,7 @@ from .parse import JsonParser
 from .context import Context
 from .util import BASE_ID, RESERVED_ITEM_IDS
 
-from ..types.items import ItemData, SingleItemData, ItemPoolEntry
+from ..types.items import ItemData, SingleItemData, ItemPoolEntry, ProgressiveItemChain
 from ..types.locations import LocationData
 from ..types.condition import Condition
 
@@ -28,6 +28,9 @@ class ListInfo:
     reward_amounts: dict[str, int]
 
     variable_definitions: dict[str, dict[str, list[Condition]]]
+
+    progressive_chains: dict[str, ProgressiveItemChain]
+    progressive_items: dict[str, ItemData]
 
     def __init__(self, ctx: Context):
         self.ctx = ctx
@@ -53,6 +56,9 @@ class ListInfo:
         self.json_parser.single_items_dict = self.single_items_dict
         self.json_parser.items_dict = self.items_dict
 
+        self.progressive_chains = {}
+        self.progressive_items = {}
+
         self.variable_definitions = defaultdict(dict)
 
     def build(self):
@@ -75,6 +81,8 @@ class ListInfo:
                 continue
 
             self.items_dict[name, 1] = ItemData(data, 1, BASE_ID + RESERVED_ITEM_IDS + data.item_id)
+
+        self.__add_progressive_chains(file["progressiveChains"])
 
         self.__add_vars(self.ctx.rando_data["vars"])
 
@@ -146,11 +154,11 @@ class ListInfo:
         for name, raw_loc in loc_list.items():
             self.__add_location(name, raw_loc, create_events)
 
-    def __add_item_data(self, name: str, raw_item: dict[str, typing.Any]):
+    def __add_item_data(self, name: str, raw_item: dict[str, typing.Any]) -> tuple[SingleItemData, ItemData]:
         single_item, item  = self.json_parser.parse_item_data(name, raw_item)
         self.single_items_dict[name] = single_item
-        if item is not None:
-            self.items_dict[name, 1] = item
+        self.items_dict[name, 1] = item
+        return single_item, item
 
     def __add_item_data_list(self, item_list: dict[str, dict[str, typing.Any]]):
         for name, raw_item in item_list.items():
@@ -180,6 +188,16 @@ class ListInfo:
         else:
             self.items_dict[key] = item
         return item
+
+    def __add_progressive_chain(self, name: str, raw: dict[str, typing.Any]):
+        chain = self.progressive_chains[name] = self.json_parser.parse_progressive_chain(name, raw)
+        raw["reserved"] = True
+        _, item = self.__add_item_data(f"Progressive {chain.display_name}", raw)
+        self.progressive_items[name] = item
+
+    def __add_progressive_chains(self, raw: dict[str, dict]):
+        for name, chain in raw.items():
+            self.__add_progressive_chain(name, chain)
 
     def __add_vars(self, variables: dict[str, dict[str, list[typing.Any]]]):
         for name, values in variables.items():
