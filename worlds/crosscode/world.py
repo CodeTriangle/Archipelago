@@ -111,7 +111,6 @@ class CrossCodeWorld(World):
         """
         return {
             "questRandoOnly": bool(self.options.quest_rando.value),
-            "keyrings": bool(self.options.keyrings.value),
         }
 
     def create_location(self, location: str, event_from_location=False) -> CrossCodeLocation:

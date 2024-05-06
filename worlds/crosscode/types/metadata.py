@@ -3,4 +3,3 @@ from typing import TypedDict
 
 class IncludeOptions(TypedDict):
     questRandoOnly: bool
-    keyrings: bool

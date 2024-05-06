@@ -84,9 +84,6 @@ class Pools:
         # this section.
         metadata = entry.metadata if entry.metadata is not None else {}
 
-        if not metadata.get("keyrings", True):
-            return False
-
         return True
 
     def pull_items_from_pool(self, name: str, rand: Random, k=1) -> list[ItemData]:
