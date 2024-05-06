@@ -4,6 +4,7 @@ from copy import deepcopy
 import sys
 import typing
 import logging
+import itertools
 
 from BaseClasses import ItemClassification, Location, LocationProgressType, Region, Item
 from Fill import fill_restrictive
@@ -32,7 +33,9 @@ cclogger = logging.getLogger(__name__)
 class CrossCodeWebWorld(WebWorld):
     theme="ocean"
 
-pools_cache: dict[tuple, Pools] = {}
+    tutorials = []
+
+    bug_report_page = "https://github.com/CodeTriangle/CCMultiworldRandomizer/blob/master/README.md#how-to-get-support"
 
 class CrossCodeWorld(World):
     """CrossCode is a retro-inspired 2D Action RPG set in the distant future,
@@ -82,6 +85,8 @@ class CrossCodeWorld(World):
     location_events: dict[str, Location]
 
     variables: dict[str, list[str]]
+
+    pools_cache: typing.ClassVar[dict[tuple, Pools]] = {}
 
     pools: Pools
 
@@ -153,10 +158,10 @@ class CrossCodeWorld(World):
 
         include_options_tuple = tuple(self.include_options.items())
 
-        if include_options_tuple in pools_cache:
-            self.pools = pools_cache[include_options_tuple]
+        if include_options_tuple in self.pools_cache:
+            self.pools = self.pools_cache[include_options_tuple]
         else:
-            pools_cache[include_options_tuple] = self.pools = Pools(self.world_data, self.include_options)
+            self.pools_cache[include_options_tuple] = self.pools = Pools(self.world_data, self.include_options)
 
         common = self.options.common_pool_weight.value
         rare = self.options.rare_pool_weight.value
@@ -165,7 +170,8 @@ class CrossCodeWorld(World):
         cons = self.options.consumable_weight.value
         drop = self.options.drop_weight.value
 
-        self._filler_pool_weights = [
+        # cumulative weights save work.
+        self._filler_pool_weights = list(itertools.accumulate([
             common * cons,
             common * drop,
             rare * cons,
@@ -173,12 +179,7 @@ class CrossCodeWorld(World):
             epic * cons,
             epic * drop,
             legendary * (cons + drop),
-        ]
-
-        # cumulative weights save work.
-        cumu = 0
-        for idx in range(len(self._filler_pool_weights)):
-            cumu = self._filler_pool_weights[idx] = cumu + self._filler_pool_weights[idx]
+        ]))
 
         self.variables = defaultdict(list)
 

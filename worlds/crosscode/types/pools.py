@@ -1,5 +1,6 @@
 from collections import defaultdict
 from random import Random
+import itertools
 
 from .metadata import IncludeOptions
 from .locations import LocationData
@@ -59,14 +60,7 @@ class Pools:
 
             self.item_pools[name] = counter
 
-            cum_weights = []
-            cumu = 0
-
-            for qty in counter.values():
-                cum_weights.append(cumu + qty)
-                cumu += qty
-
-            weights[name] = cum_weights
+            weights[name] = list(itertools.accumulate(counter.values()))
 
         for name, pool in self.item_pools.items():
             self._item_pool_lists[name] = (list(pool.keys()), weights[name])
