@@ -4,7 +4,7 @@ import itertools
 
 from .metadata import IncludeOptions
 from .locations import LocationData
-from .items import ItemData, ItemPoolEntry
+from .items import ItemData, ItemPoolEntry, ProgressiveChainEntry
 from .world import WorldData
 
 
@@ -30,10 +30,26 @@ class Pools:
     """
 
     options: IncludeOptions
+
     location_pool: set[LocationData]
     event_pool: set[LocationData]
+
     item_pools: dict[str, ItemPool]
     _item_pool_lists: dict[str, tuple[list[ItemData], list[int]]]
+
+    progressive_chains: dict[str, list[ItemData]]
+    item_progressive_replacements: dict[str, list[tuple[str, int]]]
+    """
+    Associates item names with the amount of progressive items needed to reach
+    that item's entry in the progressive chain.
+
+    Each value can store a number of entries, in case that item shows up in
+    multiple progressive chains. Each entry in this list contains the item name
+    and the quantity of that item.
+
+    This currently DOES NOT handle items appearing multiple times in the same
+    progressive chain.
+    """
 
     def __init__(self, world_data: WorldData, opts: IncludeOptions):
         self.options = opts
@@ -41,6 +57,8 @@ class Pools:
         self.event_pool = set()
         self.item_pools = {}
         self._item_pool_lists = {}
+        self.progressive_chains = {}
+        self.item_progressive_replacements = defaultdict(list)
 
         weights = {}
 
@@ -65,6 +83,14 @@ class Pools:
         for name, pool in self.item_pools.items():
             self._item_pool_lists[name] = (list(pool.keys()), weights[name])
 
+        for chain_name, chain in world_data.progressive_chains.items():
+            self.progressive_chains[chain_name] = item_list = []
+            for idx, entry in enumerate(chain.items):
+                if self.__should_include_chain_entry(entry):
+                    item_list.append(entry.item)
+                    prog_item = world_data.progressive_items[chain_name].name
+                    self.item_progressive_replacements[entry.item.name].append((prog_item, idx + 1))
+
     def __should_include_location(self, loc: LocationData) -> bool:
         # Technically the class allows metadata to be None.
         # So we'll assign a local variable and use that instead.
@@ -83,6 +109,16 @@ class Pools:
         # See the comments for the location data for the structure of
         # this section.
         metadata = entry.metadata if entry.metadata is not None else {}
+
+        return True
+
+    def __should_include_chain_entry(self, entry: ProgressiveChainEntry) -> bool:
+        # See the comments for the location data for the structure of
+        # this section.
+        metadata = entry.metadata if entry.metadata is not None else {}
+
+        if metadata.get("questRandoOnly", False):
+            return self.options["questRandoOnly"]
 
         return True
 

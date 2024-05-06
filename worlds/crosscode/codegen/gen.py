@@ -143,7 +143,7 @@ class FileGenerator:
 
         code_prog_chain_lists = {
             name: emit_list([
-                self.ast_generator.create_ast_call_item_ref(entry)
+                self.ast_generator.create_ast_call_progressive_chain_entry(entry)
                 for entry in chain.items
             ])
             for name, chain in self.lists.progressive_chains.items()

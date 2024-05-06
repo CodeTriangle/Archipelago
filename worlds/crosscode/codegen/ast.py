@@ -4,7 +4,7 @@ import ast
 from ..types.condition import Condition
 from ..types.locations import AccessInfo, LocationData
 from ..types.regions import RegionConnection
-from ..types.items import ItemData, ItemPoolEntry, SingleItemData
+from ..types.items import ItemData, ItemPoolEntry, ProgressiveChainEntry, SingleItemData
 
 
 class AstGenerator:
@@ -130,6 +130,33 @@ class AstGenerator:
             ),
             ctx=ast.Load()
         )
+        ast.fix_missing_locations(ast_item)
+        return ast_item
+
+    def create_ast_call_progressive_chain_entry(self, entry: ProgressiveChainEntry):
+        ast_item = ast.Call(
+            func=ast.Name("ProgressiveChainEntry"),
+            args=[],
+            keywords=[
+                ast.keyword(
+                    arg="item",
+                    value=self.create_ast_call_item_ref(entry.item),
+                ),
+            ]
+        )
+
+        if entry.metadata is not None:
+            keys = [ast.Constant(k) for k in entry.metadata.keys()]
+            values = [ast.Constant(k) for k in entry.metadata.values()]
+
+            ast_item.keywords.append(ast.keyword(
+                arg="metadata",
+                value=ast.Dict(
+                    keys=keys,
+                    values=values,
+                )
+            ))
+
         ast.fix_missing_locations(ast_item)
         return ast_item
 

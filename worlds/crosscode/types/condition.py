@@ -18,7 +18,16 @@ class ItemCondition(Condition):
         if self.item_name in kwargs["keyrings"]:
             target = 1
 
-        return state.has(self.item_name, player, target)
+        replacements = kwargs["item_progressive_replacements"]
+
+        if self.item_name in replacements:
+            for prog_item_name, quantity in replacements[self.item_name]:
+                if state.has(prog_item_name, player, quantity):
+                    return True
+        else:
+            return state.has(self.item_name, player, target)
+
+        return False
 
 @dataclass
 class QuestCondition(Condition):

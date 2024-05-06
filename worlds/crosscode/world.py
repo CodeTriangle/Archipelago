@@ -248,6 +248,7 @@ class CrossCodeWorld(World):
             "variables": self.variables,
             "variable_definitions": self.world_data.variable_definitions,
             "keyrings": self.world_data.keyring_items,
+            "item_progressive_replacements": self.pools.item_progressive_replacements,
         }
 
     def create_regions(self):
@@ -315,12 +316,12 @@ class CrossCodeWorld(World):
 
         # deal with progressive chains
         for chain_name in self.enabled_chain_names:
-            chain = self.world_data.progressive_chains[chain_name]
+            chain = self.pools.progressive_chains[chain_name]
             # item_to_add is the "Progressive [X]" item
             item_to_add = self.world_data.progressive_items[chain_name]
 
             # item_to_skip is the item that will be replaced by a progressive.
-            for item_to_skip in chain.items:
+            for item_to_skip in chain:
                 item = CrossCodeItem(self.player, item_to_add)
                 # We note that we have replaced an item. When we create
                 # items in the pool, this indicates that one of them should

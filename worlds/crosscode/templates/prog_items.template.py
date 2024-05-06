@@ -2,7 +2,7 @@
 
 from worlds.crosscode import prog_items
 from .items import single_items_dict, items_dict
-from .types.items import ItemData, ProgressiveItemChain
+from .types.items import ItemData, ProgressiveItemChain, ProgressiveChainEntry
 
 progressive_chains: dict[str, ProgressiveItemChain] = {
     {%- for name, display_name in prog_chain_names.items() %}

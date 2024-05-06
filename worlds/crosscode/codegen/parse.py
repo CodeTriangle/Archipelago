@@ -6,7 +6,7 @@ from BaseClasses import Item, ItemClassification
 from .context import Context
 from .util import BASE_ID, RESERVED_ITEM_IDS, SP_UPGRADE_ID_OFFSET, SP_UPGRADE_NAME, get_item_classification
 
-from ..types.items import ItemData, ProgressiveItemChain, SingleItemData
+from ..types.items import ItemData, ProgressiveChainEntry, ProgressiveItemChain, SingleItemData
 from ..types.locations import AccessInfo, Condition
 from ..types.regions import RegionConnection, RegionsData
 from ..types.condition import ItemCondition, LocationCondition, QuestCondition, RegionCondition, AnyElementCondition, OrCondition, VariableCondition
@@ -218,12 +218,17 @@ class JsonParser:
         if type(raw_items) != list:
             raise JsonParserError(raw, raw_items, "progressive chain", f"Need list of items for chain {name}")
 
-        items: list[ItemData] = []
+        items = []
         for entry in raw_items:
             if "item" not in entry:
                 raise JsonParserError(entry, None, "progressive chain entry", "Need an 'item' property")
 
-            items.append(self.parse_reward(entry["item"]))
+            metadata = entry.get("condition", None)
+
+            items.append(ProgressiveChainEntry(
+                item=self.parse_reward(entry["item"]),
+                metadata=metadata,
+            ))
 
         return ProgressiveItemChain(
             display_name=display_name,
