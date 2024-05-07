@@ -24,10 +24,8 @@ class ItemCondition(Condition):
             for prog_item_name, quantity in replacements[self.item_name]:
                 if state.has(prog_item_name, player, quantity):
                     return True
-        else:
-            return state.has(self.item_name, player, target)
 
-        return False
+        return state.has(self.item_name, player, target)
 
 @dataclass
 class QuestCondition(Condition):
