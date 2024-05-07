@@ -191,13 +191,13 @@ class CrossCodeWorld(World):
         green_leaf_shade_name = "Green Leaf Shade"
 
         area_unlocks = self.options.progressive_area_unlocks.value
-        if area_unlocks & ProgressiveAreaUnlocks.option_combined:
+        if area_unlocks & ProgressiveAreaUnlocks.COMBINE_POOLS:
             self.enabled_chain_names.add("areaItemsAll")
             green_leaf_shade_name = "Progressive Area Unlock"
         else:
-            if area_unlocks & ProgressiveAreaUnlocks.option_dungeons:
+            if area_unlocks & ProgressiveAreaUnlocks.DUNGEONS:
                 self.enabled_chain_names.add("areaItemsDungeons")
-            if area_unlocks & ProgressiveAreaUnlocks.option_overworld:
+            if area_unlocks & ProgressiveAreaUnlocks.OVERWORLD:
                 self.enabled_chain_names.add("areaItemsOverworld")
                 green_leaf_shade_name = "Progressive Overworld Area Unlock"
 

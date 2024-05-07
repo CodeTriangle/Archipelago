@@ -139,11 +139,15 @@ class ProgressiveAreaUnlocks(Choice):
     # first bit: include dungeons
     # second bit: include overworld
     # third bit: combine pools
+    DUNGEONS = 1 << 0
+    OVERWORLD = 1 << 1
+    COMBINE_POOLS = 1 << 2
+
     option_none = 0
-    option_dungeons = 1
-    option_overworld = 2
-    option_split = 3
-    option_combined = 7
+    option_dungeons = DUNGEONS
+    option_overworld = OVERWORLD
+    option_split = DUNGEONS | OVERWORLD
+    option_combined = COMBINE_POOLS | DUNGEONS | OVERWORLD
 
     default = 0
 
