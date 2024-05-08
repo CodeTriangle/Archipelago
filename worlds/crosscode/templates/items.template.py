@@ -27,7 +27,7 @@ This feature is useful for custom item placement.
 
 items_by_full_name: dict[str, ItemData] = keydefaultdict(
     lambda name: items_dict[get_info_from_full_name(name)],
-    { f"{name} x{amount}": value for (name, amount), value in items_dict.items() }
+    { name if amount == 1 else f"{name} x{amount}": value for (name, amount), value in items_dict.items() }
 )
 """Dict associating full item name with item data.
 Uses cache in items_dict for speedy access.
