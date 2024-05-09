@@ -453,6 +453,10 @@ class CrossCodeWorld(World):
         )
 
     def fill_slot_data(self):
+        prog_chains = {}
+        for name in self.enabled_chain_names:
+            prog_chains[name] = [data.combo_id for data in self.pools.progressive_chains[name]]
+
         return {
             "mode": self.logic_mode,
             "options": {
@@ -464,5 +468,6 @@ class CrossCodeWorld(World):
                 "hiddenQuestRewardMode": self.options.hidden_quest_reward_mode.current_key,
                 "hiddenQuestObfuscationLevel": self.options.hidden_quest_obfuscation_level.current_key,
                 "questDialogHints": self.options.quest_dialog_hints.value,
+                "progressiveChains": prog_chains,
             }
         }
