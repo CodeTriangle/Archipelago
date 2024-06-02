@@ -110,7 +110,10 @@ class CrossCodeWorld(World):
         for inclusion.
         """
         return {
-            "questRandoOnly": bool(self.options.quest_rando.value),
+            "trade": False,
+            "shop": False,
+            "chest": True,
+            "quest": bool(self.options.quest_rando.value),
         }
 
     def create_location(self, location: str, event_from_location=False) -> CrossCodeLocation:
@@ -190,6 +193,13 @@ class CrossCodeWorld(World):
 
         green_leaf_shade_name = "Green Leaf Shade"
 
+        self.required_items = Counter()
+        self.required_items.update(self.pools.item_pools["required"])
+        self.required_items.update(self.pools.item_pools["equipChests"])
+
+        if self.options.quest_rando.value:
+            self.required_items.update(self.pools.item_pools["equipQuests"])
+
         area_unlocks = self.options.progressive_area_unlocks.value
         if area_unlocks & ProgressiveAreaUnlocks.COMBINE_POOLS:
             self.enabled_chain_names.add("areaItemsAll")
@@ -200,6 +210,32 @@ class CrossCodeWorld(World):
             if area_unlocks & ProgressiveAreaUnlocks.OVERWORLD:
                 self.enabled_chain_names.add("areaItemsOverworld")
                 green_leaf_shade_name = "Progressive Overworld Area Unlock"
+
+        if self.options.progressive_equipment.value:
+            self.enabled_chain_names |= {
+                'headsAllPurpose',
+                'headsDefensive',
+                'headsOffensive',
+                'headsSpecial',
+                'heads',
+                'armsAllPurpose',
+                'armsDefensive',
+                'armsMelee',
+                'armsRanged',
+                'armsSpecial',
+                'armsClassBased',
+                'arms',
+                'torsosAllPurpose',
+                'torsosDefensive',
+                'torsosMixed',
+                'torsosOffensive',
+                'torsos',
+                'torsosClassBased',
+                'legsAllPurpose',
+                'legsDefensive',
+                'legsOffensive',
+                'legs'
+            }
 
         if self.options.vt_shade_lock.value in [1, 2]:
             self.variables["vtShadeLock"].append("shades")
@@ -328,7 +364,7 @@ class CrossCodeWorld(World):
                 # use this item as a replacement.
                 replaced[item_to_skip.name].append(item)
 
-        for data, quantity in self.pools.item_pools["required"].items():
+        for data, quantity in self.required_items.items():
             # if the item needs to be a keyring, limit its quantity to one.
             if self.options.keyrings.value and data.item.name in self.world_data.keyring_items:
                 quantity = 1
