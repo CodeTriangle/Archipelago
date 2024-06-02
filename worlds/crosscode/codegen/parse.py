@@ -6,7 +6,7 @@ from BaseClasses import Item, ItemClassification
 from .context import Context
 from .util import BASE_ID, RESERVED_ITEM_IDS, SP_UPGRADE_ID_OFFSET, SP_UPGRADE_NAME, get_item_classification
 
-from ..types.items import ItemData, ProgressiveChainEntry, ProgressiveItemChain, ProgressiveItemChainSingle, ProgressiveItemChainMulti, ProgressiveItemSubchains, SingleItemData
+from ..types.items import ItemData, ProgressiveChainEntry, ProgressiveItemChain, ProgressiveItemChainSingle, ProgressiveItemChainMulti, ProgressiveItemSubchain, SingleItemData
 from ..types.locations import AccessInfo, Condition
 from ..types.regions import RegionConnection, RegionsData
 from ..types.condition import ItemCondition, LocationCondition, QuestCondition, RegionCondition, AnyElementCondition, OrCondition, VariableCondition
@@ -224,7 +224,7 @@ class JsonParser:
 
         return items
 
-    def __parse_progressive_subchain(self, raw: list[dict[str, typing.Any]]) -> ProgressiveItemSubchains:
+    def __parse_progressive_subchain(self, raw: list[dict[str, typing.Any]]) -> list[ProgressiveItemSubchain]:
         subchains = []
 
         for entry in raw:
@@ -233,7 +233,7 @@ class JsonParser:
             if type(itemlist) != list:
                 raise JsonParserError(raw, itemlist, "progressive subchain", f"Need a list of item entries")
 
-            subchains.append((metadata, self.__parse_progressive_itemlist(itemlist)))
+            subchains.append(ProgressiveItemSubchain(metadata, self.__parse_progressive_itemlist(itemlist)))
 
         return subchains
 

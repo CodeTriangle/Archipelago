@@ -10,8 +10,9 @@ import json
 
 import jinja2
 
-from worlds.crosscode.codegen.merge import merge
-from worlds.crosscode.types.regions import RegionsData
+from .merge import merge
+from ..types.regions import RegionsData
+from ..types.items import ProgressiveItemChain, ProgressiveItemChainMulti, ProgressiveItemChainSingle, ProgressiveItemSubchain
 
 from .ast import AstGenerator
 from .context import Context, make_context_from_package
@@ -141,18 +142,39 @@ class FileGenerator:
             for name, item in self.lists.progressive_items.items()
         ])
 
-        code_prog_chain_lists = {
-            name: emit_list([
-                self.ast_generator.create_ast_call_progressive_chain_entry(entry)
-                for entry in chain.items
-            ])
-            for name, chain in self.lists.progressive_chains.items()
-        }
+        code_prog_chain_lists_single = {}
+        code_prog_chain_lists_multi = {}
+
+        for name, chain in self.lists.progressive_chains.items():
+            if type(chain) is ProgressiveItemChainSingle:
+                code_prog_chain_lists_single[name] = emit_list([
+                    self.ast_generator.create_ast_call_progressive_chain_entry(entry)
+                    for entry in chain.items
+                ])
+            if type(chain) is ProgressiveItemChainMulti:
+                subchains = []
+                code_prog_chain_lists_multi[name] = subchains
+                for sub in chain.subchains:
+                    if sub.metadata is not None:
+                        code_metadata = emit_dict([
+                            (ast.Constant(key), ast.Constant(value))
+                            for key, value in sub.metadata.items()
+                        ])
+                    else:
+                        code_metadata = "None"
+                    subchains.append((
+                        code_metadata,
+                        emit_list([
+                            self.ast_generator.create_ast_call_progressive_chain_entry(entry)
+                            for entry in sub.chain
+                        ])
+                    ))
 
         item_pools_complete = template.render(
             prog_chain_names=code_prog_chain_names,
             prog_items=code_prog_items,
-            prog_chain_lists=code_prog_chain_lists,
+            prog_chain_lists_single=code_prog_chain_lists_single,
+            prog_chain_lists_multi=code_prog_chain_lists_multi,
             **self.common_args
         )
 

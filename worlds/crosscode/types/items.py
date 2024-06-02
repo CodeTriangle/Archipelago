@@ -45,24 +45,27 @@ class ItemData:
 class ItemPoolEntry:
     item: ItemData
     quantity: int
-    metadata: typing.Optional[dict[str, str | int | bool | None]] = None
+    metadata: typing.Optional[IncludeOptions] = None
 
 @dataclass
 class ProgressiveChainEntry:
     item: ItemData
-    metadata: typing.Optional[dict[str, str | int | bool | None]] = None
+    metadata: typing.Optional[IncludeOptions] = None
 
 @dataclass
 class ProgressiveItemChainSingle:
     display_name: str
     items: list[ProgressiveChainEntry]
 
-ProgressiveItemSubchains = list[tuple[IncludeOptions | None, list[ProgressiveChainEntry]]]
+@dataclass
+class ProgressiveItemSubchain:
+    metadata: IncludeOptions | None
+    chain: list[ProgressiveChainEntry]
 
 @dataclass
 class ProgressiveItemChainMulti:
     display_name: str
-    subchains: ProgressiveItemSubchains
+    subchains: list[ProgressiveItemSubchain]
 
 ProgressiveItemChain = Union[ProgressiveItemChainSingle, ProgressiveItemChainMulti]
 
