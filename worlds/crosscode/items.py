@@ -1394,6 +1394,7 @@ items_dict: dict[tuple[str, int], ItemData] = keydefaultdict(__item_data_from_tu
     ('Virus Root', 2): ItemData(item=single_items_dict['Virus Root'], amount=2, combo_id=3235825030),
     ('Star Fruit', 2): ItemData(item=single_items_dict['Star Fruit'], amount=2, combo_id=3235825033),
     ('Royal Hive', 2): ItemData(item=single_items_dict['Royal Hive'], amount=2, combo_id=3235825038),
+    ('Rough Branch', 2): ItemData(item=single_items_dict['Rough Branch'], amount=2, combo_id=3235825108),
     ('Cold Platter', 2): ItemData(item=single_items_dict['Cold Platter'], amount=2, combo_id=3235825111),
     ('Green Risotto', 2): ItemData(item=single_items_dict['Green Risotto'], amount=2, combo_id=3235825133),
     ('Sandwich', 3): ItemData(item=single_items_dict['Sandwich'], amount=3, combo_id=3235825453),
