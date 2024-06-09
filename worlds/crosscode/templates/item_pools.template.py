@@ -8,6 +8,6 @@ from .types.condition import *
 
 item_pools_template: dict[str, list[ItemPoolEntry]] = {
     {% for name, pool in item_pools.items() -%}
-    "{{name}}": {{pool | indent(4)}},
+    "{{name}}": {{pool | emit_list("item_pool_entry") | indent(4)}},
     {% endfor %}
 }
