@@ -288,7 +288,7 @@ class CrossCodeWorld(World):
             "mode": self.logic_mode,
             "variables": self.variables,
             "variable_definitions": self.world_data.variable_definitions,
-            "keyrings": self.world_data.keyring_items,
+            "keyrings": self.world_data.keyring_items if self.options.keyrings.value else [],
             "item_progressive_replacements": self.pools.item_progressive_replacements,
         }
 
