@@ -250,7 +250,7 @@ class CrossCodeWorld(World):
             self.variables["vwPassage"].append("meteor")
 
         if self.options.start_with_green_leaf_shade.value:
-            start_inventory[green_leaf_shade_name] = 1
+            self.multiworld.push_precollected(self.create_item(green_leaf_shade_name))
 
         if self.options.start_with_chest_detector.value:
             start_inventory["Chest Detector"] = 1
@@ -397,6 +397,10 @@ class CrossCodeWorld(World):
                 # create the item
                 item = CrossCodeItem(self.player, data)
 
+                # if there is an item to replace this with, do so.
+                if item.name in replaced and len(replaced[item.name]) > 0:
+                    item = replaced[item.name].pop()
+
                 try:
                     # Check if the item is precollected.
                     # If it is, we'll need a replacement for it.
@@ -407,10 +411,6 @@ class CrossCodeWorld(World):
                     # If we can't find the item in the precollected list, it
                     # goes in the item pool and we need to add one less item.
                     num_needed_items -= 1
-
-                # if there is an item to replace this with, do so.
-                if item.name in replaced and len(replaced[item.name]) > 0:
-                    item = replaced[item.name].pop()
 
                 # HOWEVER! We might not actually add the item to the pool.
                 # If the item is set to be in the player's own dungeons or
