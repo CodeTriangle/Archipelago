@@ -124,7 +124,7 @@ item_pools_template: dict[str, list[ItemPoolEntry]] = {
         ItemPoolEntry(item=items_dict['The Last Strawhat', 1], quantity=1),
     ],
     "fillerCommonCons": [
-        ItemPoolEntry(item=items_dict['Sandwich', 3], quantity=50),
+        ItemPoolEntry(item=items_dict['Sandwich', 3], quantity=40),
         ItemPoolEntry(item=items_dict['Hi-Sandwich', 3], quantity=40),
         ItemPoolEntry(item=items_dict['Green Leaf Tea', 2], quantity=40),
         ItemPoolEntry(item=items_dict['Spicy Bun', 3], quantity=30),
@@ -155,9 +155,9 @@ item_pools_template: dict[str, list[ItemPoolEntry]] = {
     ],
     "fillerRareCons": [
         ItemPoolEntry(item=items_dict['Chef Sandwich', 3], quantity=40),
-        ItemPoolEntry(item=items_dict['Mega-Sandwich', 2], quantity=30),
+        ItemPoolEntry(item=items_dict['Mega-Sandwich', 2], quantity=35),
         ItemPoolEntry(item=items_dict['Sweet Berry Tea', 2], quantity=40),
-        ItemPoolEntry(item=items_dict['Flaming Bun', 3], quantity=35),
+        ItemPoolEntry(item=items_dict['Flaming Bun', 3], quantity=30),
         ItemPoolEntry(item=items_dict['Steak, rare', 3], quantity=30),
         ItemPoolEntry(item=items_dict['Chili Con Carne', 2], quantity=30),
         ItemPoolEntry(item=items_dict['Shrimp Risotto', 1], quantity=20),
