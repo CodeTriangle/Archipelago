@@ -2,19 +2,17 @@ from collections import defaultdict
 from copy import deepcopy
 import logging
 import typing
-import ast
 import os
 import json
 
 import jinja2
 
-from worlds.crosscode.codegen.jinja import create_jinja_extension
+from .jinja import CrossCodeJinjaExtension
 
+from ..types.json_data import ExportInfo
 from ..types.regions import RegionsData
 
-from .ast import AstGenerator
 from .context import Context, make_context_from_package
-from .emit import emit_dict, emit_list, emit_set
 from .util import GENERATED_COMMENT
 from .lists import ListInfo
 
@@ -28,8 +26,6 @@ class FileGenerator:
     regions_data: dict[str, RegionsData]
     world_dir: str
     data_out_dir: str
-
-    ast_generator: AstGenerator
 
     def __init__(self, world_dir: str, lists: typing.Optional[ListInfo] = None):
         data_out_dir = os.path.join(world_dir, "data", "out")
@@ -55,9 +51,7 @@ class FileGenerator:
         self.world_dir = world_dir
         self.data_out_dir = data_out_dir
 
-        self.ast_generator = AstGenerator()
-
-        self.environment.add_extension(create_jinja_extension(self.ast_generator))
+        self.environment.add_extension(CrossCodeJinjaExtension)
 
         self.common_args = {
             "generated_comment": GENERATED_COMMENT,
@@ -171,8 +165,8 @@ class FileGenerator:
     def generate_mod_files(self):
         merged_data = deepcopy(self.ctx.rando_data)
 
-        data_out = {
-            "items": defaultdict(lambda: defaultdict(dict)),
+        data_out: ExportInfo = {
+            "items": defaultdict(lambda: defaultdict(dict)), # type: ignore
             "quests": defaultdict(dict),
         }
 
@@ -184,13 +178,16 @@ class FileGenerator:
                     raise RuntimeError(f"Trying to assign null code in {data}")
                 return [code]
 
-            result = []
+            result: list[int] = []
             idx = 1
             while True:
                 full_name = f"{name} - Reward {idx}"
                 if full_name not in data:
                     break
-                result.append(data[full_name].code)
+                code = data[full_name].code
+                if code is None:
+                    continue
+                result.append(code)
                 idx += 1
 
             return result

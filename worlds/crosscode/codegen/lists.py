@@ -1,7 +1,6 @@
 from collections import defaultdict
 import typing
 
-from .ast import AstGenerator
 from .parse import JsonParser
 from .context import Context
 from .util import BASE_ID, RESERVED_ITEM_IDS
@@ -13,7 +12,6 @@ from ..types.condition import Condition
 
 class ListInfo:
     ctx: Context
-    ast_generator: AstGenerator
     json_parser: JsonParser
     current_location_code: int
 
@@ -35,7 +33,6 @@ class ListInfo:
     def __init__(self, ctx: Context):
         self.ctx = ctx
 
-        self.ast_generator = AstGenerator()
         self.json_parser = JsonParser(self.ctx)
         self.current_location_code = max(self.ctx.cached_location_ids.values(), default=BASE_ID)
         if self.current_location_code != BASE_ID:
@@ -51,7 +48,6 @@ class ListInfo:
         
         self.reward_amounts = {}
 
-        self.ast_generator = AstGenerator()
         self.json_parser = JsonParser(self.ctx)
         self.json_parser.single_items_dict = self.single_items_dict
         self.json_parser.items_dict = self.items_dict

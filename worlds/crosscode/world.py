@@ -13,7 +13,7 @@ from Fill import fill_restrictive
 from worlds.AutoWorld import WebWorld, World
 from worlds.generic.Rules import add_rule
 
-from .common import NAME, BASE_ID
+from .common import NAME
 from .logic import condition_satisfied, has_clearance
 from .world_data import static_world_data
 
