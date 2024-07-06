@@ -4,7 +4,7 @@ This module provides the options and option dataclass for the Options dataclass.
 
 from dataclasses import dataclass
 
-from Options import Choice, DefaultOnToggle, PerGameCommonOptions, Toggle, Range
+from Options import Choice, DefaultOnToggle, OptionGroup, PerGameCommonOptions, Toggle, Range
 
 class LogicMode(Choice):
     """
@@ -379,3 +379,45 @@ class CrossCodeOptions(PerGameCommonOptions):
     drop_weight: DropWeight
 
 addon_options = ["quest_rando"]
+
+option_groups: list[OptionGroup] = [
+    OptionGroup(
+        name="Quests",
+        options=[
+            QuestRando,
+            HiddenQuestRewardMode,
+            HiddenQuestObfuscationLevel,
+            QuestDialogHints,
+        ]
+    ),
+    OptionGroup(
+        name="Starting Inventory",
+        options=[
+            StartWithGreenLeafShade,
+            StartWithChestDetector,
+            StartWithDiscs,
+            StartWithPet,
+        ]
+    ),
+    OptionGroup(
+        name="Item Locations",
+        options=[
+            ShadeShuffle,
+            ElementShuffle,
+            SmallKeyShuffle,
+            MasterKeyShuffle,
+            ChestKeyShuffle,
+        ]
+    ),
+    OptionGroup(
+        name="Pools",
+        options=[
+            CommonPoolWeight,
+            RarePoolWeight,
+            EpicPoolWeight,
+            LegendaryPoolWeight,
+            ConsumableWeight,
+            DropWeight
+        ]
+    ),
+]

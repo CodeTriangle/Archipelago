@@ -24,7 +24,7 @@ from .types.world import WorldData
 from .types.regions import RegionsData
 from .types.metadata import IncludeOptions
 from .types.pools import Pools
-from .options import CrossCodeOptions, StartWithDiscs, ProgressiveAreaUnlocks
+from .options import CrossCodeOptions, StartWithDiscs, ProgressiveAreaUnlocks, option_groups
 
 cclogger = logging.getLogger(__name__)
 
@@ -40,6 +40,8 @@ class CrossCodeWebWorld(WebWorld):
     tutorials = []
 
     bug_report_page = "https://github.com/CodeTriangle/CCMultiworldRandomizer/blob/master/README.md#how-to-get-support"
+
+    option_groups=option_groups
 
 class CrossCodeWorld(World):
     """CrossCode is a retro-inspired 2D Action RPG set in the distant future,
