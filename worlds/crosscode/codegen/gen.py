@@ -63,7 +63,19 @@ class FileGenerator:
             "generated_comment": GENERATED_COMMENT,
             "modes": self.ctx.rando_data["modes"],
             "default_mode": self.ctx.rando_data["defaultMode"],
+            "base_id": self.ctx.rando_data["baseId"],
+            "data_version": self.ctx.rando_data["dataVersion"],
         }
+
+    def generate_python_file_common(self):
+        template = self.environment.get_template("common.template.py")
+
+        locations_complete = template.render(
+            **self.common_args
+        )
+
+        with open(os.path.join(self.world_dir, "common.py"), "w") as f:
+            f.write(locations_complete)
 
     def generate_python_file_locations(self):
         template = self.environment.get_template("locations.template.py")
@@ -148,6 +160,7 @@ class FileGenerator:
             f.write(regions_complete)
 
     def generate_python_files(self) -> None:
+        self.generate_python_file_common()
         self.generate_python_file_locations()
         self.generate_python_file_items()
         self.generate_python_file_item_pools()
