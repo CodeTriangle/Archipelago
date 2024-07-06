@@ -8,6 +8,9 @@ from .condition import Condition
 
 @dataclass
 class WorldData:
+    data_version: str
+    base_id: int
+
     # regions.py
     region_packs: dict[str, RegionsData]
     modes: list[str] = field(init=False)

@@ -59,7 +59,7 @@ class CrossCodeWorld(World):
 
     # ID of first item and location, could be hard-coded but code may be easier
     # to read with this as a propery.
-    base_id = BASE_ID
+    base_id = world_data.base_id
     # Instead of dynamic numbering, IDs could be part of data.
 
     # The following two dicts are required for the generation to know which
@@ -532,6 +532,7 @@ class CrossCodeWorld(World):
 
         return {
             "mode": self.logic_mode,
+            "dataVersion": self.world_data.data_version,
             "options": {
                 "vtShadeLock": self.options.vt_shade_lock.value,
                 "meteorPassage": self.options.vw_meteor_passage.value,
