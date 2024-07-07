@@ -1,3 +1,7 @@
+"""
+Provide the Jinja extension used to generate python files.
+"""
+
 import ast
 import typing
 
@@ -10,7 +14,7 @@ from .emit import emit_dict, emit_list, emit_set
 
 def to_code(target: typing.Any, kind: str) -> ast.expr:
     """
-    Converts the target into an AST expression
+    Converts *target* into an AST expression of kind *kind* using codegen's AST module.
     """
     if kind == "constant":
         return ast.Constant(target)
@@ -21,13 +25,26 @@ def to_code(target: typing.Any, kind: str) -> ast.expr:
         raise RuntimeError(f"No function to emit {kind}")
     return each_func(target)
 
+
 def emit_list_internal(lst: list[typing.Any], kind: str) -> str:
+    """
+    Emit a list of any type, using the AST function named for *kind* to transform them to AST objects.
+    """
     return emit_list([to_code(el, kind) for el in lst])
 
+
 def emit_set_internal(lst: list[typing.Any], kind: str) -> str:
+    """
+    Emit a set of any type, using the AST function named for *kind* to transform them to AST objects.
+    """
     return emit_set([to_code(el, kind) for el in lst])
 
+
 def emit_dict_internal(dct: list[tuple[typing.Any, typing.Any]], kind_key: str, kind_value: str) -> str:
+    """
+    Emit a dict of any two types, using the AST functions named for *kind_key*  and *kind_value* to transform them to
+    AST objects.
+    """
     return emit_dict(list(zip(
         [to_code(k, kind_key) for k, _ in dct],
         [to_code(v, kind_value) for _, v in dct]

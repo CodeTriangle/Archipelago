@@ -7,9 +7,6 @@ import os
 import typing
 import pkgutil
 
-from jinja2 import Environment
-from jinja2.ext import Extension
-
 from BaseClasses import ItemClassification
 
 from .merge import merge

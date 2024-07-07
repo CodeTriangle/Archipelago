@@ -1,3 +1,7 @@
+"""
+This module contains code to create the generated python lists and mod data files.
+"""
+
 from collections import defaultdict
 from copy import deepcopy
 import logging
@@ -19,6 +23,9 @@ from .lists import ListInfo
 cglogger = logging.getLogger("crosscode.codegen")
 
 class FileGenerator:
+    """
+    This class uses an instance of ListInfo and provides functions to create python and mod data files.
+    """
     environment: jinja2.Environment
     ctx: Context
     common_args: typing.Dict[str, typing.Any]
@@ -35,7 +42,7 @@ class FileGenerator:
             loader=jinja2.FileSystemLoader(template_dir),
         )
 
-        if lists == None:
+        if lists is None:
             self.ctx = make_context_from_package(world_dir.replace('/', '.'))
             self.lists = ListInfo(self.ctx)
             self.lists.build()
@@ -62,16 +69,22 @@ class FileGenerator:
         }
 
     def generate_python_file_common(self):
+        """
+        Generates common.py, which provides the base ID, game name, and data version.
+        """
         template = self.environment.get_template("common.template.py")
 
         locations_complete = template.render(
             **self.common_args
         )
 
-        with open(os.path.join(self.world_dir, "common.py"), "w") as f:
+        with open(os.path.join(self.world_dir, "common.py"), "w", encoding="utf8") as f:
             f.write(locations_complete)
 
     def generate_python_file_locations(self):
+        """
+        Generates locations.py, which provides a list of locations and events.
+        """
         template = self.environment.get_template("locations.template.py")
 
         locations_complete = template.render(
@@ -80,10 +93,16 @@ class FileGenerator:
             **self.common_args
         )
 
-        with open(os.path.join(self.world_dir, "locations.py"), "w") as f:
+        with open(os.path.join(self.world_dir, "locations.py"), "w", encoding="utf8") as f:
             f.write(locations_complete)
 
     def generate_python_file_items(self):
+        """
+        Generates items.py, which provides lists of items, including:
+        * single items
+        * multiples of items
+        * full item names to items
+        """
         template = self.environment.get_template("items.template.py")
 
         sorted_single_item_data = sorted(
@@ -104,10 +123,13 @@ class FileGenerator:
             **self.common_args
         )
 
-        with open(os.path.join(self.world_dir, "items.py"), "w") as f:
+        with open(os.path.join(self.world_dir, "items.py"), "w", encoding="utf8") as f:
             f.write(items_complete)
 
     def generate_python_file_item_pools(self):
+        """
+        Generates item_pools.py, which provides instructions on how to build item pools based on options.
+        """
         template = self.environment.get_template("item_pools.template.py")
 
         item_pools_complete = template.render(
@@ -115,10 +137,13 @@ class FileGenerator:
             **self.common_args
         )
 
-        with open(os.path.join(self.world_dir, "item_pools.py"), "w") as f:
+        with open(os.path.join(self.world_dir, "item_pools.py"), "w", encoding="utf8") as f:
             f.write(item_pools_complete)
 
     def generate_python_file_prog_items(self):
+        """
+        Generates prog_items.py, which provides information on progressive chains.
+        """
         template = self.environment.get_template("prog_items.template.py")
 
         item_pools_complete = template.render(
@@ -127,10 +152,13 @@ class FileGenerator:
             **self.common_args
         )
 
-        with open(os.path.join(self.world_dir, "prog_items.py"), "w") as f:
+        with open(os.path.join(self.world_dir, "prog_items.py"), "w", encoding="utf8") as f:
             f.write(item_pools_complete)
 
     def generate_python_file_regions(self):
+        """
+        Generates regions.py, which provides information on which regions exist and how they are connected.
+        """
         template = self.environment.get_template("regions.template.py")
 
         regions_complete = template.render(
@@ -139,10 +167,13 @@ class FileGenerator:
             **self.common_args
         )
 
-        with open(os.path.join(self.world_dir, "regions.py"), "w") as f:
+        with open(os.path.join(self.world_dir, "regions.py"), "w", encoding="utf8") as f:
             f.write(regions_complete)
 
     def generate_python_file_vars(self):
+        """
+        Generates vars.py, which includes definitions of variable condition
+        """
         template = self.environment.get_template("vars.template.py")
 
         regions_complete = template.render(
@@ -150,10 +181,13 @@ class FileGenerator:
             **self.common_args
         )
 
-        with open(os.path.join(self.world_dir, "vars.py"), "w") as f:
+        with open(os.path.join(self.world_dir, "vars.py"), "w", encoding="utf8") as f:
             f.write(regions_complete)
 
     def generate_python_files(self) -> None:
+        """
+        Generates all python list files.
+        """
         self.generate_python_file_common()
         self.generate_python_file_locations()
         self.generate_python_file_items()
@@ -163,6 +197,9 @@ class FileGenerator:
         self.generate_python_file_vars()
 
     def generate_mod_files(self):
+        """
+        Generates JSON files for use by the CCMultiworldRandomizer mod.
+        """
         merged_data = deepcopy(self.ctx.rando_data)
 
         data_out: ExportInfo = {
@@ -224,7 +261,7 @@ class FileGenerator:
             codes = get_codes(name)
             quest_id = quest["questid"]
             if not quest_id in self.ctx.database["quests"]:
-                cglogger.error(f"{quest_id} does not exist")
+                cglogger.error("%s does not exist", quest_id)
 
             room = data_out["quests"]
             room[quest_id] = { "mwids": codes }
@@ -234,9 +271,9 @@ class FileGenerator:
         except FileExistsError:
             pass
 
-        with open(os.path.join(self.data_out_dir, "data.json"), "w") as f:
+        with open(os.path.join(self.data_out_dir, "data.json"), "w", encoding="utf8") as f:
             json.dump(data_out, f, indent='\t')
 
-        with open(os.path.join(self.data_out_dir, "locations.json"), "w") as f:
+        with open(os.path.join(self.data_out_dir, "locations.json"), "w", encoding="utf8") as f:
             location_ids = { loc.name: loc.code for loc in self.lists.locations_data.values() }
             json.dump(location_ids, f, indent='\t')

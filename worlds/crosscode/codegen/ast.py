@@ -1,3 +1,7 @@
+"""
+Module that provides functions to create AST calls representing various game objects.
+"""
+
 import typing
 import ast
 
@@ -8,6 +12,9 @@ from ..types.items import ItemData, ItemPoolEntry, ProgressiveChainEntry, Single
 
 
 def create_expression_condition(condition: Condition) -> ast.Call:
+    """
+    Create an expression representing a singular condition.
+    """
     result = ast.Call(
         func=ast.Name(condition.__class__.__name__),
         args=[],
@@ -18,6 +25,9 @@ def create_expression_condition(condition: Condition) -> ast.Call:
     return result
 
 def create_expression_condition_list(conditions: typing.Optional[list[Condition]]) -> ast.expr:
+    """
+    Create an expression representing a list of conditions.
+    """
     if conditions is None:
         return ast.Constant(None)
     result = ast.List(elts=[])
@@ -29,6 +39,9 @@ def create_expression_condition_list(conditions: typing.Optional[list[Condition]
     return result
 
 def create_expression_access_info(access: AccessInfo):
+    """
+    Create an expression representing the access information of a location.
+    """
     ast_call = ast.Call(
         func=ast.Name("AccessInfo"),
         args=[],
@@ -51,6 +64,11 @@ def create_expression_access_info(access: AccessInfo):
     return ast_call
 
 def create_expression_location(data: LocationData) -> ast.Call:
+    """
+    Create an expression that represents a location.
+
+    Specifically, this will instantiate a new location. Do not use this more than once per location.
+    """
     ast_item = ast.Call(
         func=ast.Name("LocationData"),
         args=[],
@@ -84,6 +102,11 @@ def create_expression_location(data: LocationData) -> ast.Call:
     return ast_item
 
 def create_expression_single_item(data: SingleItemData):
+    """
+    Create an expression representing the raw data for an item type.
+
+    Specifically, this will instantiate a new single item. Do not use this more than once per item.
+    """
     ast_item = ast.Call(
         func=ast.Name("SingleItemData"),
         args=[],
@@ -120,6 +143,11 @@ def create_expression_single_item(data: SingleItemData):
     return ast_item
 
 def create_expression_item(data: ItemData):
+    """
+    Create an expression representing an item with a quantity.
+
+    Specifically, this will instantiate a new item. Do not use this more than once per item.
+    """
     ast_item = ast.Call(
         func=ast.Name("ItemData"),
         args=[],
@@ -146,6 +174,11 @@ def create_expression_item(data: ItemData):
     return ast_item
 
 def create_expression_item_ref(data: ItemData):
+    """
+    Create an expression representing an item with a quantity.
+
+    This will reference the variable items_dict. Please make sure that variable in in the scope of the file.
+    """
     ast_item = ast.Subscript(
         value=ast.Name("items_dict"),
         slice=ast.Tuple(elts=[
@@ -158,6 +191,9 @@ def create_expression_item_ref(data: ItemData):
     return ast_item
 
 def create_expression_progressive_chain_entry(entry: ProgressiveChainEntry):
+    """
+    Create an expression representing an entry in a chain of progressive items.
+    """
     ast_item = ast.Call(
         func=ast.Name("ProgressiveChainEntry"),
         args=[],
@@ -186,6 +222,9 @@ def create_expression_progressive_chain_entry(entry: ProgressiveChainEntry):
     return ast_item
 
 def create_expression_item_pool_entry(entry: ItemPoolEntry):
+    """
+    Create an expression representing an entry in an item pool, with possible conditional inclusion.
+    """
     ast_item = ast.Call(
         func=ast.Name("ItemPoolEntry"),
         args=[],
@@ -217,6 +256,9 @@ def create_expression_item_pool_entry(entry: ItemPoolEntry):
     return ast_item
 
 def create_expression_region_connection(conn: RegionConnection):
+    """
+    Create an expression representing a connection between two regions.
+    """
     ast_region = ast.Call(
         func=ast.Name("RegionConnection"),
         args=[],

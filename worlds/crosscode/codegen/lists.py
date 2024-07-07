@@ -1,3 +1,7 @@
+"""
+Provides the ListInfo class, which stores most of the world data during the codegen step.
+"""
+
 from collections import defaultdict
 import typing
 
@@ -11,6 +15,10 @@ from ..types.condition import Condition
 
 
 class ListInfo:
+    """
+    The ListInfo class contains a large amount of list-type data. It is stored in this class until it is eventually used
+    to generate the python files.
+    """
     ctx: Context
     json_parser: JsonParser
     current_location_code: int
@@ -45,7 +53,7 @@ class ListInfo:
         self.items_dict = {}
 
         self.item_pools = {}
-        
+
         self.reward_amounts = {}
 
         self.json_parser = JsonParser(self.ctx)
@@ -58,14 +66,21 @@ class ListInfo:
         self.variable_definitions = defaultdict(dict)
 
     def build(self):
+        """
+        Builds the list data using the context provided with the program's initialization.
+        """
         self.__add_item_data_list(self.ctx.rando_data["items"])
 
         file = self.ctx.rando_data
 
-        if "chests" in file: self.__add_location_list(file["chests"])
-        if "cutscenes" in file: self.__add_location_list(file["cutscenes"])
-        if "elements" in file: self.__add_location_list(file["elements"])
-        if "quests" in file: self.__add_location_list(file["quests"], True)
+        if "chests" in file:
+            self.__add_location_list(file["chests"])
+        if "cutscenes" in file:
+            self.__add_location_list(file["cutscenes"])
+        if "elements" in file:
+            self.__add_location_list(file["elements"])
+        if "quests" in file:
+            self.__add_location_list(file["quests"], True)
 
         self.__add_item_pool_list(file["itemPools"])
 
@@ -83,9 +98,15 @@ class ListInfo:
         self.__add_vars(self.ctx.rando_data["vars"])
 
     def __get_cached_location_id(self, name: str) -> typing.Optional[int]:
+        """
+        Check to see if the context has a cached ID. If the location has no cached ID, returns None. 
+        """
         return self.ctx.cached_location_ids.get(name, None)
 
-    def __add_location(self, name: str, raw_loc: dict[str, typing.Any], create_event=False):
+    def __add_location(self, name: str, raw_loc: dict[str, typing.Any], create_event: bool = False):
+        """
+        Add a location to the lists.
+        """
         dbentry = self.ctx.database["quests"][raw_loc["questid"]] if "questid" in raw_loc else {}
         rewards = dbentry.get("rewards", {})
         item_rewards = rewards.get("items", [])
@@ -97,13 +118,16 @@ class ListInfo:
             if num_rewards != self.reward_amounts[name]:
                 found = True
                 num_rewards = 0
-                raise RuntimeError(f"Location of name '{name}' already exists with {self.reward_amounts[name]} rewards. Cannot add or overwrite with {num_rewards}.")
+                raise RuntimeError(
+                    f"Location of name '{name}' already exists with {self.reward_amounts[name]} rewards. "
+                    "Cannot add or overwrite with {num_rewards}."
+                )
 
         try:
             area = raw_loc["location"]["map"].split('.')[0]
             if area not in self.ctx.rando_data["dungeons"]:
                 area = None
-        except KeyError or AttributeError:
+        except (KeyError, AttributeError):
             area = None
 
         location_names: list[str] = []
@@ -146,22 +170,34 @@ class ListInfo:
             )
             self.events_data[event_name] = event
 
-    def __add_location_list(self, loc_list: dict[str, dict[str, typing.Any]], create_events=False):
+    def __add_location_list(self, loc_list: dict[str, dict[str, typing.Any]], create_events: bool = False):
+        """
+        Add a list of locations to the list.
+        """
         for name, raw_loc in loc_list.items():
             self.__add_location(name, raw_loc, create_events)
 
     def __add_item_data(self, name: str, raw_item: dict[str, typing.Any]) -> tuple[SingleItemData, ItemData]:
+        """
+        Add an item to the list.
+        """
         single_item, item  = self.json_parser.parse_item_data(name, raw_item)
         self.single_items_dict[name] = single_item
         self.items_dict[name, 1] = item
         return single_item, item
 
     def __add_item_data_list(self, item_list: dict[str, dict[str, typing.Any]]):
+        """
+        Add a list of items to the list.
+        """
         for name, raw_item in item_list.items():
             self.__add_item_data(name, raw_item)
 
     def __add_item_pool(self, name: str, raw: list[dict[str, typing.Any]]):
-        pool = []
+        """
+        Add an item pool to the list of item pools.
+        """
+        pool: list[ItemPoolEntry] = []
         for data in raw:
             item = self.__add_reward(data["item"])
             pool.append(ItemPoolEntry(
@@ -173,10 +209,16 @@ class ListInfo:
         self.item_pools[name] = pool
 
     def __add_item_pool_list(self, raw: dict[str, list[dict[str, typing.Any]]]):
+        """
+        Add a list of item pools to the list of item pools.
+        """
         for name, pool in raw.items():
             self.__add_item_pool(name, pool)
 
-    def __add_reward(self, reward: list) -> ItemData:
+    def __add_reward(self, reward: list[dict[str, typing.Any]]) -> ItemData:
+        """
+        Ensure an item reward is in the list of items.
+        """
         item = self.json_parser.parse_reward(reward)
         key = (item.item.name, item.amount)
         if key in self.items_dict:
@@ -186,16 +228,25 @@ class ListInfo:
         return item
 
     def __add_progressive_chain(self, name: str, raw: dict[str, typing.Any]):
+        """
+        Add a progressive chain to the list.
+        """
         chain = self.progressive_chains[name] = self.json_parser.parse_progressive_chain(name, raw)
         raw["reserved"] = True
         _, item = self.__add_item_data(f"Progressive {chain.display_name}", raw)
         self.progressive_items[name] = item
 
-    def __add_progressive_chains(self, raw: dict[str, dict]):
+    def __add_progressive_chains(self, raw: dict[str, dict[str, typing.Any]]):
+        """
+        Add a list of progressive chain to the list.
+        """
         for name, chain in raw.items():
             self.__add_progressive_chain(name, chain)
 
     def __add_vars(self, variables: dict[str, dict[str, list[typing.Any]]]):
+        """
+        Add a list of variable conditions to the list..
+        """
         for name, values in variables.items():
             for value, conds in values.items():
                 self.variable_definitions[name][value] = self.json_parser.parse_condition(conds)
