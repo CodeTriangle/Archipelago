@@ -10,3 +10,5 @@ locations_dict = { location.name: location for location in locations_data }
 events_data = {{events_data | emit_list("location") }}
 
 events_dict = { location.name: location for location in events_data }
+
+locked_locations = {{ locked_locations | emit_set("constant") }}

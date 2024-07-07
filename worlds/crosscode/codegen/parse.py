@@ -13,7 +13,7 @@ from .util import BASE_ID, RESERVED_ITEM_IDS, get_item_classification
 from ..types.items import ItemData, ProgressiveChainEntry, ProgressiveItemChain, SingleItemData
 from ..types.locations import AccessInfo, Condition
 from ..types.regions import RegionConnection, RegionsData
-from ..types.condition import ItemCondition, LocationCondition, QuestCondition, RegionCondition, AnyElementCondition, \
+from ..types.condition import ChestKeyCondition, ItemCondition, LocationCondition, QuestCondition, RegionCondition, AnyElementCondition, \
     OrCondition, VariableCondition
 
 class JsonParserError(Exception):
@@ -141,17 +141,17 @@ class JsonParser:
                 if not isinstance(region_name, str):
                     raise JsonParserError(raw, region_name, "location", "region name must be a string")
 
-        clearance = "Default"
+        condition: list[Condition] = []
+        if "condition" in raw:
+            condition = self.parse_condition(raw["condition"])
+
         if "clearance" in raw:
             clearance = raw["clearance"]
             if not isinstance(clearance, str):
                 raise JsonParserError(raw, clearance, "location", "clearance must be a string")
+            condition.append(ChestKeyCondition(clearance))
 
-        condition = None
-        if "condition" in raw:
-            condition = self.parse_condition(raw["condition"])
-
-        return AccessInfo(region, condition, clearance)
+        return AccessInfo(region, condition)
 
     def parse_item_data(self, name: str, raw: dict[str, typing.Any]) -> tuple[SingleItemData, ItemData]:
         """
@@ -242,11 +242,11 @@ class JsonParser:
         Parse a progressive item chain into a list of item chain entries.
         """
         display_name = raw.get("displayName", None)
-        if isinstance(display_name, str):
+        if not isinstance(display_name, str):
             raise JsonParserError(raw, display_name, "progressive chain", f"Need string display name for chain {name}")
 
         raw_items = raw.get("items", None)
-        if isinstance(raw_items, list):
+        if not isinstance(raw_items, list):
             raise JsonParserError(raw, raw_items, "progressive chain", f"Need list of items for chain {name}")
 
         items = []

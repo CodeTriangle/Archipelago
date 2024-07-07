@@ -90,6 +90,7 @@ class FileGenerator:
         locations_complete = template.render(
             locations_data=self.lists.locations_data.values(),
             events_data=self.lists.events_data.values(),
+            locked_locations=self.lists.locked_locations,
             **self.common_args
         )
 

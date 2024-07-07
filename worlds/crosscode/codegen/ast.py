@@ -53,9 +53,6 @@ def create_expression_access_info(access: AccessInfo):
         ]
     )
 
-    if access.clearance != "Default":
-        ast_call.keywords.append(ast.keyword("clearance", ast.Constant(access.clearance)))
-
     if access.cond is not None and access.cond != []:
         ast_call.keywords.append(ast.keyword("cond", create_expression_condition_list(access.cond)))
 

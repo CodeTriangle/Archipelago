@@ -26,6 +26,8 @@ class ListInfo:
     locations_data: dict[str, LocationData]
     events_data: dict[str, LocationData]
 
+    locked_locations: list[int]
+
     single_items_dict: dict[str, SingleItemData]
     items_dict: dict[tuple[str, int], ItemData]
 
@@ -48,6 +50,8 @@ class ListInfo:
 
         self.locations_data = {}
         self.events_data = {}
+
+        self.locked_locations = []
 
         self.single_items_dict = {}
         self.items_dict = {}
@@ -136,6 +140,8 @@ class ListInfo:
 
         access_info = self.json_parser.parse_location_access_info(raw_loc)
 
+        locked = "clearance" in raw_loc
+
         for idx in range(num_rewards):
             full_name = name
             if num_rewards > 1:
@@ -158,6 +164,9 @@ class ListInfo:
             )
 
             self.locations_data[full_name] = loc
+
+            if locked:
+                self.locked_locations.append(locid)
 
         if not found and (num_rewards > 1 or create_event):
             event_name = f"{name} (Event)"

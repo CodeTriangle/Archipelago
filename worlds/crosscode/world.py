@@ -14,12 +14,12 @@ from worlds.AutoWorld import WebWorld, World
 from worlds.generic.Rules import add_rule
 
 from .common import NAME
-from .logic import condition_satisfied, has_clearance
+from .logic import condition_satisfied
 from .world_data import static_world_data
 
 from .types.items import ItemData, CrossCodeItem
 from .types.locations import CrossCodeLocation
-from .types.condition import Condition, LocationCondition
+from .types.condition import LogicDict, Condition, LocationCondition
 from .types.world import WorldData
 from .types.regions import RegionsData
 from .types.metadata import IncludeOptions
@@ -91,7 +91,7 @@ class CrossCodeWorld(World):
     dungeon_location_list: dict[str, set[CrossCodeLocation]]
     dungeon_areas: typing.ClassVar[set[str]] = {"cold-dng", "heat-dng", "shock-dng", "wave-dng", "tree-dng"}
 
-    logic_dict: dict[str, typing.Any]
+    logic_dict: LogicDict
 
     location_events: dict[str, Location]
 
@@ -112,6 +112,10 @@ class CrossCodeWorld(World):
     ]
 
     _filler_pool_weights: list[int]
+
+    _chest_level_names: list[str] = [ "Default", "Bronze", "Silver", "Gold" ]
+
+    _chest_lock_weights: list[int]
 
     enabled_chain_names: set[str]
 
@@ -266,6 +270,14 @@ class CrossCodeWorld(World):
             chosen_pet = self.pools.pull_items_from_pool("pets", self.random)[0]
             start_inventory[chosen_pet.name] = 1
 
+        if self.options.chest_lock_randomization.value:
+            self._chest_lock_weights = list(itertools.accumulate([
+                self.options.no_chest_lock_weight.value,
+                self.options.bronze_chest_lock_weight.value,
+                self.options.silver_chest_lock_weight.value,
+                self.options.gold_chest_lock_weight.value,
+            ]))
+
         self.pre_fill_any_dungeon_names = set()
         self.pre_fill_specific_dungeons_names = defaultdict(set)
 
@@ -286,12 +298,13 @@ class CrossCodeWorld(World):
                 self.pre_fill_any_dungeon_names
             )
 
-        self.logic_dict = {
+        self.logic_dict: LogicDict = {
             "mode": self.logic_mode,
             "variables": self.variables,
             "variable_definitions": self.world_data.variable_definitions,
-            "keyrings": self.world_data.keyring_items if self.options.keyrings.value else [],
+            "keyrings": self.world_data.keyring_items if self.options.keyrings.value else set(),
             "item_progressive_replacements": self.pools.item_progressive_replacements,
+            "chest_clearance_levels": {}
         }
 
     def create_regions(self):
@@ -307,7 +320,7 @@ class CrossCodeWorld(World):
             self.region_dict[conn.region_from].connect(
                 self.region_dict[conn.region_to],
                 f"{conn.region_from} => {conn.region_to}",
-                condition_satisfied(self.player, conn.cond, **self.logic_dict) if conn.cond is not None else None
+                condition_satisfied(self.player, conn.cond, None, self.logic_dict) if conn.cond is not None else None
             )
 
             self.create_event_conditions(conn.cond)
@@ -340,6 +353,14 @@ class CrossCodeWorld(World):
                         self.dungeon_location_list[location.data.area].add(location)
                     region.locations.append(location)
                     self.create_event_conditions(data.access.cond)
+
+                    if self.options.chest_lock_randomization.value and data.code in self.world_data.locked_locations:
+                        clearance = self.random.choices(
+                            self._chest_level_names,
+                            cum_weights=self._chest_lock_weights
+                        )[0]
+
+                        self.logic_dict["chest_clearance_levels"][data.code] = clearance
 
             for data in self.pools.event_pool:
                 if self.logic_mode in data.access.region and data.access.region[self.logic_mode] == name:
@@ -441,9 +462,7 @@ class CrossCodeWorld(World):
                 if not isinstance(loc, CrossCodeLocation):
                     continue
                 if loc.data.access.cond is not None:
-                    add_rule(loc, condition_satisfied(self.player, loc.data.access.cond, **self.logic_dict))
-                if loc.data.access.clearance != "Default":
-                    add_rule(loc, has_clearance(self.player, loc.data.access.clearance))
+                    add_rule(loc, condition_satisfied(self.player, loc.data.access.cond, loc.data.code, self.logic_dict))
 
     def pre_fill(self):
         allowed_locations_by_item: dict[Item, set[CrossCodeLocation]] = {}
@@ -526,6 +545,12 @@ class CrossCodeWorld(World):
             allow_partial=False,
         )
 
+    def extend_hint_information(self, hint_data: dict[int, dict[int, str]]):
+        ours = hint_data.setdefault(self.player, {})
+
+        for loc, clearance in self.logic_dict["chest_clearance_levels"].items():
+            ours[loc] = clearance
+
     def fill_slot_data(self) -> typing.Mapping[str, typing.Any]:
         prog_chains = {}
         for name in self.enabled_chain_names:
@@ -545,5 +570,6 @@ class CrossCodeWorld(World):
                 "hiddenQuestObfuscationLevel": self.options.hidden_quest_obfuscation_level.current_key,
                 "questDialogHints": self.options.quest_dialog_hints.value,
                 "progressiveChains": prog_chains,
+                "chestClearanceLevels": self.logic_dict["chest_clearance_levels"],
             }
         }
