@@ -6,6 +6,9 @@ from .condition import Condition
 
 @dataclass
 class WorldData:
+    data_version: str
+    base_id: int
+
     # regions.py
     region_packs: dict[str, RegionsData]
     modes: list[str] = field(init=False)
@@ -13,6 +16,7 @@ class WorldData:
     # locations.py
     locations_dict: dict[str, LocationData]
     events_dict: dict[str, LocationData]
+    locked_locations: set[int]
 
     # items.py
     single_items_dict: dict[str, SingleItemData]

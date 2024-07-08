@@ -9,7 +9,6 @@ from .condition import Condition
 class AccessInfo:
     region: typing.Dict[str, str]
     cond: typing.Optional[list[Condition]] = None
-    clearance: str = "Default"
 
 @dataclass
 class LocationData:

@@ -4,7 +4,7 @@ This module provides the options and option dataclass for the Options dataclass.
 
 from dataclasses import dataclass
 
-from Options import Choice, DefaultOnToggle, PerGameCommonOptions, Toggle, Range
+from Options import Choice, DefaultOnToggle, OptionGroup, PerGameCommonOptions, Toggle, Range
 
 class LogicMode(Choice):
     """
@@ -294,6 +294,52 @@ class ChestKeyShuffle(DungeonReachability):
         "wave-dng": { "Radiant Key" },
     }
 
+class ChestLockRandomization(Toggle):
+    """
+    If enabled, the lock on all chests (Bronze, Silver, Gold, or None) will be randomized.
+    """
+    display_name = "Chest Lock Randomization"
+
+class NoChestLockWeight(Range):
+    """
+    Controls the likelihood of giving a chest no lock (if chest lock randomization is enabled).
+    """
+    display_name = "Unlocked Chest Weight"
+
+    range_start = 0
+    range_end = 100
+    default = 60
+
+class BronzeChestLockWeight(Range):
+    """
+    Controls the likelihood of giving a chest bronze lock, requiring Thief's Key to open (if chest lock randomization is enabled).
+    """
+    display_name = "Bronze Chest Lock Weight"
+
+    range_start = 0
+    range_end = 100
+    default = 15
+
+class SilverChestLockWeight(Range):
+    """
+    Controls the likelihood of giving a chest silver lock, requiring White Key to open (if chest lock randomization is enabled).
+    """
+    display_name = "Silver Chest Lock Weight"
+
+    range_start = 0
+    range_end = 100
+    default = 15
+
+class GoldChestLockWeight(Range):
+    """
+    Controls the likelihood of giving a chest gild lock, requiring Radiant Key to open (if chest lock randomization is enabled).
+    """
+    display_name = "Gold Chest Lock Weight"
+
+    range_start = 0
+    range_end = 100
+    default = 10
+
 class CommonPoolWeight(Range):
     """
     Controls the likelihood of choosing a common filler item when filling the world.
@@ -302,7 +348,7 @@ class CommonPoolWeight(Range):
 
     range_start = 0
     range_end = 100
-    default = 42
+    default = 38
 
 class RarePoolWeight(Range):
     """
@@ -332,7 +378,7 @@ class LegendaryPoolWeight(Range):
 
     range_start = 0
     range_end = 100
-    default = 2
+    default = 6
 
 class ConsumableWeight(Range):
     """
@@ -386,6 +432,12 @@ class CrossCodeOptions(PerGameCommonOptions):
     master_key_shuffle: MasterKeyShuffle
     chest_key_shuffle: ChestKeyShuffle
 
+    chest_lock_randomization: ChestLockRandomization
+    no_chest_lock_weight: NoChestLockWeight
+    bronze_chest_lock_weight: BronzeChestLockWeight
+    silver_chest_lock_weight: SilverChestLockWeight
+    gold_chest_lock_weight: GoldChestLockWeight
+
     common_pool_weight: CommonPoolWeight
     rare_pool_weight: RarePoolWeight
     epic_pool_weight: EpicPoolWeight
@@ -394,3 +446,55 @@ class CrossCodeOptions(PerGameCommonOptions):
     drop_weight: DropWeight
 
 addon_options = ["quest_rando"]
+
+option_groups: list[OptionGroup] = [
+    OptionGroup(
+        name="Quests",
+        options=[
+            QuestRando,
+            HiddenQuestRewardMode,
+            HiddenQuestObfuscationLevel,
+            QuestDialogHints,
+        ]
+    ),
+    OptionGroup(
+        name="Starting Inventory",
+        options=[
+            StartWithGreenLeafShade,
+            StartWithChestDetector,
+            StartWithDiscs,
+            StartWithPet,
+        ]
+    ),
+    OptionGroup(
+        name="Item Locations",
+        options=[
+            ShadeShuffle,
+            ElementShuffle,
+            SmallKeyShuffle,
+            MasterKeyShuffle,
+            ChestKeyShuffle,
+        ]
+    ),
+    OptionGroup(
+        name="Chest Locks",
+        options=[
+            ChestLockRandomization,
+            NoChestLockWeight,
+            BronzeChestLockWeight,
+            SilverChestLockWeight,
+            GoldChestLockWeight,
+        ]
+    ),
+    OptionGroup(
+        name="Pools",
+        options=[
+            CommonPoolWeight,
+            RarePoolWeight,
+            EpicPoolWeight,
+            LegendaryPoolWeight,
+            ConsumableWeight,
+            DropWeight
+        ]
+    ),
+]
