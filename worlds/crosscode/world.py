@@ -325,22 +325,6 @@ class CrossCodeWorld(World):
 
             self.create_event_conditions(conn.cond)
 
-            connection_event = Location(
-                self.player,
-                f"{conn.region_from} => {conn.region_to} (Event)",
-                None,
-                self.region_dict[conn.region_from]
-            )
-
-            connection_event.place_locked_item(Item(
-                f"{conn.region_to} (Event)",
-                ItemClassification.progression,
-                None,
-                self.player
-            ))
-
-            self.region_dict[conn.region_from].locations.append(connection_event)
-
         menu_region = Region("Menu", self.player, self.multiworld)
         menu_region.add_exits({self.region_pack.starting_region: "login"})
         self.multiworld.regions.append(menu_region)
