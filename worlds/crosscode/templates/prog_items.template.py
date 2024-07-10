@@ -5,20 +5,20 @@ from .items import single_items_dict, items_dict
 from .types.items import ItemData, ProgressiveItemChain, ProgressiveItemChainSingle, ProgressiveItemChainMulti, ProgressiveChainEntry, ProgressiveItemSubchain
 
 progressive_chains: dict[str, ProgressiveItemChain] = {
-    {%- for name, display_name in prog_chain_names.items() %}
-    {%- if name in prog_chain_lists_single %}
-    "{{name}}": ProgressiveItemChainSingle(
-        display_name="{{display_name}}",
-        items={{prog_chain_lists_single[name] | indent(8)}},
+    {%- for name, chain in prog_chains.items() %}
+    {%- if prog_chain_types[name] == "single" %}
+    "{{ name }}": ProgressiveItemChainSingle(
+        display_name="{{ chain.display_name }}",
+        items={{ chain.items | emit_list("progressive_chain_entry") | indent(8) }},
     ),
-    {%- elif name in prog_chain_lists_multi %}
-    "{{name}}": ProgressiveItemChainMulti(
-        display_name="{{display_name}}",
+    {%- elif prog_chain_types[name] == "multi" %}
+    "{{ name }}": ProgressiveItemChainMulti(
+        display_name="{{ chain.display_name }}",
         subchains=[
-            {%- for metadata, subchain in prog_chain_lists_multi[name] %}
+            {%- for subchain in chain.subchains %}
             ProgressiveItemSubchain(
-                metadata={{ metadata | indent(16) }},
-                chain={{ subchain | indent(16) }}
+                metadata={{ subchain.metadata.items() | emit_dict("constant", "constant") | indent(16) }},
+                chain={{ subchain.chain | emit_list("progressive_chain_entry") | indent(16) }}
             ),
             {%- endfor %}
         ],
@@ -27,4 +27,4 @@ progressive_chains: dict[str, ProgressiveItemChain] = {
     {%- endfor %}
 }
 
-progressive_items: dict[str, ItemData] = {{prog_items}}
+progressive_items: dict[str, ItemData] = {{ prog_items.items() | emit_dict("constant", "item_ref") }}
