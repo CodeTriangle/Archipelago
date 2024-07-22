@@ -1,7 +1,9 @@
 from dataclasses import dataclass, field
+
 from .items import ItemData, ProgressiveItemChain, SingleItemData, ItemPoolEntry
 from .locations import LocationData
 from .regions import RegionsData
+from .shops import ShopData
 from .condition import Condition
 
 @dataclass
@@ -23,6 +25,11 @@ class WorldData:
     items_dict: dict[tuple[str, int], ItemData]
     items_by_full_name: dict[str, ItemData]
     keyring_items: set[str]
+
+    # shops.py
+    shops_dict: dict[str, ShopData]
+    per_shop_locations: dict[str, dict[int, LocationData]]
+    global_shop_locations: dict[int, LocationData]
 
     # item_pools.py
     item_pools_template: dict[str, list[ItemPoolEntry]]

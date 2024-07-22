@@ -17,12 +17,9 @@ BASE_ID = 3235824000
 # and other items that don't map to CrossCode items
 RESERVED_ITEM_IDS = 100
 
+DYNAMIC_ITEM_AREA_OFFSET = 100000
+
 NUM_ITEMS = 676
-
-SP_UPGRADE_ID_OFFSET = 4
-SP_UPGRADE_NAME = "SP Upgrade"
-
-CIRCUIT_OVERRIDE = 428
 
 GENERATED_COMMENT = """WARNING: THIS FILE HAS BEEN GENERATED!
 Modifications to this file will not be kept.

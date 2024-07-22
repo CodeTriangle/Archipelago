@@ -9,6 +9,7 @@ from ..types.condition import Condition
 from ..types.locations import AccessInfo, LocationData
 from ..types.regions import RegionConnection
 from ..types.items import ItemData, ItemPoolEntry, ProgressiveChainEntry, SingleItemData
+from ..types.shops import ShopData
 
 
 def create_expression_condition(condition: Condition) -> ast.Call:
@@ -95,6 +96,20 @@ def create_expression_location(data: LocationData) -> ast.Call:
 
     ast_item.keywords.append(ast.keyword("access", create_expression_access_info(data.access)))
 
+    ast.fix_missing_locations(ast_item)
+    return ast_item
+
+def create_expression_location_ref(data: LocationData):
+    """
+    Create an expression that represents a location.
+
+    This will reference the variable locations_data. Please make sure that variable in in the scope of the file.
+    """
+    ast_item = ast.Subscript(
+        value=ast.Name("locations_dict"),
+        slice=ast.Constant(data.name),
+        ctx=ast.Load()
+    )
     ast.fix_missing_locations(ast_item)
     return ast_item
 
@@ -278,3 +293,38 @@ def create_expression_region_connection(conn: RegionConnection):
     ast.fix_missing_locations(ast_region)
 
     return ast_region
+
+def create_expression_shop(data: ShopData) -> ast.Call:
+    """
+    Create an expression that represents a shop region.
+
+    Specifically, this will instantiate a new ShopData. Do not use this more than once per location.
+    """
+    ast_item = ast.Call(
+        func=ast.Name("ShopData"),
+        args=[],
+        keywords=[
+            ast.keyword(
+                arg="internal_name",
+                value=ast.Constant(data.internal_name)
+            ),
+            ast.keyword(
+                arg="name",
+                value=ast.Constant(data.name)
+            ),
+        ]
+    )
+
+    if data.metadata is not None:
+        ast_item.keywords.append(ast.keyword(
+            arg="metadata",
+            value=ast.Dict(
+                keys=[ast.Constant(x) for x in data.metadata.keys()],
+                values=[ast.Constant(x) for x in data.metadata.values()],
+            )
+        ))
+
+    ast_item.keywords.append(ast.keyword("access", create_expression_access_info(data.access)))
+
+    ast.fix_missing_locations(ast_item)
+    return ast_item

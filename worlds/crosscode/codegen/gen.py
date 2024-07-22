@@ -185,6 +185,23 @@ class FileGenerator:
         with open(os.path.join(self.world_dir, "vars.py"), "w", encoding="utf8") as f:
             f.write(regions_complete)
 
+    def generate_python_file_shops(self):
+        """
+        Generates locations.py, which provides a list of locations and events.
+        """
+        template = self.environment.get_template("shops.template.py")
+
+        locations_complete = template.render(
+            shop_data=self.lists.shop_data,
+            per_shop_locations=self.lists.per_shop_locations,
+            global_shop_locations=self.lists.global_shop_locations,
+            **self.common_args
+        )
+
+        with open(os.path.join(self.world_dir, "shops.py"), "w", encoding="utf8") as f:
+            f.write(locations_complete)
+
+
     def generate_python_files(self) -> None:
         """
         Generates all python list files.
@@ -196,6 +213,7 @@ class FileGenerator:
         self.generate_python_file_prog_items()
         self.generate_python_file_regions()
         self.generate_python_file_vars()
+        self.generate_python_file_shops()
 
     def generate_mod_files(self):
         """
@@ -267,8 +285,6 @@ class FileGenerator:
             room = data_out["quests"]
             room[quest_id] = { "mwids": codes }
 
-        data_out["shops"] = self.lists.shop_ids
-
         try:
             os.mkdir(self.data_out_dir)
         except FileExistsError:
@@ -280,3 +296,7 @@ class FileGenerator:
         with open(os.path.join(self.data_out_dir, "locations.json"), "w", encoding="utf8") as f:
             location_ids = { loc.name: loc.code for loc in self.lists.locations_data.values() }
             json.dump(location_ids, f, indent='\t')
+
+        with open(os.path.join(self.data_out_dir, "items.json"), "w", encoding="utf8") as f:
+            item_ids = { loc.name: loc.combo_id for loc in self.lists.dynamic_items.values()  }
+            json.dump(item_ids, f, indent='\t')

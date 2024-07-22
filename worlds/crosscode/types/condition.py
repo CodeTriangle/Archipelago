@@ -1,8 +1,9 @@
 import typing
 import abc
-from dataclasses import dataclass
+from dataclasses import field, dataclass
 
 from BaseClasses import CollectionState
+from ..options import ShopReceiveMode
 
 class LogicDict(typing.TypedDict):
     mode: str
@@ -11,6 +12,7 @@ class LogicDict(typing.TypedDict):
     keyrings: set[str]
     item_progressive_replacements: dict[str, list[tuple[str, int]]]
     chest_clearance_levels: dict[int, str]
+    shop_receive_mode: int
 
 class Condition(abc.ABC):
     @abc.abstractmethod
@@ -54,11 +56,12 @@ class LocationCondition(Condition):
 class RegionCondition(Condition):
     target_mode: str
     region_name: str
+    on_mode_miss: bool = field(default=True)
 
     def satisfied(self, state: CollectionState, player: int, location: int | None, args: LogicDict) -> bool:
         mode: str = args["mode"]
 
-        return mode != self.target_mode or state.can_reach_region(self.region_name, player)
+        return mode != self.target_mode and self.on_mode_miss or state.can_reach_region(self.region_name, player)
 
 @dataclass
 class AnyElementCondition(Condition):
@@ -117,6 +120,17 @@ class ChestKeyCondition(Condition):
 
         return state.has(ChestKeyCondition.clearance_items[level], player)
 
+@dataclass
+class ShopSlotCondition(Condition):
+    shop_name: str
+    item_id: int
+
+    def satisfied(self, state: CollectionState, player: int, location: int | None, args: LogicDict) -> bool:
+        # if args["shop_receive_mode"] == ShopReceiveMode.option_per_item_type:
+        #     pass
+        # return state.has(self.location_event_name, player)
+        return True
+
 __all__ = [
     "Condition",
     "ItemCondition",
@@ -127,4 +141,5 @@ __all__ = [
     "OrCondition",
     "VariableCondition",
     "ChestKeyCondition",
+    "ShopSlotCondition"
 ]

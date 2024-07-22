@@ -30,6 +30,10 @@ class Context:
     """
     A list of cached location ids to respect when creating location objects.
     """
+    cached_item_ids: dict[str, int]
+    """
+    A list of cached item ids for the dynamically allocated item area.
+    """
     num_items: int = field(init=False)
     """
     The number of items in the item database.
@@ -53,9 +57,16 @@ def make_context_from_package(package: str) -> Context:
     except FileNotFoundError:
         pass
 
+    cached_item_ids: dict[str, int] = {}
+    try:
+        cached_item_ids = get_json_object(package, "data/out/items.json")
+    except FileNotFoundError:
+        pass
+
     return Context(
         master,
         get_json_object(package, "data/assets/data/item-database.json")["items"],
         get_json_object(package, "data/assets/data/database.json"),
-        cached_location_ids
+        cached_location_ids,
+        cached_item_ids
     )

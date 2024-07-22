@@ -554,7 +554,6 @@ class CrossCodeWorld(World):
                 "hiddenQuestObfuscationLevel": self.options.hidden_quest_obfuscation_level.current_key,
                 "questDialogHints": self.options.quest_dialog_hints.value,
                 "progressiveChains": prog_chains,
-                "shopRando": self.options.shop_rando.value,
                 "shopDialogHints": self.options.shop_dialog_hints.value,
                 "chestClearanceLevels": self.logic_dict["chest_clearance_levels"],
             }

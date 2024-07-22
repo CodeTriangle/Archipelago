@@ -5,13 +5,16 @@ Provides the ListInfo class, which stores most of the world data during the code
 from collections import defaultdict
 import typing
 
+from BaseClasses import ItemClassification
+
 from .parse import JsonParser
 from .context import Context
-from .util import BASE_ID, RESERVED_ITEM_IDS
+from .util import BASE_ID, DYNAMIC_ITEM_AREA_OFFSET, RESERVED_ITEM_IDS
 
 from ..types.items import ItemData, SingleItemData, ItemPoolEntry, ProgressiveItemChain
-from ..types.locations import LocationData
-from ..types.condition import Condition
+from ..types.locations import AccessInfo, LocationData
+from ..types.condition import Condition, RegionCondition, OrCondition, ShopSlotCondition
+from ..types.shops import ShopData
 
 
 class ListInfo:
@@ -22,6 +25,7 @@ class ListInfo:
     ctx: Context
     json_parser: JsonParser
     current_location_code: int
+    current_item_code: int
 
     locations_data: dict[str, LocationData]
     events_data: dict[str, LocationData]
@@ -30,13 +34,21 @@ class ListInfo:
 
     single_items_dict: dict[str, SingleItemData]
     items_dict: dict[tuple[str, int], ItemData]
+    dynamic_items: dict[str, ItemData]
 
     item_pools: dict[str, list[ItemPoolEntry]]
 
     reward_amounts: dict[str, int]
 
     variable_definitions: dict[str, dict[str, list[Condition]]]
-    shop_ids: dict[str, dict[int, int]]
+
+    shop_data: dict[str, ShopData]
+    per_shop_locations: dict[str, dict[int, LocationData]]
+    global_shop_locations: dict[int, LocationData]
+    shop_unlock_by_id: dict[int, ItemData]
+    shop_unlock_by_shop: dict[str, ItemData]
+    shop_unlock_by_shop_and_id: dict[tuple[str, int], ItemData]
+    global_slot_region_conditions_list: dict[str, list[Condition]]
 
     progressive_chains: dict[str, ProgressiveItemChain]
     progressive_items: dict[str, ItemData]
@@ -49,6 +61,10 @@ class ListInfo:
         if self.current_location_code != BASE_ID:
             self.current_location_code += 1
 
+        self.current_item_code = max(self.ctx.cached_item_ids.values(), default=BASE_ID + DYNAMIC_ITEM_AREA_OFFSET)
+        if self.current_item_code != BASE_ID + DYNAMIC_ITEM_AREA_OFFSET:
+            self.current_item_code += 1
+
         self.locations_data = {}
         self.events_data = {}
 
@@ -56,10 +72,19 @@ class ListInfo:
 
         self.single_items_dict = {}
         self.items_dict = {}
+        self.dynamic_items = {}
 
         self.item_pools = {}
 
         self.reward_amounts = {}
+
+        self.shop_data = {}
+        self.per_shop_locations = defaultdict(dict)
+        self.global_shop_locations = {}
+        self.shop_unlock_by_id = {}
+        self.shop_unlock_by_shop = {}
+        self.shop_unlock_by_shop_and_id = {}
+        self.global_slot_region_conditions_list = {}
 
         self.json_parser = JsonParser(self.ctx)
         self.json_parser.single_items_dict = self.single_items_dict
@@ -69,8 +94,6 @@ class ListInfo:
         self.progressive_items = {}
 
         self.variable_definitions = defaultdict(dict)
-
-        self.shop_ids = defaultdict(dict)
 
     def build(self):
         """
@@ -111,6 +134,37 @@ class ListInfo:
         Check to see if the context has a cached ID. If the location has no cached ID, returns None. 
         """
         return self.ctx.cached_location_ids.get(name, None)
+
+    def __get_or_allocate_location_id(self, name: str) -> int:
+        """
+        Get the cached location ID, or allocate a new one if it is not cached.
+        """
+        locid = self.__get_cached_location_id(name)
+
+        if locid is None:
+            locid = self.current_location_code
+            self.current_location_code += 1
+
+        return locid
+
+    def __get_cached_item_id(self, name: str) -> typing.Optional[int]:
+        """
+        Check to see if the context has a cached ID for an item in the dynamically allocated area. If the item has no
+        cached ID, returns None. 
+        """
+        return self.ctx.cached_item_ids.get(name, None)
+
+    def __get_or_allocate_item_id(self, name: str) -> int:
+        """
+        Get the cached item ID, or allocate a new one if it is not cached.
+        """
+        item_id = self.__get_cached_item_id(name)
+
+        if item_id is None:
+            item_id = self.current_item_code
+            self.current_item_code += 1
+
+        return item_id
 
     def __add_location(self, name: str, raw_loc: dict[str, typing.Any], create_event: bool = False):
         """
@@ -154,11 +208,7 @@ class ListInfo:
 
             location_names.append(full_name)
 
-            locid = self.__get_cached_location_id(full_name)
-
-            if locid is None:
-                locid = self.current_location_code
-                self.current_location_code += 1
+            locid = self.__get_or_allocate_location_id(full_name)
 
             loc = LocationData(
                 name=full_name,
@@ -200,38 +250,115 @@ class ListInfo:
         self.items_dict[name, 1] = item
         return single_item, item
 
+    def __add_shop_unlock_item(self, name: str) -> ItemData:
+        prev_item = self.dynamic_items.get(name)
+        if prev_item is not None:
+            return prev_item
+
+        single_item = SingleItemData(
+            name=name,
+            item_id=0,
+            classification=ItemClassification.progression,
+            unique=True
+        )
+
+        self.single_items_dict[name] = single_item
+
+        item = ItemData(
+            item=single_item,
+            amount=1,
+            combo_id=self.__get_or_allocate_item_id(name)
+        )
+
+        self.items_dict[name, 1] = item
+        self.dynamic_items[name] = item
+
+        return item
+
     def __add_shop(self, shop_display_name: str, raw_shop: dict[str, typing.Any]):
         shop_name = raw_shop["location"]["shop"]
+        shop_base_name = shop_display_name.split(" (")[0] # this is a hack until there are heirarchical shops
 
         metadata = raw_shop.get("metadata", None)
         access_info = self.json_parser.parse_location_access_info(raw_shop)
 
-        id_map = self.shop_ids[shop_name]
+        shop_locs = self.per_shop_locations[shop_display_name]
+
+        by_shop_name =  f"{shop_base_name} Unlock"
+        by_shop_item = self.__add_shop_unlock_item(by_shop_name)
+        self.shop_unlock_by_shop[shop_name] = by_shop_item
 
         for item_name in raw_shop["slots"]:
             item_data = self.ctx.rando_data["items"][item_name]
 
-            if item_data["id"] in id_map:
-                continue
+            slot_location_name = f"{shop_display_name} - {item_name} Slot"
 
+            locid = self.__get_or_allocate_location_id(slot_location_name)
 
-            location_name = f"{shop_display_name} - {item_name} Slot"
+            item_id = item_data["id"]
 
-            locid = self.__get_cached_location_id(location_name)
-
-            if locid is None:
-                locid = self.current_location_code
-                self.current_location_code += 1
-
-            id_map[item_data["id"]] = locid
-
-            self.locations_data[location_name] = LocationData(
-                name=location_name,
+            slot_location = LocationData(
+                name=slot_location_name,
                 code=locid,
                 area=None,
                 metadata=metadata,
-                access=access_info,
+                access=AccessInfo(
+                    region={ name: shop_display_name for name in access_info.region },
+                    cond=[ShopSlotCondition(shop_name, item_id)],
+                ),
             )
+
+            shop_locs[item_id] = slot_location
+            self.locations_data[slot_location.name] = slot_location
+
+            global_location = self.global_shop_locations.get(item_id, None)
+
+            by_shop_and_id_name = f"{slot_location_name} Unlock"
+            by_shop_and_id_item = self.__add_shop_unlock_item(by_shop_and_id_name)
+            self.shop_unlock_by_shop[shop_name] = by_shop_and_id_item
+
+            if global_location is None:
+                item_type_location_name = f"Global {item_name} Slot"
+
+                locid = self.__get_cached_location_id(item_type_location_name)
+
+                if locid is None:
+                    locid = self.current_location_code
+                    self.current_location_code += 1
+
+                slot_condition = self.global_slot_region_conditions_list[item_id] = []
+
+                global_location = LocationData(
+                    name=item_type_location_name,
+                    code=locid,
+                    area=None,
+                    metadata=metadata,
+                    access=AccessInfo(
+                        region={ name: "Menu" for name in access_info.region },
+                        cond=[
+                            ShopSlotCondition(shop_name, item_id),
+                            OrCondition(slot_condition)
+                        ],
+                    ),
+                )
+
+                by_id_name = f"{item_type_location_name} Unlock"
+                by_id_item = self.__add_shop_unlock_item(by_id_name)
+                self.shop_unlock_by_id[item_id] = by_id_item
+                self.global_shop_locations[item_id] = global_location
+
+                self.locations_data[global_location.name] = global_location
+
+            self.global_slot_region_conditions_list[item_id].extend(
+                [ RegionCondition(mode, name, False) for mode, name in access_info.region.items() ]
+            )
+
+        self.shop_data[shop_display_name] = ShopData(
+            internal_name=shop_name,
+            name=shop_display_name,
+            access=access_info,
+            metadata=metadata
+        )
 
     def __add_shop_list(self, loc_list: dict[str, dict[str, typing.Any]]):
         for name, raw_shop in loc_list.items():

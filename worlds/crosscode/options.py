@@ -100,6 +100,39 @@ class ShopRando(Toggle):
     """
     display_name = "Shop Randomization"
 
+class ShopSendMode(Choice):
+    """
+    Controls what exactly counts as a check when shop randomization is enabled.
+    [Per Item Type] A check is added for each type of item (for example, Sandwich). Therefore, purchasing a sandwich
+    from any shop in the game clears the same check.
+    [Per Slot] A check is added for each item slot in each shop. Therefore, purchasing a Sandwich in Rookie Harbor
+    clears a separate check than purchasing a Sandwich in Bergen Village.
+    """
+
+    option_per_item_type = 1
+    option_per_slot = 3
+
+    default = option_per_item_type
+
+class ShopReceiveMode(Choice):
+    """
+    Controls how shops are unlocked when shop randomization is enabled.
+    [None] All shop slots are able to be purchased as soon as the player can access the shop.
+    [Per Item Type] A check is added for each type of item (for example, Sandwich) which unlocks the ability to purchase
+    that item from any shop.
+    [Per Shop] A check is added for each shop (for example, Rookie Harbor Items) which unlocks the ability to purchase
+    items from that shop.
+    [Per Slot] A check is added for each item slot in each shop which unlocks the ability to purchase that item from
+    that shop (this may lead to tedious playthroughs).
+    """
+
+    option_none = 0
+    option_per_item_type = 1
+    option_per_shop = 2
+    option_per_slot = 3
+
+    default = option_per_item_type
+
 class ShopDialogHints(DefaultOnToggle):
     """
     If enabled, upon opening the dialog for a shop, corresponding hints are sent to the Archipelago server.
