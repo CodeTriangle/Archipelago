@@ -450,6 +450,8 @@ class CrossCodeOptions(PerGameCommonOptions):
 
     shop_rando: ShopRando
     shop_dialog_hints: ShopDialogHints
+    shop_send_mode: ShopSendMode
+    shop_receive_mode: ShopReceiveMode
 
     start_with_green_leaf_shade: StartWithGreenLeafShade
     start_with_chest_detector: StartWithChestDetector

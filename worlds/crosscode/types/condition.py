@@ -61,7 +61,7 @@ class RegionCondition(Condition):
     def satisfied(self, state: CollectionState, player: int, location: int | None, args: LogicDict) -> bool:
         mode: str = args["mode"]
 
-        return mode != self.target_mode and self.on_mode_miss or state.can_reach_region(self.region_name, player)
+        return mode != self.target_mode or state.can_reach_region(self.region_name, player)
 
 @dataclass
 class AnyElementCondition(Condition):

@@ -62,7 +62,7 @@ class Pools:
 
         weights = {}
 
-        for loc in world_data.locations_dict.values():
+        for loc in world_data.pool_locations:
             if self.__should_include_location(loc):
                 self.location_pool.add(loc)
 
@@ -100,15 +100,23 @@ class Pools:
         # These are manually coded for now.
         # The default is to include the item.
         # Return false if at any point it is discovered we shouldn't.
-        if metadata.get("questRandoOnly", False):
-            return self.options["questRandoOnly"]
 
-        return True
+        result = True
+
+        if metadata.get("questRandoOnly", False):
+            result &= self.options["questRandoOnly"]
+        if metadata.get("shops", False):
+            result &= self.options["shops"]
+
+        return result
 
     def __should_include_item(self, entry: ItemPoolEntry) -> bool:
         # See the comments for the location data for the structure of
         # this section.
         metadata = entry.metadata if entry.metadata is not None else {}
+
+        if metadata.get("shops", False):
+            return self.options["shops"] and metadata["shopSendMode"] == self.options["shopSendMode"]
 
         return True
 

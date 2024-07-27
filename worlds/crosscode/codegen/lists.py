@@ -29,6 +29,7 @@ class ListInfo:
 
     locations_data: dict[str, LocationData]
     events_data: dict[str, LocationData]
+    pool_locations: list[LocationData]
 
     locked_locations: list[int]
 
@@ -67,6 +68,7 @@ class ListInfo:
 
         self.locations_data = {}
         self.events_data = {}
+        self.pool_locations = []
 
         self.locked_locations = []
 
@@ -219,6 +221,7 @@ class ListInfo:
             )
 
             self.locations_data[full_name] = loc
+            self.pool_locations.append(loc)
 
             if locked:
                 self.locked_locations.append(locid)
@@ -279,7 +282,8 @@ class ListInfo:
         shop_name = raw_shop["location"]["shop"]
         shop_base_name = shop_display_name.split(" (")[0] # this is a hack until there are heirarchical shops
 
-        metadata = raw_shop.get("metadata", None)
+        metadata = raw_shop.get("metadata", {})
+        metadata["shops"] = True
         access_info = self.json_parser.parse_location_access_info(raw_shop)
 
         shop_locs = self.per_shop_locations[shop_display_name]

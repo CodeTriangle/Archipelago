@@ -12,3 +12,5 @@ events_data = {{events_data | emit_list("location") }}
 events_dict = { location.name: location for location in events_data }
 
 locked_locations = {{ locked_locations | emit_set("constant") }}
+
+pool_locations = {{ pool_locations | emit_list("location_ref") }}
