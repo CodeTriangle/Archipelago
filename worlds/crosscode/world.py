@@ -348,9 +348,9 @@ class CrossCodeWorld(World):
                         condition_satisfied(self.player, shop.access.cond, None, self.logic_dict) if shop.access.cond else None
                     )
 
-                if self.options.shop_send_mode == ShopSendMode.option_per_slot:
-                    for data in self.world_data.per_shop_locations[shop_name].values():
-                        self.add_location(data, region)
+                    if self.options.shop_send_mode == ShopSendMode.option_per_slot:
+                        for data in self.world_data.per_shop_locations[shop_name].values():
+                            self.add_location(data, region)
 
         if self.options.shop_send_mode.value == ShopSendMode.option_per_item_type:
             for data in self.world_data.global_shop_locations.values():
