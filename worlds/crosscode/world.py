@@ -24,7 +24,7 @@ from .types.world import WorldData
 from .types.regions import RegionsData
 from .types.metadata import IncludeOptions
 from .types.pools import Pools
-from .options import CrossCodeOptions, ShopSendMode, StartWithDiscs, ProgressiveAreaUnlocks, option_groups
+from .options import CrossCodeOptions, ShopReceiveMode, ShopSendMode, StartWithDiscs, ProgressiveAreaUnlocks, option_groups
 
 cclogger = logging.getLogger(__name__)
 
@@ -247,6 +247,14 @@ class CrossCodeWorld(World):
         self.required_items.update(self.pools.item_pools["required"])
         self.required_items.update(self.pools.item_pools["equipChests"])
 
+        if self.options.shop_rando.value:
+            if self.options.shop_receive_mode == ShopReceiveMode.option_per_item_type:
+                self.required_items.update(self.world_data.shop_unlock_by_id.values())
+            if self.options.shop_receive_mode == ShopReceiveMode.option_per_shop:
+                self.required_items.update(self.world_data.shop_unlock_by_shop.values())
+            if self.options.shop_receive_mode == ShopReceiveMode.option_per_slot:
+                self.required_items.update(self.world_data.shop_unlock_by_shop_and_id.values())
+
         if self.options.quest_rando.value:
             self.required_items.update(self.pools.item_pools["equipQuests"])
 
@@ -306,7 +314,11 @@ class CrossCodeWorld(World):
             "variable_definitions": self.world_data.variable_definitions,
             "keyrings": self.world_data.keyring_items if self.options.keyrings.value else set(),
             "item_progressive_replacements": self.pools.item_progressive_replacements,
-            "chest_clearance_levels": {}
+            "chest_clearance_levels": {},
+            "shop_receive_mode": self.options.shop_receive_mode.value,
+            "shop_unlock_by_id": self.world_data.shop_unlock_by_id,
+            "shop_unlock_by_shop": self.world_data.shop_unlock_by_shop,
+            "shop_unlock_by_shop_and_id": self.world_data.shop_unlock_by_shop_and_id,
         }
 
     def add_location(self, data: LocationData, region: Region):

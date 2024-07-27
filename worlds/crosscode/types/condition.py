@@ -5,6 +5,8 @@ from dataclasses import field, dataclass
 from BaseClasses import CollectionState
 from ..options import ShopReceiveMode
 
+from .items import ItemData
+
 class LogicDict(typing.TypedDict):
     mode: str
     variables: dict[str, list[str]]
@@ -13,6 +15,9 @@ class LogicDict(typing.TypedDict):
     item_progressive_replacements: dict[str, list[tuple[str, int]]]
     chest_clearance_levels: dict[int, str]
     shop_receive_mode: int
+    shop_unlock_by_id: dict[int, ItemData]
+    shop_unlock_by_shop: dict[str, ItemData]
+    shop_unlock_by_shop_and_id: dict[tuple[str, int], ItemData]
 
 class Condition(abc.ABC):
     @abc.abstractmethod
@@ -126,9 +131,12 @@ class ShopSlotCondition(Condition):
     item_id: int
 
     def satisfied(self, state: CollectionState, player: int, location: int | None, args: LogicDict) -> bool:
-        # if args["shop_receive_mode"] == ShopReceiveMode.option_per_item_type:
-        #     pass
-        # return state.has(self.location_event_name, player)
+        if args["shop_receive_mode"] == ShopReceiveMode.option_per_item_type:
+            return state.has(args["shop_unlock_by_id"][self.item_id].name, player)
+        if args["shop_receive_mode"] == ShopReceiveMode.option_per_shop:
+            return state.has(args["shop_unlock_by_shop"][self.shop_name].name, player)
+        if args["shop_receive_mode"] == ShopReceiveMode.option_per_slot:
+            return state.has(args["shop_unlock_by_shop_and_id"][self.shop_name, self.item_id].name, player)
         return True
 
 __all__ = [

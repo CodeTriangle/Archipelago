@@ -17,7 +17,7 @@ dungeon_unlocks = [
 ]
 
 class TestProgressiveAreasOverworld(CrossCodeTestBase):
-    options = { "progressive_area_unlocks": "overworld" }
+    options = { "start_with_green_leaf_shade": False, "progressive_area_unlocks": "overworld", }
 
     def test_overworld_items_are_progressive(self):
         local_overworld_area_unlocks = self.get_items_by_name("Progressive Overworld Area Unlock")

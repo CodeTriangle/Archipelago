@@ -196,6 +196,9 @@ class FileGenerator:
             shop_data=self.lists.shop_data,
             per_shop_locations=self.lists.per_shop_locations,
             global_shop_locations=self.lists.global_shop_locations,
+            shop_unlock_by_id=self.lists.shop_unlock_by_id,
+            shop_unlock_by_shop=self.lists.shop_unlock_by_shop,
+            shop_unlock_by_shop_and_id=self.lists.shop_unlock_by_shop_and_id,
             **self.common_args
         )
 

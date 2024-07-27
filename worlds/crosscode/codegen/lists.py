@@ -319,7 +319,7 @@ class ListInfo:
 
             by_shop_and_id_name = f"{slot_location_name} Unlock"
             by_shop_and_id_item = self.__add_shop_unlock_item(by_shop_and_id_name)
-            self.shop_unlock_by_shop[shop_name] = by_shop_and_id_item
+            self.shop_unlock_by_shop_and_id[shop_name, item_id] = by_shop_and_id_item
 
             if global_location is None:
                 item_type_location_name = f"Global {item_name} Slot"
