@@ -587,6 +587,20 @@ class CrossCodeWorld(World):
             key = self.world_data.progressive_items[name].combo_id
             prog_chains[key] = [data.combo_id for data in self.pools.progressive_chains[name]]
 
+        if self.options.shop_send_mode.value == ShopSendMode.option_per_item_type:
+            shop_send_mode_string = "itemType"
+        else:
+            shop_send_mode_string = "slot"
+
+        if self.options.shop_receive_mode.value == ShopReceiveMode.option_per_item_type:
+            shop_receive_mode_string = "itemType"
+        elif self.options.shop_receive_mode.value == ShopReceiveMode.option_per_shop:
+            shop_receive_mode_string = "shop"
+        elif self.options.shop_receive_mode.value == ShopReceiveMode.option_per_slot:
+            shop_receive_mode_string = "slot"
+        else:
+            shop_receive_mode_string = "none"
+
         return {
             "mode": self.logic_mode,
             "dataVersion": self.world_data.data_version,
@@ -600,6 +614,8 @@ class CrossCodeWorld(World):
                 "hiddenQuestObfuscationLevel": self.options.hidden_quest_obfuscation_level.current_key,
                 "questDialogHints": self.options.quest_dialog_hints.value,
                 "progressiveChains": prog_chains,
+                "shopSendMode": shop_send_mode_string,
+                "shopReceiveMode": shop_receive_mode_string,
                 "shopDialogHints": self.options.shop_dialog_hints.value,
                 "chestClearanceLevels": self.logic_dict["chest_clearance_levels"],
             }

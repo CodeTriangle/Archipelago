@@ -109,6 +109,8 @@ class ShopSendMode(Choice):
     clears a separate check than purchasing a Sandwich in Bergen Village.
     """
 
+    display_name = "Shop Send Mode"
+
     option_per_item_type = 1
     option_per_slot = 3
 
@@ -125,6 +127,8 @@ class ShopReceiveMode(Choice):
     [Per Slot] A check is added for each item slot in each shop which unlocks the ability to purchase that item from
     that shop (this may lead to tedious playthroughs).
     """
+
+    display_name = "Shop Receive Mode"
 
     option_none = 0
     option_per_item_type = 1
@@ -490,6 +494,15 @@ option_groups: list[OptionGroup] = [
             HiddenQuestRewardMode,
             HiddenQuestObfuscationLevel,
             QuestDialogHints,
+        ]
+    ),
+    OptionGroup(
+        name="Shops",
+        options=[
+            ShopRando,
+            ShopDialogHints,
+            ShopSendMode,
+            ShopReceiveMode
         ]
     ),
     OptionGroup(

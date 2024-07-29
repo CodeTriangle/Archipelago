@@ -228,6 +228,20 @@ class FileGenerator:
         data_out: ExportInfo = {
             "items": defaultdict(lambda: defaultdict(dict)), # type: ignore
             "quests": defaultdict(dict),
+            "shops": {
+                "locations": {
+                    "global": { item_id: data.code for item_id, data in self.lists.global_shop_locations.items() },
+                    "perShop": defaultdict(dict),
+                },
+                "unlocks": {
+                    "byId": {
+                        item_id: data.combo_id
+                        for item_id, data in self.lists.shop_unlock_by_id.items()
+                    },
+                    "byShop": {},
+                    "byShopAndId": defaultdict(dict)
+                },
+            }
         }
 
         def get_codes(name: str) -> list[int]:
@@ -288,6 +302,17 @@ class FileGenerator:
 
             room = data_out["quests"]
             room[quest_id] = { "mwids": codes }
+
+        for shop_name, items in self.lists.per_shop_locations.items():
+            data_out["shops"]["locations"]["perShop"][self.lists.shop_data[shop_name].internal_name].update(
+                { item_id: data.code for item_id, data in items.items() }
+            )
+
+        for shop_name, data in self.lists.shop_unlock_by_shop.items():
+            data_out["shops"]["unlocks"]["byShop"][shop_name] = data.combo_id
+
+        for (shop_name, item_id), data in self.lists.shop_unlock_by_shop_and_id.items():
+            data_out["shops"]["unlocks"]["byShopAndId"][shop_name][item_id] = data.combo_id
 
         try:
             os.mkdir(self.data_out_dir)
