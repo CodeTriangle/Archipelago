@@ -10,7 +10,7 @@ from BaseClasses import ItemClassification
 from .context import Context
 from .util import BASE_ID, RESERVED_ITEM_IDS, get_item_classification
 
-from ..types.items import ItemData, ProgressiveChainEntry, ProgressiveItemChain, SingleItemData
+from ..types.items import ItemData, ProgressiveChainEntry, ProgressiveItemChain, ProgressiveItemChainSingle, ProgressiveItemChainMulti, ProgressiveItemSubchain, SingleItemData
 from ..types.locations import AccessInfo, Condition
 from ..types.regions import RegionConnection, RegionsData
 from ..types.condition import ChestKeyCondition, ItemCondition, LocationCondition, QuestCondition, RegionCondition, AnyElementCondition, \
@@ -237,18 +237,7 @@ class JsonParser:
             return self.parse_item_reward(info)
         raise RuntimeError(f"Error parsing reward {raw}: unrecognized type")
 
-    def parse_progressive_chain(self, name: str, raw: dict[str, typing.Any]) -> ProgressiveItemChain:
-        """
-        Parse a progressive item chain into a list of item chain entries.
-        """
-        display_name = raw.get("displayName", None)
-        if not isinstance(display_name, str):
-            raise JsonParserError(raw, display_name, "progressive chain", f"Need string display name for chain {name}")
-
-        raw_items = raw.get("items", None)
-        if not isinstance(raw_items, list):
-            raise JsonParserError(raw, raw_items, "progressive chain", f"Need list of items for chain {name}")
-
+    def __parse_progressive_itemlist(self, raw_items: list[dict[str, typing.Any]]) -> list[ProgressiveChainEntry]:
         items = []
         for entry in raw_items:
             if "item" not in entry:
@@ -261,10 +250,42 @@ class JsonParser:
                 metadata=metadata,
             ))
 
-        return ProgressiveItemChain(
-            display_name=display_name,
-            items=items,
-        )
+        return items
+
+    def __parse_progressive_subchain(self, raw: list[dict[str, typing.Any]]) -> list[ProgressiveItemSubchain]:
+        subchains = []
+
+        for entry in raw:
+            metadata = entry.get("metadata", None)
+            itemlist = entry.get("content", None)
+            if type(itemlist) != list:
+                raise JsonParserError(raw, itemlist, "progressive subchain", f"Need a list of item entries")
+
+            subchains.append(ProgressiveItemSubchain(metadata, self.__parse_progressive_itemlist(itemlist)))
+
+        return subchains
+
+    def parse_progressive_chain(self, name: str, raw: dict[str, typing.Any]) -> ProgressiveItemChain:
+        display_name = raw.get("displayName", None)
+        if type(display_name) != str:
+            raise JsonParserError(raw, display_name, "progressive chain", f"Need string display name for chain {name}")
+
+        raw_items = raw.get("items", None)
+        if type(raw_items) != list:
+            raise JsonParserError(raw, raw_items, "progressive chain", f"Need list of items for chain {name}")
+
+        if raw.get("multi", False):
+            return ProgressiveItemChainMulti(
+                display_name=display_name,
+                subchains=self.__parse_progressive_subchain(raw_items)
+            )
+        else:
+            return ProgressiveItemChainSingle(
+                display_name=display_name,
+                items=self.__parse_progressive_itemlist(raw_items),
+            )
+
+
 
     def parse_region_connection(self, raw: dict[str, typing.Any]) -> RegionConnection:
         """
