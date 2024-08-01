@@ -194,7 +194,6 @@ class ProgressiveAreaUnlocks(Choice):
     [Split] both dungeons and overworld areas are unlocked progressively in separate progressive chains.
     [Combined] both dungeons and overworld areas are unlocked progressively from the same progressive chain.
     """
-
     display_name = "Progressive Area Unlocks"
 
     # treat this option as a bitmask
@@ -212,6 +211,13 @@ class ProgressiveAreaUnlocks(Choice):
     option_combined = COMBINE_POOLS | DUNGEONS | OVERWORLD
 
     default = 0
+
+class ProgressiveEquipment(Toggle):
+    """
+    If enabled, equipment will be progressive, sorted into different categories according to playstyle depending on
+    which of the other location-adding options are enabled.
+    """
+    display_name = "Progressive Equipment"
 
 class Reachability(Choice):
     """
@@ -463,6 +469,7 @@ class CrossCodeOptions(PerGameCommonOptions):
     start_with_pet: StartWithPet
 
     progressive_area_unlocks: ProgressiveAreaUnlocks
+    progressive_equipment: ProgressiveEquipment
     keyrings: Keyrings
 
     shade_shuffle: ShadeShuffle

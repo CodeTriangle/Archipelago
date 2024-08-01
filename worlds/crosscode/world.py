@@ -125,9 +125,11 @@ class CrossCodeWorld(World):
         classes to check for inclusion.
         """
         return {
-            "questRandoOnly": bool(self.options.quest_rando.value),
-            "shops": bool(self.options.shop_rando.value),
-            "shopSendMode": self.options.shop_send_mode.value
+            "trade": False,
+            "shop": False,
+            "arena": False,
+            "chest": True,
+            "quest": bool(self.options.quest_rando.value),
         }
 
     def create_location(self, location: str, event_from_location: bool = False) -> CrossCodeLocation:
@@ -232,6 +234,13 @@ class CrossCodeWorld(World):
 
         green_leaf_shade_name = "Green Leaf Shade"
 
+        self.required_items = Counter()
+        self.required_items.update(self.pools.item_pools["required"])
+        self.required_items.update(self.pools.item_pools["equipChests"])
+
+        if self.options.quest_rando.value:
+            self.required_items.update(self.pools.item_pools["equipQuests"])
+
         area_unlocks = self.options.progressive_area_unlocks.value
         if area_unlocks & ProgressiveAreaUnlocks.COMBINE_POOLS:
             self.enabled_chain_names.add("areaItemsAll")
@@ -243,6 +252,31 @@ class CrossCodeWorld(World):
                 self.enabled_chain_names.add("areaItemsOverworld")
                 green_leaf_shade_name = "Progressive Overworld Area Unlock"
 
+        if self.options.progressive_equipment.value:
+            self.enabled_chain_names |= {
+                'headsAllPurpose',
+                'headsDefensive',
+                'headsOffensive',
+                'headsSpecial',
+                'heads',
+                'armsAllPurpose',
+                'armsDefensive',
+                'armsMelee',
+                'armsRanged',
+                'armsSpecial',
+                'armsClassBased',
+                'arms',
+                'torsosAllPurpose',
+                'torsosDefensive',
+                'torsosMixed',
+                'torsosOffensive',
+                'torsos',
+                'torsosClassBased',
+                'legsAllPurpose',
+                'legsDefensive',
+                'legsOffensive',
+                'legs'
+            }
         self.required_items = Counter()
         self.required_items.update(self.pools.item_pools["required"])
         self.required_items.update(self.pools.item_pools["equipChests"])

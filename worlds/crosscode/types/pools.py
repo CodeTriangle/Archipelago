@@ -4,7 +4,7 @@ import itertools
 
 from .metadata import IncludeOptions
 from .locations import LocationData
-from .items import ItemData, ItemPoolEntry, ProgressiveChainEntry
+from .items import ItemData, ItemPoolEntry, ProgressiveChainEntry, ProgressiveItemChain, ProgressiveItemChainMulti, ProgressiveItemChainSingle
 from .world import WorldData
 
 
@@ -62,18 +62,18 @@ class Pools:
 
         weights = {}
 
-        for loc in world_data.pool_locations:
-            if self.__should_include_location(loc):
+        for loc in world_data.locations_dict.values():
+            if self.__should_include(loc.metadata):
                 self.location_pool.add(loc)
 
         for ev in world_data.events_dict.values():
-            if self.__should_include_location(ev):
+            if self.__should_include(ev.metadata):
                 self.event_pool.add(ev)
 
         for name, pool in world_data.item_pools_template.items():
             counter = defaultdict(lambda: 0)
             for entry in pool:
-                if self.__should_include_item(entry):
+                if self.__should_include(entry.metadata):
                     counter[entry.item] += entry.quantity
 
             self.item_pools[name] = counter
@@ -85,16 +85,31 @@ class Pools:
 
         for chain_name, chain in world_data.progressive_chains.items():
             self.progressive_chains[chain_name] = item_list = []
-            for idx, entry in enumerate(chain.items):
-                if self.__should_include_chain_entry(entry):
+            items = self.locate_chain(chain)
+            for idx, entry in enumerate(items):
+                if self.__should_include(entry.metadata):
                     item_list.append(entry.item)
                     prog_item = world_data.progressive_items[chain_name].name
                     self.item_progressive_replacements[entry.item.name].append((prog_item, idx + 1))
 
-    def __should_include_location(self, loc: LocationData) -> bool:
+    def locate_chain(self, chain: ProgressiveItemChain) -> list[ProgressiveChainEntry]:
+        if isinstance(chain, ProgressiveItemChainSingle):
+            return chain.items
+
+        if isinstance(chain, ProgressiveItemChainMulti):
+            for subchain in chain.subchains:
+                if subchain.metadata is None:
+                    return subchain.chain
+                if self.__should_include(subchain.metadata):
+                    return subchain.chain
+
+            return []
+
+    def __should_include(self, metadata: IncludeOptions | None) -> bool:
         # Technically the class allows metadata to be None.
         # So we'll assign a local variable and use that instead.
-        metadata = loc.metadata if loc.metadata is not None else {}
+        if metadata is None:
+            return True
 
         # This is where we check the item conditions.
         # These are manually coded for now.
@@ -103,32 +118,14 @@ class Pools:
 
         result = True
 
-        if metadata.get("questRandoOnly", False):
-            result &= self.options["questRandoOnly"]
-        if metadata.get("shops", False):
-            result &= self.options["shops"]
-
-        return result
-
-    def __should_include_item(self, entry: ItemPoolEntry) -> bool:
-        # See the comments for the location data for the structure of
-        # this section.
-        metadata = entry.metadata if entry.metadata is not None else {}
-
-        if metadata.get("shops", False):
-            return self.options["shops"] and metadata["shopSendMode"] == self.options["shopSendMode"]
-
-        return True
-
-    def __should_include_chain_entry(self, entry: ProgressiveChainEntry) -> bool:
-        # See the comments for the location data for the structure of
-        # this section.
-        metadata = entry.metadata if entry.metadata is not None else {}
-
-        if metadata.get("questRandoOnly", False):
-            return self.options["questRandoOnly"]
-
-        return True
+        if metadata.get("trade", False):
+            result &= self.options["trade"]
+        if metadata.get("shop", False):
+            result &= self.options["shop"]
+        if metadata.get("chest", False):
+            result &= self.options["chest"]
+        if metadata.get("quest", False):
+            result &= self.options["quest"]
 
     def pull_items_from_pool(self, name: str, rand: Random, k=1) -> list[ItemData]:
         population, weights = self._item_pool_lists[name]

@@ -12,6 +12,8 @@ import json
 import jinja2
 
 from .jinja import CrossCodeJinjaExtension
+from ..types.regions import RegionsData
+from ..types.items import ProgressiveItemChain, ProgressiveItemChainMulti, ProgressiveItemChainSingle, ProgressiveItemSubchain
 
 from ..types.json_data import ExportInfo
 from ..types.regions import RegionsData
@@ -150,6 +152,10 @@ class FileGenerator:
 
         item_pools_complete = template.render(
             prog_chains=self.lists.progressive_chains,
+            prog_chain_types={
+                name: "multi" if isinstance(chain, ProgressiveItemChainMulti) else "single"
+                for name, chain in self.lists.progressive_chains.items()
+            },
             prog_items=self.lists.progressive_items,
             **self.common_args
         )

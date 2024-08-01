@@ -108,7 +108,6 @@ item_pools_template: dict[str, list[ItemPoolEntry]] = {
         ItemPoolEntry(item=items_dict['Disciple Gloves', 1], quantity=1),
         ItemPoolEntry(item=items_dict["Hunter's Bolt", 1], quantity=1),
         ItemPoolEntry(item=items_dict['Adept Gloves', 1], quantity=1),
-        ItemPoolEntry(item=items_dict['Infinity Spiral Drill', 1], quantity=1),
         ItemPoolEntry(item=items_dict["Explorer's Cap", 1], quantity=1),
         ItemPoolEntry(item=items_dict["Miner's Helmet", 1], quantity=1),
         ItemPoolEntry(item=items_dict['Scarecrown', 1], quantity=1),
