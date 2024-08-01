@@ -62,7 +62,7 @@ class Pools:
 
         weights = {}
 
-        for loc in world_data.locations_dict.values():
+        for loc in world_data.pool_locations:
             if self.__should_include(loc.metadata):
                 self.location_pool.add(loc)
 
@@ -126,6 +126,8 @@ class Pools:
             result &= self.options["chest"]
         if metadata.get("quest", False):
             result &= self.options["quest"]
+
+        return result
 
     def pull_items_from_pool(self, name: str, rand: Random, k=1) -> list[ItemData]:
         population, weights = self._item_pool_lists[name]
