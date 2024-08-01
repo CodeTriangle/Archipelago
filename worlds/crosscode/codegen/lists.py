@@ -54,6 +54,8 @@ class ListInfo:
     progressive_chains: dict[str, ProgressiveItemChain]
     progressive_items: dict[str, ItemData]
 
+    descriptions: dict[int, dict[str, str]]
+
     def __init__(self, ctx: Context):
         self.ctx = ctx
 
@@ -94,6 +96,8 @@ class ListInfo:
 
         self.progressive_chains = {}
         self.progressive_items = {}
+
+        self.descriptions = {}
 
         self.variable_definitions = defaultdict(dict)
 
@@ -251,6 +255,10 @@ class ListInfo:
         single_item, item  = self.json_parser.parse_item_data(name, raw_item)
         self.single_items_dict[name] = single_item
         self.items_dict[name, 1] = item
+
+        if "description" in raw_item:
+            self.descriptions[item.combo_id] = raw_item["description"]
+
         return single_item, item
 
     def __add_shop_unlock_item(self, name: str) -> ItemData:
@@ -291,6 +299,9 @@ class ListInfo:
         by_shop_name =  f"{shop_base_name} Unlock"
         by_shop_item = self.__add_shop_unlock_item(by_shop_name)
         self.shop_unlock_by_shop[shop_name] = by_shop_item
+        self.descriptions[by_shop_item.combo_id] = {
+            "en_US": f"Unlocks all item slots in the shop {shop_base_name}."
+        }
 
         for item_name in raw_shop["slots"]:
             item_data = self.ctx.rando_data["items"][item_name]
@@ -320,6 +331,10 @@ class ListInfo:
             by_shop_and_id_name = f"{slot_location_name} Unlock"
             by_shop_and_id_item = self.__add_shop_unlock_item(by_shop_and_id_name)
             self.shop_unlock_by_shop_and_id[shop_name, item_id] = by_shop_and_id_item
+
+            self.descriptions[by_shop_and_id_item.combo_id] = {
+                "en_US": f"Unlocks the slot selling {item_name} in {shop_base_name}"
+            }
 
             if global_location is None:
                 item_type_location_name = f"Global {item_name} Slot"
@@ -352,6 +367,10 @@ class ListInfo:
                 self.global_shop_locations[item_id] = global_location
 
                 self.locations_data[global_location.name] = global_location
+
+                self.descriptions[by_id_item.combo_id] = {
+                    "en_US": f"Unlocks slots selling {item_name} in all shops."
+                }
 
             self.global_slot_region_conditions_list[item_id].extend(
                 [ RegionCondition(mode, name, False) for mode, name in access_info.region.items() ]

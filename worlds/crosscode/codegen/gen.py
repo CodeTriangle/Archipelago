@@ -236,7 +236,11 @@ class FileGenerator:
             "quests": defaultdict(dict),
             "shops": {
                 "locations": {
-                    "global": { item_id: data.code for item_id, data in self.lists.global_shop_locations.items() },
+                    "perItemType": {
+                        item_id: data.code
+                        for item_id, data in self.lists.global_shop_locations.items()
+                        if data.code is not None
+                    },
                     "perShop": defaultdict(dict),
                 },
                 "unlocks": {
@@ -247,7 +251,8 @@ class FileGenerator:
                     "byShop": {},
                     "byShopAndId": defaultdict(dict)
                 },
-            }
+            },
+            "descriptions": self.lists.descriptions
         }
 
         def get_codes(name: str) -> list[int]:
@@ -311,7 +316,7 @@ class FileGenerator:
 
         for shop_name, items in self.lists.per_shop_locations.items():
             data_out["shops"]["locations"]["perShop"][self.lists.shop_data[shop_name].internal_name].update(
-                { item_id: data.code for item_id, data in items.items() }
+                { item_id: data.code for item_id, data in items.items() if data.code is not None }
             )
 
         for shop_name, data in self.lists.shop_unlock_by_shop.items():
