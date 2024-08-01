@@ -290,6 +290,10 @@ class ListInfo:
         shop_name = raw_shop["location"]["shop"]
         shop_base_name = shop_display_name.split(" (")[0] # this is a hack until there are heirarchical shops
 
+        dbentry = self.ctx.database["shops"][shop_name]
+
+        real_name = dbentry["name"]["en_US"]
+
         metadata = raw_shop.get("metadata", {})
         metadata["shops"] = True
         access_info = self.json_parser.parse_location_access_info(raw_shop)
@@ -300,7 +304,7 @@ class ListInfo:
         by_shop_item = self.__add_shop_unlock_item(by_shop_name)
         self.shop_unlock_by_shop[shop_name] = by_shop_item
         self.descriptions[by_shop_item.combo_id] = {
-            "en_US": f"Unlocks all item slots in the shop {shop_base_name}."
+            "en_US": f"Unlocks \\c[3]all item slots\\c[0] in the shop \\c[3]{real_name}\\c[0]."
         }
 
         for item_name in raw_shop["slots"]:
@@ -333,7 +337,7 @@ class ListInfo:
             self.shop_unlock_by_shop_and_id[shop_name, item_id] = by_shop_and_id_item
 
             self.descriptions[by_shop_and_id_item.combo_id] = {
-                "en_US": f"Unlocks the slot selling {item_name} in {shop_base_name}"
+                "en_US": f"Unlocks the slot selling \\c[3]{item_name}\\c[0] in \\c[3]{real_name}\\c[0]."
             }
 
             if global_location is None:
@@ -369,7 +373,7 @@ class ListInfo:
                 self.locations_data[global_location.name] = global_location
 
                 self.descriptions[by_id_item.combo_id] = {
-                    "en_US": f"Unlocks slots selling {item_name} in all shops."
+                    "en_US": f"Unlocks slots selling \\c[3]{item_name}\\c[0] in \\c[3]all shops\\c[0]."
                 }
 
             self.global_slot_region_conditions_list[item_id].extend(
