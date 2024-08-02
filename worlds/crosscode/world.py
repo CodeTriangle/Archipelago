@@ -119,6 +119,32 @@ class CrossCodeWorld(World):
 
     enabled_chain_names: set[str]
 
+    _equip_chain_names = {
+        'headsAllPurpose',
+        'headsDefensive',
+        'headsOffensive',
+        'headsSpecial',
+        'heads',
+        'armsAllPurpose',
+        'armsDefensive',
+        'armsMelee',
+        'armsRanged',
+        'armsSpecial',
+        'armsClassBased',
+        'arms',
+        'torsosAllPurpose',
+        'torsosDefensive',
+        'torsosMixed',
+        'torsosOffensive',
+        'torsos',
+        'torsosClassBased',
+        'legsAllPurpose',
+        'legsDefensive',
+        'legsOffensive',
+        'legs'
+    }
+
+
     def get_include_options(self) -> IncludeOptions:
         """
         The metadata dict is a dict that will be matched against the `metadata` fields in the ItemPoolEntry and Location
@@ -126,7 +152,7 @@ class CrossCodeWorld(World):
         """
         return {
             "trade": False,
-            "shop": False,
+            "shop": bool(self.options.shop_rando.value),
             "arena": False,
             "chest": True,
             "quest": bool(self.options.quest_rando.value),
@@ -253,33 +279,13 @@ class CrossCodeWorld(World):
                 green_leaf_shade_name = "Progressive Overworld Area Unlock"
 
         if self.options.progressive_equipment.value:
-            self.enabled_chain_names |= {
-                'headsAllPurpose',
-                'headsDefensive',
-                'headsOffensive',
-                'headsSpecial',
-                'heads',
-                'armsAllPurpose',
-                'armsDefensive',
-                'armsMelee',
-                'armsRanged',
-                'armsSpecial',
-                'armsClassBased',
-                'arms',
-                'torsosAllPurpose',
-                'torsosDefensive',
-                'torsosMixed',
-                'torsosOffensive',
-                'torsos',
-                'torsosClassBased',
-                'legsAllPurpose',
-                'legsDefensive',
-                'legsOffensive',
-                'legs'
-            }
+            self.enabled_chain_names |= self._equip_chain_names
+
         self.required_items = Counter()
         self.required_items.update(self.pools.item_pools["required"])
-        self.required_items.update(self.pools.item_pools["equipChests"])
+
+        for name in self._equip_chain_names:
+            self.required_items.update(self.pools.item_pools[f"pool:{name}"])
 
         if self.options.shop_rando.value:
             if self.options.shop_receive_mode == ShopReceiveMode.option_per_item_type:
@@ -288,9 +294,6 @@ class CrossCodeWorld(World):
                 self.required_items.update(self.world_data.shop_unlock_by_shop.values())
             if self.options.shop_receive_mode == ShopReceiveMode.option_per_slot:
                 self.required_items.update(self.world_data.shop_unlock_by_shop_and_id.values())
-
-        if self.options.quest_rando.value:
-            self.required_items.update(self.pools.item_pools["equipQuests"])
 
         if self.options.vt_shade_lock.value in [1, 2]:
             self.variables["vtShadeLock"].append("shades")

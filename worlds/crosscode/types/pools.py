@@ -84,13 +84,18 @@ class Pools:
             self._item_pool_lists[name] = (list(pool.keys()), weights[name])
 
         for chain_name, chain in world_data.progressive_chains.items():
-            self.progressive_chains[chain_name] = item_list = []
+            item_list: list[ItemData] = []
+            self.progressive_chains[chain_name] = item_list
             items = self.locate_chain(chain)
             for idx, entry in enumerate(items):
                 if self.__should_include(entry.metadata):
                     item_list.append(entry.item)
                     prog_item = world_data.progressive_items[chain_name].name
                     self.item_progressive_replacements[entry.item.name].append((prog_item, idx + 1))
+
+            self.item_pools[f"pool:{chain_name}"] = { item: 1 for item in item_list }
+
+
 
     def locate_chain(self, chain: ProgressiveItemChain) -> list[ProgressiveChainEntry]:
         if isinstance(chain, ProgressiveItemChainSingle):
