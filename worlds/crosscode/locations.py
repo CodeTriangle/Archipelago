@@ -352,6 +352,8 @@ locations_data = [
     LocationData(code=3235824343, name="So'najiz Temple - Fast Conveyance", area='wave-dng', access=AccessInfo(region={'linear': '26', 'open': 'open14.1'}, cond=[ChestKeyCondition(default_level='Default')])),
     LocationData(code=3235824344, name="So'najiz Temple - Flaming Conveyance", area='wave-dng', access=AccessInfo(region={'linear': '26.5', 'open': 'open14.2'}, cond=[ChestKeyCondition(default_level='Default')])),
     LocationData(code=3235824077, name='Bergen Village - Omni Gilders Basement Left', metadata={'quest': True}, access=AccessInfo(region={'linear': '4', 'open': 'open4.1'}, cond=[OrCondition(subconditions=[ItemCondition(item_name='Heat', amount=1), ItemCondition(item_name='Mine Key', amount=1)]), QuestCondition(quest_name='The Legendary Bunny'), ChestKeyCondition(default_level='Bronze')])),
+    LocationData(code=3235824785, name='Bergen Trail - Horncave', metadata={'quest': True}, access=AccessInfo(region={'linear': '3', 'open': 'open3'}, cond=[QuestCondition(quest_name='Kidding Around'), ChestKeyCondition(default_level='Default')])),
+    LocationData(code=3235824786, name="Gaia's Garden - Chilled Den", metadata={'quest': True}, access=AccessInfo(region={'linear': '10', 'open': 'open10'}, cond=[ChestKeyCondition(default_level='Silver')])),
     LocationData(code=3235824345, name='Talatu Introductions', access=AccessInfo(region={'linear': '3', 'open': 'open3'})),
     LocationData(code=3235824346, name='Schneider Guild Pass', access=AccessInfo(region={'linear': '3.1', 'open': 'open3.1'})),
     LocationData(code=3235824347, name='Bergen Mine Guard', access=AccessInfo(region={'linear': '4', 'open': 'open4.1'})),
@@ -1190,6 +1192,8 @@ locked_locations = {
     3235824343,
     3235824344,
     3235824077,
+    3235824785,
+    3235824786,
 }
 
 pool_locations = [
@@ -1538,6 +1542,8 @@ pool_locations = [
     locations_dict["So'najiz Temple - Fast Conveyance"],
     locations_dict["So'najiz Temple - Flaming Conveyance"],
     locations_dict['Bergen Village - Omni Gilders Basement Left'],
+    locations_dict['Bergen Trail - Horncave'],
+    locations_dict["Gaia's Garden - Chilled Den"],
     locations_dict['Talatu Introductions'],
     locations_dict['Schneider Guild Pass'],
     locations_dict['Bergen Mine Guard'],
