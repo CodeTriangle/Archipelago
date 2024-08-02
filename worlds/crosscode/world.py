@@ -262,10 +262,6 @@ class CrossCodeWorld(World):
 
         self.required_items = Counter()
         self.required_items.update(self.pools.item_pools["required"])
-        self.required_items.update(self.pools.item_pools["equipChests"])
-
-        if self.options.quest_rando.value:
-            self.required_items.update(self.pools.item_pools["equipQuests"])
 
         area_unlocks = self.options.progressive_area_unlocks.value
         if area_unlocks & ProgressiveAreaUnlocks.COMBINE_POOLS:
