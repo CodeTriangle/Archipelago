@@ -123,7 +123,6 @@ class CrossCodeWorld(World):
         'headsAllPurpose',
         'headsDefensive',
         'headsOffensive',
-        'headsSpecial',
         'heads',
         'armsAllPurpose',
         'armsDefensive',

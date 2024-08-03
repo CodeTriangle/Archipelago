@@ -372,6 +372,29 @@ progressive_chains: dict[str, ProgressiveItemChain] = {
             ),
             ProgressiveItemSubchain(
                 metadata={
+                    'trade': False,
+                    'shop': True,
+                    'arena': True,
+                    'chest': True,
+                    'quest': True,
+                },
+                chain=[
+                    ProgressiveChainEntry(item=items_dict['Cooling Veil', 1]),
+                    ProgressiveChainEntry(item=items_dict['Furry Cap', 1]),
+                    ProgressiveChainEntry(item=items_dict['Proper Tophat', 1]),
+                    ProgressiveChainEntry(item=items_dict['Strawhat', 1]),
+                    ProgressiveChainEntry(item=items_dict["Miner's Helmet", 1]),
+                    ProgressiveChainEntry(item=items_dict['Dried Grass Hat', 1]),
+                    ProgressiveChainEntry(item=items_dict['Dented Crown', 1]),
+                    ProgressiveChainEntry(item=items_dict['Strawberry Hat', 1]),
+                    ProgressiveChainEntry(item=items_dict['Climate Cowl', 1]),
+                    ProgressiveChainEntry(item=items_dict['The Last Strawhat', 1]),
+                    ProgressiveChainEntry(item=items_dict["Dragon's Bandana", 1]),
+                    ProgressiveChainEntry(item=items_dict['Tranquil Earmuffs', 1]),
+                ]
+            ),
+            ProgressiveItemSubchain(
+                metadata={
                     'trade': True,
                     'shop': False,
                     'arena': True,
@@ -463,6 +486,27 @@ progressive_chains: dict[str, ProgressiveItemChain] = {
                     ProgressiveChainEntry(item=items_dict['Serene Bubble', 1]),
                     ProgressiveChainEntry(item=items_dict["Dragon's Bandana", 1]),
                     ProgressiveChainEntry(item=items_dict['Tranquil Earmuffs', 1]),
+                ]
+            ),
+            ProgressiveItemSubchain(
+                metadata={
+                    'trade': False,
+                    'shop': True,
+                    'arena': False,
+                    'chest': True,
+                    'quest': True,
+                },
+                chain=[
+                    ProgressiveChainEntry(item=items_dict['Cooling Veil', 1]),
+                    ProgressiveChainEntry(item=items_dict['Furry Cap', 1]),
+                    ProgressiveChainEntry(item=items_dict['Proper Tophat', 1]),
+                    ProgressiveChainEntry(item=items_dict['Strawhat', 1]),
+                    ProgressiveChainEntry(item=items_dict["Miner's Helmet", 1]),
+                    ProgressiveChainEntry(item=items_dict['Dried Grass Hat', 1]),
+                    ProgressiveChainEntry(item=items_dict['Dented Crown', 1]),
+                    ProgressiveChainEntry(item=items_dict['Strawberry Hat', 1]),
+                    ProgressiveChainEntry(item=items_dict['Climate Cowl', 1]),
+                    ProgressiveChainEntry(item=items_dict['The Last Strawhat', 1]),
                 ]
             ),
             ProgressiveItemSubchain(
@@ -1124,55 +1168,6 @@ progressive_chains: dict[str, ProgressiveItemChain] = {
                     ProgressiveChainEntry(item=items_dict['Scouting Visor', 1]),
                     ProgressiveChainEntry(item=items_dict['Furious Hothead', 1]),
                     ProgressiveChainEntry(item=items_dict['Trackwalker Visor', 1]),
-                ]
-            ),
-        ],
-    ),
-    "headsSpecial": ProgressiveItemChainMulti(
-        display_name="Special Heads",
-        subchains=[
-            ProgressiveItemSubchain(
-                metadata={
-                    'trade': False,
-                    'shop': True,
-                    'arena': True,
-                    'chest': True,
-                    'quest': True,
-                },
-                chain=[
-                    ProgressiveChainEntry(item=items_dict['Cooling Veil', 1]),
-                    ProgressiveChainEntry(item=items_dict['Furry Cap', 1]),
-                    ProgressiveChainEntry(item=items_dict['Proper Tophat', 1]),
-                    ProgressiveChainEntry(item=items_dict['Strawhat', 1]),
-                    ProgressiveChainEntry(item=items_dict["Miner's Helmet", 1]),
-                    ProgressiveChainEntry(item=items_dict['Dried Grass Hat', 1]),
-                    ProgressiveChainEntry(item=items_dict['Dented Crown', 1]),
-                    ProgressiveChainEntry(item=items_dict['Strawberry Hat', 1]),
-                    ProgressiveChainEntry(item=items_dict['Climate Cowl', 1]),
-                    ProgressiveChainEntry(item=items_dict['The Last Strawhat', 1]),
-                    ProgressiveChainEntry(item=items_dict["Dragon's Bandana", 1]),
-                    ProgressiveChainEntry(item=items_dict['Tranquil Earmuffs', 1]),
-                ]
-            ),
-            ProgressiveItemSubchain(
-                metadata={
-                    'trade': False,
-                    'shop': True,
-                    'arena': False,
-                    'chest': True,
-                    'quest': True,
-                },
-                chain=[
-                    ProgressiveChainEntry(item=items_dict['Cooling Veil', 1]),
-                    ProgressiveChainEntry(item=items_dict['Furry Cap', 1]),
-                    ProgressiveChainEntry(item=items_dict['Proper Tophat', 1]),
-                    ProgressiveChainEntry(item=items_dict['Strawhat', 1]),
-                    ProgressiveChainEntry(item=items_dict["Miner's Helmet", 1]),
-                    ProgressiveChainEntry(item=items_dict['Dried Grass Hat', 1]),
-                    ProgressiveChainEntry(item=items_dict['Dented Crown', 1]),
-                    ProgressiveChainEntry(item=items_dict['Strawberry Hat', 1]),
-                    ProgressiveChainEntry(item=items_dict['Climate Cowl', 1]),
-                    ProgressiveChainEntry(item=items_dict['The Last Strawhat', 1]),
                 ]
             ),
         ],
@@ -6464,7 +6459,6 @@ progressive_items: dict[str, ItemData] = {
     'headsAllPurpose': items_dict['Progressive All-Purpose Heads', 1],
     'headsDefensive': items_dict['Progressive Defensive Heads', 1],
     'headsOffensive': items_dict['Progressive Offensive Heads', 1],
-    'headsSpecial': items_dict['Progressive Special Heads', 1],
     'heads': items_dict['Progressive Heads', 1],
     'armsAllPurpose': items_dict['Progressive All-Purpose Arms', 1],
     'armsDefensive': items_dict['Progressive Defensive Arms', 1],
