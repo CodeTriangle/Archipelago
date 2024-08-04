@@ -288,7 +288,7 @@ class ListInfo:
 
     def __add_shop(self, shop_display_name: str, raw_shop: dict[str, typing.Any]):
         shop_name = raw_shop["location"]["shop"]
-        shop_base_name = shop_display_name.split(" (")[0] # this is a hack until there are heirarchical shops
+        shop_base_name = shop_display_name.split(" +")[0] # this is a hack until there are heirarchical shops
 
         dbentry = self.ctx.database["shops"][shop_name]
 
@@ -300,7 +300,7 @@ class ListInfo:
 
         shop_locs = self.per_shop_locations[shop_display_name]
 
-        by_shop_name =  f"{shop_base_name} Unlock"
+        by_shop_name =  f"Shop Unlock: {shop_base_name}"
         by_shop_item = self.__add_shop_unlock_item(by_shop_name)
         self.shop_unlock_by_shop[shop_name] = by_shop_item
         self.descriptions[by_shop_item.combo_id] = {
@@ -310,7 +310,7 @@ class ListInfo:
         for item_name in raw_shop["slots"]:
             item_data = self.ctx.rando_data["items"][item_name]
 
-            slot_location_name = f"{shop_display_name} - {item_name} Slot"
+            slot_location_name = f"Shop Slot: {item_name} ({shop_display_name})"
 
             locid = self.__get_or_allocate_location_id(slot_location_name)
 
@@ -332,7 +332,7 @@ class ListInfo:
 
             global_location = self.global_shop_locations.get(item_id, None)
 
-            by_shop_and_id_name = f"{slot_location_name} Unlock"
+            by_shop_and_id_name = f"Slot Unlock: {item_name} ({shop_display_name})"
             by_shop_and_id_item = self.__add_shop_unlock_item(by_shop_and_id_name)
             self.shop_unlock_by_shop_and_id[shop_name, item_id] = by_shop_and_id_item
 
@@ -341,7 +341,7 @@ class ListInfo:
             }
 
             if global_location is None:
-                item_type_location_name = f"Global {item_name} Slot"
+                item_type_location_name = f"Global Shop Slot: {item_name}"
 
                 locid = self.__get_cached_location_id(item_type_location_name)
 
@@ -365,7 +365,7 @@ class ListInfo:
                     ),
                 )
 
-                by_id_name = f"{item_type_location_name} Unlock"
+                by_id_name = f"Global Slot Unlock: {item_name}"
                 by_id_item = self.__add_shop_unlock_item(by_id_name)
                 self.shop_unlock_by_id[item_id] = by_id_item
                 self.global_shop_locations[item_id] = global_location
