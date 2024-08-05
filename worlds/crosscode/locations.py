@@ -352,6 +352,8 @@ locations_data = [
     LocationData(code=3235824343, name="So'najiz Temple - Fast Conveyance", area='wave-dng', access=AccessInfo(region={'linear': '26', 'open': 'open14.1'})),
     LocationData(code=3235824344, name="So'najiz Temple - Flaming Conveyance", area='wave-dng', access=AccessInfo(region={'linear': '26.5', 'open': 'open14.2'})),
     LocationData(code=3235824077, name='Bergen Village - Omni Gilders Basement Left (Bronze)', metadata={'questRandoOnly': True}, access=AccessInfo(region={'linear': '4', 'open': 'open4.1'}, clearance='Bronze', cond=[OrCondition(subconditions=[ItemCondition(item_name='Heat', amount=1), ItemCondition(item_name='Mine Key', amount=1)]), QuestCondition(quest_name='The Legendary Bunny')])),
+    LocationData(code=3235824522, name='Bergen Trail - Horncave', metadata={'questRandoOnly': True}, access=AccessInfo(region={'linear': '3', 'open': 'open3'}, cond=[QuestCondition(quest_name='Kidding Around')])),
+    LocationData(code=3235824523, name="Gaia's Garden - Chilled Den", metadata={'questRandoOnly': True}, access=AccessInfo(region={'linear': '10', 'open': 'open10'}, clearance='Silver')),
     LocationData(code=3235824345, name='Talatu Introductions', access=AccessInfo(region={'linear': '3', 'open': 'open3'})),
     LocationData(code=3235824346, name='Schneider Guild Pass', access=AccessInfo(region={'linear': '3.1', 'open': 'open3.1'})),
     LocationData(code=3235824347, name='Bergen Mine Guard', access=AccessInfo(region={'linear': '4', 'open': 'open4.1'})),
