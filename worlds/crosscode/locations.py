@@ -367,7 +367,7 @@ locations_data = [
     LocationData(code=3235824355, name="Ba'kii Shade Statue", access=AccessInfo(region={'linear': '12', 'open': 'open6'})),
     LocationData(code=3235824356, name="Zir'vitar Shade Statue", access=AccessInfo(region={'linear': '25', 'open': 'open13.2'}, cond=[ItemCondition(item_name='Wave', amount=1)])),
     LocationData(code=3235824357, name="Krys'kajo Shade Statue", access=AccessInfo(region={'linear': '30', 'open': 'open15.3'})),
-    LocationData(code=3235824358, name="So'najiz Shade Statue", access=AccessInfo(region={'linear': '27', 'open': 'open14.4'})),
+    LocationData(code=3235824358, name="So'najiz Shade Statue", access=AccessInfo(region={'linear': '27', 'open': 'open14.5'})),
     LocationData(code=3235824359, name='Rookie Harbor Shade', access=AccessInfo(region={'linear': '2', 'open': 'open2'})),
     LocationData(code=3235824360, name='Rookie Harbor Disc', access=AccessInfo(region={'linear': '2', 'open': 'open2'})),
     LocationData(code=3235824361, name='Rookie Harbor Post Mine', access=AccessInfo(region={'linear': '11', 'open': 'open4.8'})),
