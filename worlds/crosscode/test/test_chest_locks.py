@@ -6,7 +6,6 @@ class TestChestLocks(CrossCodeTestBase):
     options = { "chest_lock_rando": True }
 
     def get_no_keys_state(self) -> CollectionState:
-        super().setUp()
         all_state = self.multiworld.get_all_state(use_cache=False)
 
         # get the key items
