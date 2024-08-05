@@ -11,7 +11,7 @@ from .parse import JsonParser
 from .context import Context
 from .util import BASE_ID, DYNAMIC_ITEM_AREA_OFFSET, RESERVED_ITEM_IDS
 
-from ..types.items import ItemData, SingleItemData, ItemPoolEntry, ProgressiveItemChain
+from ..types.items import ItemData, ProgressiveItemChainSingle, SingleItemData, ItemPoolEntry, ProgressiveItemChain
 from ..types.locations import AccessInfo, LocationData
 from ..types.condition import Condition, RegionCondition, OrCondition, ShopSlotCondition
 from ..types.shops import ShopData
@@ -432,11 +432,25 @@ class ListInfo:
             self.items_dict[key] = item
         return item
 
+    def __add_progressive_chain_items(self, chain: ProgressiveItemChain):
+        if isinstance(chain, ProgressiveItemChainSingle):
+            for entry in chain.items:
+                key = (entry.item.item.name, entry.item.amount)
+                if key not in self.items_dict:
+                    self.items_dict[key] = entry.item
+        else:
+            for subchain in chain.subchains:
+                for entry in subchain.chain:
+                    key = (entry.item.item.name, entry.item.amount)
+                    if key not in self.items_dict:
+                        self.items_dict[key] = entry.item
+
     def __add_progressive_chain(self, name: str, raw: dict[str, typing.Any]):
         """
         Add a progressive chain to the list.
         """
         chain = self.progressive_chains[name] = self.json_parser.parse_progressive_chain(name, raw)
+        self.__add_progressive_chain_items(chain)
         raw["reserved"] = True
         _, item = self.__add_item_data(f"Progressive {chain.display_name}", raw)
         self.progressive_items[name] = item
