@@ -297,6 +297,8 @@ class CrossCodeWorld(World):
         if self.options.vw_meteor_passage.value:
             self.variables["vwPassage"].append("meteor")
 
+        self.variables["canGrind"].append("noShadeWarp")
+
         if self.options.start_with_green_leaf_shade.value:
             self.multiworld.push_precollected(self.create_item(green_leaf_shade_name))
 
