@@ -24,6 +24,7 @@ from .types.world import WorldData
 from .types.regions import RegionsData
 from .types.metadata import IncludeOptions
 from .types.pools import Pools
+from .types.slot import SlotData
 from .options import CrossCodeOptions, ShopReceiveMode, ShopSendMode, StartWithDiscs, ProgressiveAreaUnlocks, option_groups
 
 cclogger = logging.getLogger(__name__)
@@ -615,7 +616,7 @@ class CrossCodeWorld(World):
         for loc, clearance in self.logic_dict["chest_clearance_levels"].items():
             ours[loc] = clearance
 
-    def fill_slot_data(self) -> typing.Mapping[str, typing.Any]:
+    def fill_slot_data(self) -> SlotData:
         prog_chains = {}
         for name in self.enabled_chain_names:
             key = self.world_data.progressive_items[name].combo_id
@@ -640,17 +641,21 @@ class CrossCodeWorld(World):
             "dataVersion": self.world_data.data_version,
             "options": {
                 "vtShadeLock": self.options.vt_shade_lock.value,
-                "meteorPassage": self.options.vw_meteor_passage.value,
-                "vtSkip": self.options.vt_skip.value,
+                "meteorPassage": bool(self.options.vw_meteor_passage.value),
+                "vtSkip": bool(self.options.vt_skip.value),
                 "keyrings": [self.world_data.single_items_dict[name].item_id for name in self.logic_dict["keyrings"]],
-                "questRando": self.options.quest_rando.value,
+                "questRando": bool(self.options.quest_rando.value),
                 "hiddenQuestRewardMode": self.options.hidden_quest_reward_mode.current_key,
                 "hiddenQuestObfuscationLevel": self.options.hidden_quest_obfuscation_level.current_key,
-                "questDialogHints": self.options.quest_dialog_hints.value,
+                "questDialogHints": bool(self.options.quest_dialog_hints.value),
                 "progressiveChains": prog_chains,
                 "shopSendMode": shop_send_mode_string,
                 "shopReceiveMode": shop_receive_mode_string,
-                "shopDialogHints": self.options.shop_dialog_hints.value,
+                "shopDialogHints": bool(self.options.shop_dialog_hints.value),
                 "chestClearanceLevels": self.logic_dict["chest_clearance_levels"],
             }
         }
+
+
+    def interpret_slot_data(self, slot_data: SlotData):
+        self.logic_dict["chest_clearance_levels"] = slot_data["options"]["chestClearanceLevels"]
