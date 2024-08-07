@@ -127,6 +127,8 @@ class Pools:
             result &= self.options["trade"]
         if metadata.get("shop", False):
             result &= self.options["shop"]
+        if metadata.get("arena", False):
+            result &= self.options["arena"]
         if metadata.get("chest", False):
             result &= self.options["chest"]
         if metadata.get("quest", False):
