@@ -376,8 +376,9 @@ class ListInfo:
                     "en_US": f"Unlocks slots selling \\c[3]{item_name}\\c[0] in \\c[3]all shops\\c[0]."
                 }
 
+            # Require the player to be able to reach the shop region in all modes that the shop has a region in.
             self.global_slot_region_conditions_list[item_id].extend(
-                [ RegionCondition(mode, name, False) for mode, name in access_info.region.items() ]
+                [ RegionCondition(mode, shop_display_name, False) for mode in access_info.region ]
             )
 
         self.shop_data[shop_display_name] = ShopData(
