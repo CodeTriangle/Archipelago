@@ -377,9 +377,7 @@ class ListInfo:
                 }
 
             # Require the player to be able to reach the shop region in all modes that the shop has a region in.
-            self.global_slot_region_conditions_list[item_id].extend(
-                [ RegionCondition(mode, shop_display_name, False) for mode in access_info.region ]
-            )
+            self.global_slot_region_conditions_list[item_id].append(RegionCondition(None, shop_display_name))
 
         self.shop_data[shop_display_name] = ShopData(
             internal_name=shop_name,

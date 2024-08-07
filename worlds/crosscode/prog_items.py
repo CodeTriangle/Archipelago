@@ -3314,25 +3314,6 @@ progressive_chains: dict[str, ProgressiveItemChain] = {
             ),
             ProgressiveItemSubchain(
                 metadata={
-                    'trade': False,
-                    'shop': False,
-                    'arena': False,
-                    'chest': True,
-                    'quest': False,
-                },
-                chain=[
-                    ProgressiveChainEntry(item=items_dict['Rocksplitter', 1]),
-                    ProgressiveChainEntry(item=items_dict['Prickly Bracer', 1]),
-                    ProgressiveChainEntry(item=items_dict['Hidden Blade', 1]),
-                    ProgressiveChainEntry(item=items_dict['Bright Bracer', 1]),
-                    ProgressiveChainEntry(item=items_dict['Sneaky Shiv', 1]),
-                    ProgressiveChainEntry(item=items_dict['Sonic Spike', 1]),
-                    ProgressiveChainEntry(item=items_dict['Shining Bracer', 1]),
-                    ProgressiveChainEntry(item=items_dict['Warkeeper', 1]),
-                ]
-            ),
-            ProgressiveItemSubchain(
-                metadata={
                     'trade': True,
                     'shop': False,
                     'arena': False,
@@ -3516,24 +3497,6 @@ progressive_chains: dict[str, ProgressiveItemChain] = {
                     ProgressiveChainEntry(item=items_dict['Aehre', 1]),
                 ]
             ),
-            ProgressiveItemSubchain(
-                metadata={
-                    'trade': False,
-                    'shop': False,
-                    'arena': False,
-                    'chest': True,
-                    'quest': False,
-                },
-                chain=[
-                    ProgressiveChainEntry(item=items_dict['Daikon', 1]),
-                    ProgressiveChainEntry(item=items_dict['Copper Gull', 1]),
-                    ProgressiveChainEntry(item=items_dict['Winterclaw', 1]),
-                    ProgressiveChainEntry(item=items_dict['Humming Razor', 1]),
-                    ProgressiveChainEntry(item=items_dict['Sunset Claw', 1]),
-                    ProgressiveChainEntry(item=items_dict['Rough Branch', 2]),
-                    ProgressiveChainEntry(item=items_dict['Aehre', 1]),
-                ]
-            ),
         ],
     ),
     "arms": ProgressiveItemChainMulti(
@@ -3648,6 +3611,32 @@ progressive_chains: dict[str, ProgressiveItemChain] = {
                     ProgressiveChainEntry(item=items_dict['Disciple Gloves', 1]),
                     ProgressiveChainEntry(item=items_dict["Hunter's Bolt", 1]),
                     ProgressiveChainEntry(item=items_dict['Adept Gloves', 1]),
+                ]
+            ),
+            ProgressiveItemSubchain(
+                metadata={
+                    'trade': False,
+                    'shop': False,
+                    'arena': False,
+                    'chest': True,
+                    'quest': False,
+                },
+                chain=[
+                    ProgressiveChainEntry(item=items_dict['Daikon', 1]),
+                    ProgressiveChainEntry(item=items_dict['Copper Gull', 1]),
+                    ProgressiveChainEntry(item=items_dict['Rocksplitter', 1]),
+                    ProgressiveChainEntry(item=items_dict['Prickly Bracer', 1]),
+                    ProgressiveChainEntry(item=items_dict['Winterclaw', 1]),
+                    ProgressiveChainEntry(item=items_dict['Hidden Blade', 1]),
+                    ProgressiveChainEntry(item=items_dict['Bright Bracer', 1]),
+                    ProgressiveChainEntry(item=items_dict['Humming Razor', 1]),
+                    ProgressiveChainEntry(item=items_dict['Sunset Claw', 1]),
+                    ProgressiveChainEntry(item=items_dict['Rough Branch', 2]),
+                    ProgressiveChainEntry(item=items_dict['Aehre', 1]),
+                    ProgressiveChainEntry(item=items_dict['Sneaky Shiv', 1]),
+                    ProgressiveChainEntry(item=items_dict['Sonic Spike', 1]),
+                    ProgressiveChainEntry(item=items_dict['Shining Bracer', 1]),
+                    ProgressiveChainEntry(item=items_dict['Warkeeper', 1]),
                 ]
             ),
             ProgressiveItemSubchain(
@@ -6032,18 +6021,6 @@ progressive_chains: dict[str, ProgressiveItemChain] = {
             ),
             ProgressiveItemSubchain(
                 metadata={
-                    'trade': False,
-                    'shop': False,
-                    'arena': True,
-                    'chest': True,
-                    'quest': False,
-                },
-                chain=[
-                    ProgressiveChainEntry(item=items_dict['Combat Skates', 1]),
-                ]
-            ),
-            ProgressiveItemSubchain(
-                metadata={
                     'trade': True,
                     'shop': False,
                     'arena': False,
@@ -6325,6 +6302,7 @@ progressive_chains: dict[str, ProgressiveItemChain] = {
                     ProgressiveChainEntry(item=items_dict['Ancient Sandals', 1]),
                     ProgressiveChainEntry(item=items_dict['Lead Boots', 1]),
                     ProgressiveChainEntry(item=items_dict['Paedalos', 1]),
+                    ProgressiveChainEntry(item=items_dict['Combat Skates', 1]),
                 ]
             ),
             ProgressiveItemSubchain(

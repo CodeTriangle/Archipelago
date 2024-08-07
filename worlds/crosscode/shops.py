@@ -10,14 +10,14 @@ from .types.condition import *
 from .locations import locations_dict
 
 shop_dict: dict[str, ShopData] = {
-    'Harbor Items': ShopData(internal_name='rookieHarborItems', name='Harbor Items', metadata={'shops': True}, access=AccessInfo(region={'linear': '3', 'open': 'open3'})),
-    'Harbor Items + Blue Ice': ShopData(internal_name='rookieHarborItems', name='Harbor Items + Blue Ice', metadata={'shops': True}, access=AccessInfo(region={'linear': '3', 'open': 'open3'}, cond=[ItemCondition(item_name='Blue Ice Shade', amount=1)])),
-    'Harbor Items + Red Flame': ShopData(internal_name='rookieHarborItems', name='Harbor Items + Red Flame', metadata={'shops': True}, access=AccessInfo(region={'linear': '3', 'open': 'open3'}, cond=[ItemCondition(item_name='Red Flame Shade', amount=1)])),
-    'Harbor Items + Green Seed': ShopData(internal_name='rookieHarborItems', name='Harbor Items + Green Seed', metadata={'shops': True}, access=AccessInfo(region={'linear': '3', 'open': 'open3'}, cond=[ItemCondition(item_name='Green Seed Shade', amount=1)])),
-    'Harbor Weapons': ShopData(internal_name='rookieHarborWeapons', name='Harbor Weapons', metadata={'shops': True}, access=AccessInfo(region={'linear': '3', 'open': 'open3'})),
-    'Harbor Weapons + Red Flame': ShopData(internal_name='rookieHarborWeapons', name='Harbor Weapons + Red Flame', metadata={'shops': True}, access=AccessInfo(region={'linear': '3', 'open': 'open3'}, cond=[ItemCondition(item_name='Red Flame Shade', amount=1)])),
+    'Harbor Items': ShopData(internal_name='rookieHarborItems', name='Harbor Items', metadata={'shops': True}, access=AccessInfo(region={'linear': '2', 'open': 'open2'}, cond=[VariableCondition(name='canGrind')])),
+    'Harbor Items + Blue Ice': ShopData(internal_name='rookieHarborItems', name='Harbor Items + Blue Ice', metadata={'shops': True}, access=AccessInfo(region={'linear': '2', 'open': 'open2'}, cond=[VariableCondition(name='canGrind'), ItemCondition(item_name='Blue Ice Shade', amount=1)])),
+    'Harbor Items + Red Flame': ShopData(internal_name='rookieHarborItems', name='Harbor Items + Red Flame', metadata={'shops': True}, access=AccessInfo(region={'linear': '2', 'open': 'open2'}, cond=[VariableCondition(name='canGrind'), ItemCondition(item_name='Red Flame Shade', amount=1)])),
+    'Harbor Items + Green Seed': ShopData(internal_name='rookieHarborItems', name='Harbor Items + Green Seed', metadata={'shops': True}, access=AccessInfo(region={'linear': '2', 'open': 'open2'}, cond=[VariableCondition(name='canGrind'), ItemCondition(item_name='Green Seed Shade', amount=1)])),
+    'Harbor Weapons': ShopData(internal_name='rookieHarborWeapons', name='Harbor Weapons', metadata={'shops': True}, access=AccessInfo(region={'linear': '2', 'open': 'open2'}, cond=[VariableCondition(name='canGrind')])),
+    'Harbor Weapons + Red Flame': ShopData(internal_name='rookieHarborWeapons', name='Harbor Weapons + Red Flame', metadata={'shops': True}, access=AccessInfo(region={'linear': '2', 'open': 'open2'}, cond=[VariableCondition(name='canGrind'), ItemCondition(item_name='Red Flame Shade', amount=1)])),
     'Harbor North Weapons': ShopData(internal_name='rookieHarborWeaponsNorth', name='Harbor North Weapons', metadata={'shops': True}, access=AccessInfo(region={'linear': '19', 'open': 'open8'})),
-    "Tara's Shop": ShopData(internal_name='rookieHarborTara', name="Tara's Shop", metadata={'shops': True}, access=AccessInfo(region={'linear': '3', 'open': 'open3'})),
+    "Tara's Shop": ShopData(internal_name='rookieHarborTara', name="Tara's Shop", metadata={'shops': True}, access=AccessInfo(region={'linear': '2', 'open': 'open2'}, cond=[VariableCondition(name='canGrind')])),
     'Harbor Backer Items': ShopData(internal_name='rookieBacker', name='Harbor Backer Items', metadata={'shops': True}, access=AccessInfo(region={'linear': '19', 'open': 'open8'})),
     'Bergen Items': ShopData(internal_name='bergenVillageItems', name='Bergen Items', metadata={'shops': True}, access=AccessInfo(region={'linear': '3', 'open': 'open3'})),
     'Bergen Items + Blue Ice': ShopData(internal_name='bergenVillageItems', name='Bergen Items + Blue Ice', metadata={'shops': True}, access=AccessInfo(region={'linear': '3', 'open': 'open3'}, cond=[ItemCondition(item_name='Blue Ice Shade', amount=1)])),
@@ -35,6 +35,10 @@ shop_dict: dict[str, ShopData] = {
     'Calzone Shop': ShopData(internal_name='basinMushroom', name='Calzone Shop', metadata={'shops': True}, access=AccessInfo(region={'linear': '23', 'open': 'open10'}, cond=[ItemCondition(item_name='Wave', amount=1)])),
     'Ridge Weapons': ShopData(internal_name='sapphireWeapons', name='Ridge Weapons', metadata={'shops': True}, access=AccessInfo(region={'linear': '31', 'open': 'open16'})),
     'Ridge Items': ShopData(internal_name='sapphireItems', name='Ridge Items', metadata={'shops': True}, access=AccessInfo(region={'linear': '31', 'open': 'open16'})),
+    'Rhombus Weapons': ShopData(internal_name='rhombusWeapons1', name='Rhombus Weapons', metadata={'shops': True}, access=AccessInfo(region={'linear': '33', 'open': 'open16'}, cond=[VariableCondition(name='canGrind')])),
+    'Rhombus Items': ShopData(internal_name='rhombusItems1', name='Rhombus Items', metadata={'shops': True}, access=AccessInfo(region={'linear': '33', 'open': 'open16'}, cond=[VariableCondition(name='canGrind')])),
+    'Rhombus Curios': ShopData(internal_name='rhombusCurios', name='Rhombus Curios', metadata={'shops': True}, access=AccessInfo(region={'linear': '33', 'open': 'open16'}, cond=[VariableCondition(name='canGrind')])),
+    'Rhombus Backer Items': ShopData(internal_name='rhombusBacker', name='Rhombus Backer Items', metadata={'shops': True}, access=AccessInfo(region={'linear': '33', 'open': 'open16'})),
 }
 
 per_shop_locations: dict[str, dict[int, LocationData]] = {
@@ -243,6 +247,46 @@ per_shop_locations: dict[str, dict[int, LocationData]] = {
         291: locations_dict["Shop Slot: Cup o' Coffee (Ridge Items)"],
         331: locations_dict['Shop Slot: Snack Mix (Ridge Items)'],
     },
+    "Rhombus Weapons": {
+        397: locations_dict['Shop Slot: Laser Goggles (Rhombus Weapons)'],
+        398: locations_dict['Shop Slot: Laser Edge (Rhombus Weapons)'],
+        399: locations_dict['Shop Slot: Laser Mail (Rhombus Weapons)'],
+        400: locations_dict['Shop Slot: Laser Boots (Rhombus Weapons)'],
+    },
+    "Rhombus Items": {
+        1: locations_dict['Shop Slot: Sandwich (Rhombus Items)'],
+        27: locations_dict['Shop Slot: Hi-Sandwich (Rhombus Items)'],
+        2: locations_dict['Shop Slot: Green Leaf Tea (Rhombus Items)'],
+        366: locations_dict['Shop Slot: Just Water (Rhombus Items)'],
+        353: locations_dict['Shop Slot: Kebab Roll (Rhombus Items)'],
+        355: locations_dict['Shop Slot: Meaty Risotto (Rhombus Items)'],
+        64: locations_dict['Shop Slot: Spicy Bun (Rhombus Items)'],
+        70: locations_dict['Shop Slot: Fruit Drink (Rhombus Items)'],
+        73: locations_dict['Shop Slot: Rice Cracker (Rhombus Items)'],
+        67: locations_dict['Shop Slot: Veggie Sticks (Rhombus Items)'],
+        110: locations_dict['Shop Slot: Bergen Ice Cream (Rhombus Items)'],
+        165: locations_dict['Shop Slot: Sweet Lemonjuice (Rhombus Items)'],
+        290: locations_dict['Shop Slot: Salted Peanuts (Rhombus Items)'],
+        291: locations_dict["Shop Slot: Cup o' Coffee (Rhombus Items)"],
+        331: locations_dict['Shop Slot: Snack Mix (Rhombus Items)'],
+    },
+    "Rhombus Curios": {
+        501: locations_dict['Shop Slot: Chest Detector (Rhombus Curios)'],
+    },
+    "Rhombus Backer Items": {
+        382: locations_dict['Shop Slot: Rising Super Star (Rhombus Backer Items)'],
+        490: locations_dict['Shop Slot: Dk Pepper (Rhombus Backer Items)'],
+        491: locations_dict['Shop Slot: Cheese Spaetzle (Rhombus Backer Items)'],
+        315: locations_dict['Shop Slot: Maultasche (Rhombus Backer Items)'],
+        493: locations_dict['Shop Slot: Durian (Rhombus Backer Items)'],
+        494: locations_dict['Shop Slot: PengoPop (Rhombus Backer Items)'],
+        495: locations_dict['Shop Slot: Spicy Beat-0-Type (Rhombus Backer Items)'],
+        316: locations_dict['Shop Slot: Werewolf Stick (Rhombus Backer Items)'],
+        516: locations_dict['Shop Slot: Mooncake (Rhombus Backer Items)'],
+        496: locations_dict['Shop Slot: Guacamole Toast (Rhombus Backer Items)'],
+        551: locations_dict['Shop Slot: Willis Waldmahl (Rhombus Backer Items)'],
+        637: locations_dict['Shop Slot: Pumpkin Spice Cof. (Rhombus Backer Items)'],
+    },
     
 }
 
@@ -301,6 +345,11 @@ global_shop_locations: dict[int, LocationData] = {
     394: locations_dict['Global Shop Slot: Cobalt Edge'],
     395: locations_dict['Global Shop Slot: Cobalt Mail'],
     396: locations_dict['Global Shop Slot: Cobalt Boots'],
+    397: locations_dict['Global Shop Slot: Laser Goggles'],
+    398: locations_dict['Global Shop Slot: Laser Edge'],
+    399: locations_dict['Global Shop Slot: Laser Mail'],
+    400: locations_dict['Global Shop Slot: Laser Boots'],
+    501: locations_dict['Global Shop Slot: Chest Detector'],
 }
 
 shop_unlock_by_id = {
@@ -358,6 +407,11 @@ shop_unlock_by_id = {
     394: items_dict['Global Slot Unlock: Cobalt Edge', 1],
     395: items_dict['Global Slot Unlock: Cobalt Mail', 1],
     396: items_dict['Global Slot Unlock: Cobalt Boots', 1],
+    397: items_dict['Global Slot Unlock: Laser Goggles', 1],
+    398: items_dict['Global Slot Unlock: Laser Edge', 1],
+    399: items_dict['Global Slot Unlock: Laser Mail', 1],
+    400: items_dict['Global Slot Unlock: Laser Boots', 1],
+    501: items_dict['Global Slot Unlock: Chest Detector', 1],
 }
 
 shop_unlock_by_shop = {
@@ -377,6 +431,10 @@ shop_unlock_by_shop = {
     'basinMushroom': items_dict['Shop Unlock: Calzone Shop', 1],
     'sapphireWeapons': items_dict['Shop Unlock: Ridge Weapons', 1],
     'sapphireItems': items_dict['Shop Unlock: Ridge Items', 1],
+    'rhombusWeapons1': items_dict['Shop Unlock: Rhombus Weapons', 1],
+    'rhombusItems1': items_dict['Shop Unlock: Rhombus Items', 1],
+    'rhombusCurios': items_dict['Shop Unlock: Rhombus Curios', 1],
+    'rhombusBacker': items_dict['Shop Unlock: Rhombus Backer Items', 1],
 }
 
 shop_unlock_by_shop_and_id = {
@@ -535,4 +593,36 @@ shop_unlock_by_shop_and_id = {
     ('sapphireItems', 290): items_dict['Slot Unlock: Salted Peanuts (Ridge Items)', 1],
     ('sapphireItems', 291): items_dict["Slot Unlock: Cup o' Coffee (Ridge Items)", 1],
     ('sapphireItems', 331): items_dict['Slot Unlock: Snack Mix (Ridge Items)', 1],
+    ('rhombusWeapons1', 397): items_dict['Slot Unlock: Laser Goggles (Rhombus Weapons)', 1],
+    ('rhombusWeapons1', 398): items_dict['Slot Unlock: Laser Edge (Rhombus Weapons)', 1],
+    ('rhombusWeapons1', 399): items_dict['Slot Unlock: Laser Mail (Rhombus Weapons)', 1],
+    ('rhombusWeapons1', 400): items_dict['Slot Unlock: Laser Boots (Rhombus Weapons)', 1],
+    ('rhombusItems1', 1): items_dict['Slot Unlock: Sandwich (Rhombus Items)', 1],
+    ('rhombusItems1', 27): items_dict['Slot Unlock: Hi-Sandwich (Rhombus Items)', 1],
+    ('rhombusItems1', 2): items_dict['Slot Unlock: Green Leaf Tea (Rhombus Items)', 1],
+    ('rhombusItems1', 366): items_dict['Slot Unlock: Just Water (Rhombus Items)', 1],
+    ('rhombusItems1', 353): items_dict['Slot Unlock: Kebab Roll (Rhombus Items)', 1],
+    ('rhombusItems1', 355): items_dict['Slot Unlock: Meaty Risotto (Rhombus Items)', 1],
+    ('rhombusItems1', 64): items_dict['Slot Unlock: Spicy Bun (Rhombus Items)', 1],
+    ('rhombusItems1', 70): items_dict['Slot Unlock: Fruit Drink (Rhombus Items)', 1],
+    ('rhombusItems1', 73): items_dict['Slot Unlock: Rice Cracker (Rhombus Items)', 1],
+    ('rhombusItems1', 67): items_dict['Slot Unlock: Veggie Sticks (Rhombus Items)', 1],
+    ('rhombusItems1', 110): items_dict['Slot Unlock: Bergen Ice Cream (Rhombus Items)', 1],
+    ('rhombusItems1', 165): items_dict['Slot Unlock: Sweet Lemonjuice (Rhombus Items)', 1],
+    ('rhombusItems1', 290): items_dict['Slot Unlock: Salted Peanuts (Rhombus Items)', 1],
+    ('rhombusItems1', 291): items_dict["Slot Unlock: Cup o' Coffee (Rhombus Items)", 1],
+    ('rhombusItems1', 331): items_dict['Slot Unlock: Snack Mix (Rhombus Items)', 1],
+    ('rhombusCurios', 501): items_dict['Slot Unlock: Chest Detector (Rhombus Curios)', 1],
+    ('rhombusBacker', 382): items_dict['Slot Unlock: Rising Super Star (Rhombus Backer Items)', 1],
+    ('rhombusBacker', 490): items_dict['Slot Unlock: Dk Pepper (Rhombus Backer Items)', 1],
+    ('rhombusBacker', 491): items_dict['Slot Unlock: Cheese Spaetzle (Rhombus Backer Items)', 1],
+    ('rhombusBacker', 315): items_dict['Slot Unlock: Maultasche (Rhombus Backer Items)', 1],
+    ('rhombusBacker', 493): items_dict['Slot Unlock: Durian (Rhombus Backer Items)', 1],
+    ('rhombusBacker', 494): items_dict['Slot Unlock: PengoPop (Rhombus Backer Items)', 1],
+    ('rhombusBacker', 495): items_dict['Slot Unlock: Spicy Beat-0-Type (Rhombus Backer Items)', 1],
+    ('rhombusBacker', 316): items_dict['Slot Unlock: Werewolf Stick (Rhombus Backer Items)', 1],
+    ('rhombusBacker', 516): items_dict['Slot Unlock: Mooncake (Rhombus Backer Items)', 1],
+    ('rhombusBacker', 496): items_dict['Slot Unlock: Guacamole Toast (Rhombus Backer Items)', 1],
+    ('rhombusBacker', 551): items_dict['Slot Unlock: Willis Waldmahl (Rhombus Backer Items)', 1],
+    ('rhombusBacker', 637): items_dict['Slot Unlock: Pumpkin Spice Cof. (Rhombus Backer Items)', 1],
 }

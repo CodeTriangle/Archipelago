@@ -59,12 +59,13 @@ class LocationCondition(Condition):
 
 @dataclass
 class RegionCondition(Condition):
-    target_mode: str
+    target_mode: typing.Optional[str]
     region_name: str
-    on_mode_miss: bool = field(default=True)
 
     def satisfied(self, state: CollectionState, player: int, location: int | None, args: LogicDict) -> bool:
         mode: str = args["mode"]
+        if self.target_mode != None:
+            mode = self.target_mode
 
         return mode != self.target_mode or state.can_reach_region(self.region_name, player)
 
