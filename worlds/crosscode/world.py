@@ -356,12 +356,22 @@ class CrossCodeWorld(World):
             "shop_unlock_by_shop_and_id": self.world_data.shop_unlock_by_shop_and_id,
         }
 
+        # Universal Tracker support
+        # Anything that is generated in a non-standard fashion on my end has to be brought back into scope here from slot data.
+        if hasattr(self.multiworld, "re_gen_passthrough"):
+            slot_data: SlotData = self.multiworld.re_gen_passthrough["CrossCode"]
+            # Reinterpret the JSON chest clearance levels dict (a string -> string mapping) as an int -> int mapping instead.
+            self.logic_dict["chest_clearance_levels"] = {int(combo_id): clearance for combo_id, clearance in slot_data["options"]["chestClearanceLevels"].items()}
+
     def add_location(self, data: LocationData, region: Region):
         location = CrossCodeLocation(self.player, data, self.logic_mode, self.region_dict)
         if location.data.area is not None:
             self.dungeon_location_list[location.data.area].add(location)
         region.locations.append(location)
         self.create_event_conditions(data.access.cond)
+
+        if hasattr(self.multiworld, "generation_is_fake") or hasattr(self.multiworld, "re_gen_passthrough"):
+            return
 
         if self.options.chest_lock_randomization.value and data.code in self.world_data.locked_locations:
             clearance = self.random.choices(
@@ -656,6 +666,6 @@ class CrossCodeWorld(World):
             }
         }
 
-
-    def interpret_slot_data(self, slot_data: SlotData):
-        self.logic_dict["chest_clearance_levels"] = slot_data["options"]["chestClearanceLevels"]
+    @staticmethod
+    def interpret_slot_data(slot_data: SlotData) -> SlotData:
+        return slot_data
