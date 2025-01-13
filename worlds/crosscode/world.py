@@ -76,6 +76,11 @@ class CrossCodeWorld(World):
         location.name: location.code for location in world_data.locations_dict.values() if location.code is not None
     }
 
+    item_name_groups = {
+        name: { entry.item.name for entry in entries }
+        for name, entries in world_data.item_pools_template.items()
+    }
+
     include_options: IncludeOptions
     required_items: Counter[ItemData]
 
