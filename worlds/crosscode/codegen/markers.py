@@ -11,8 +11,8 @@ class Marker(typing.TypedDict):
     x: float
     y: float
     level: int
-    area: str
     map: str
+    mwid: int
 
 class MarkerGenerator:
     ctx: Context
@@ -47,7 +47,7 @@ class MarkerGenerator:
 
         return self.area_cache[name]
 
-    def generate_marker(self, raw_loc: dict[str, typing.Any]) -> typing.Optional[Marker]:
+    def generate_marker(self, raw_loc: dict[str, typing.Any], mwid: int) -> typing.Optional[Marker]:
         loc_data = raw_loc.get("location", None)
         if loc_data is None:
             return None
@@ -58,9 +58,6 @@ class MarkerGenerator:
         map_id = loc_data.get("mapId", None)
         if map_id is None:
             return None
-
-        if map_name == "rookie-harbor.teleporter":
-            breakpoint()
 
         map = self.__load_map(map_name)
 
@@ -132,6 +129,6 @@ class MarkerGenerator:
             "level": map_floor["level"],
             "x": mx,
             "y": my,
-            "area": area_name,
-            "map": map_name
+            "map": map_name,
+            "mwid": mwid
         }

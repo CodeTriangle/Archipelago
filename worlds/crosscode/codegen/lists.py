@@ -60,7 +60,7 @@ class ListInfo:
 
     descriptions: dict[int, dict[str, str]]
 
-    markers: dict[int, Marker]
+    markers: dict[str, list[Marker]]
 
     def __init__(self, ctx: Context):
         self.ctx = ctx
@@ -107,7 +107,7 @@ class ListInfo:
         self.descriptions = {}
 
         self.marker_generator = MarkerGenerator(self.ctx)
-        self.markers = {}
+        self.markers = defaultdict(list)
 
         self.variable_definitions = defaultdict(dict)
 
@@ -240,10 +240,10 @@ class ListInfo:
             if locked:
                 self.locked_locations.append(locid)
 
-            marker = self.marker_generator.generate_marker(raw_loc)
+            marker = self.marker_generator.generate_marker(raw_loc, locid)
 
             if marker is not None:
-                self.markers[locid] = marker
+                self.markers[area].append(marker)
 
         if not found and (num_rewards > 1 or create_event):
             event_name = f"{name} (Event)"
