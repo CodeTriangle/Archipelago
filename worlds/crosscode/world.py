@@ -333,6 +333,9 @@ class CrossCodeWorld(World):
                 self.options.gold_chest_lock_weight.value,
             ]))
 
+        if self.options.force_filler_local.value:
+            self.options.local_items.value.update(self._filler_pool_names)
+
         self.pre_fill_any_dungeon_names = set()
         self.pre_fill_specific_dungeons_names = defaultdict(set)
 
