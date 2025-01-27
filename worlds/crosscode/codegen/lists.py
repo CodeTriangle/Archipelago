@@ -305,6 +305,8 @@ class ListInfo:
 
     def __add_shop(self, shop_display_name: str, raw_shop: dict[str, typing.Any]):
         shop_name = raw_shop["location"]["shop"]
+        area = raw_shop["location"]["area"]
+        area_name = self.ctx.area_names[area]
         shop_base_name = shop_display_name.split(" +")[0] # this is a hack until there are heirarchical shops
 
         dbentry = self.ctx.database["shops"][shop_name]
@@ -336,13 +338,16 @@ class ListInfo:
             slot_location = LocationData(
                 name=slot_location_name,
                 code=locid,
-                area=None,
+                area=area,
                 metadata=metadata,
                 access=AccessInfo(
                     region={ name: shop_display_name for name in access_info.region },
                     cond=[ShopSlotCondition(shop_name, item_id)],
                 ),
             )
+
+            self.location_groups[area_name].append(slot_location)
+            self.location_groups[f"{area_name} Shops"].append(slot_location)
 
             shop_locs[item_id] = slot_location
             self.locations_data[slot_location.name] = slot_location
