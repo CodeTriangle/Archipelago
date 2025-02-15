@@ -2929,6 +2929,13 @@ location_groups = {
         locations_dict['Talatu Introductions'],
         locations_dict['Schneider Guild Pass'],
     },
+    "Always Quests": {
+        locations_dict['Talatu Introductions'],
+        locations_dict['Bergen Mine Detector'],
+        locations_dict["Ba'kii Shade Statue"],
+        locations_dict['Chase the Hologram Frobbit'],
+        locations_dict['Mushroom Kingdom'],
+    },
     "Bergen Village Cutscenes": {
         locations_dict['Bergen Mine Guard'],
         locations_dict['Bergen Mine Detector'],
