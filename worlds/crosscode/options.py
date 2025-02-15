@@ -387,9 +387,9 @@ class GoldChestLockWeight(Range):
 class ExcludeAlwaysQuests(DefaultOnToggle):
     """
     Certain quests are always in the location pool because they hold progression items when playing vanilla CrossCode.
-    If selected, this option will ensure that none of those locations are populated with progression or useful items. It
-    will also prohibit items from being placed on NPC interactions that give progression items but require working
-    through part of a questline to get to.
+    If this option is selected (and quest rando is disabled), this option will ensure that none of those locations are
+    populated with progression or useful items. It will also prohibit items from being placed on NPC interactions that
+    give progression items but require working through part of a questline to get to.
     """
     display_name = "Exclude Always Quests"
 
