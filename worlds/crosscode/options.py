@@ -146,7 +146,7 @@ class ShopDialogHints(DefaultOnToggle):
 
 class StartWithGreenLeafShade(DefaultOnToggle):
     """
-    If enabled, the player will start with the green leaf shade, unlocking Autumn's Fall. This makes the early game far
+    If enabled, the player will start with the green leaf shade, unlocking Autumn's Rise. This makes the early game far
     more open.
     """
     display_name = "Start with Green Leaf Shade"
