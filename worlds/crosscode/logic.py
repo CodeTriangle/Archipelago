@@ -15,7 +15,6 @@ def condition_satisfied(
     """
     Factory function. Return value is a rule that checks whether all the conditions are satisfied.
     """
-    def conditions_satisfied_internal(state: CollectionState) -> bool:
-        return all(c.satisfied(state, player, location, cond_args) for c in conditions)
+    callbacks = [c.satisfied(player, location, cond_args) for c in conditions]
 
-    return conditions_satisfied_internal
+    return lambda state: all(map(lambda x: x(state), callbacks))
