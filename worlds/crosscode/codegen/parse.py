@@ -177,15 +177,12 @@ class JsonParser:
 
         db_entry = self.ctx.item_data[item_id]
 
-        cls = get_item_classification(db_entry)
-
         item_type = db_entry["type"]
 
         if "classification" in raw:
-            cls_str = raw["classification"]
-            if not hasattr(ItemClassification, cls_str):
-                raise JsonParserError(raw, cls_str, "item reward", "invalid classification")
-            cls = getattr(ItemClassification, cls_str)
+            cls = self.parse_classification(raw["classification"])
+        else: 
+            cls = get_item_classification(db_entry)
 
         if raw.get("reserved", False):
             single_item = SingleItemData(
@@ -378,3 +375,8 @@ class JsonParser:
         Parse all of the regions.
         """
         return {name: self.parse_regions_data(data) for name, data in raw.items()}
+
+    def parse_classification(self, cls_str: str):
+        if not hasattr(ItemClassification, cls_str):
+            raise JsonParserError(cls_str, cls_str, "classification", "invalid classification")
+        return getattr(ItemClassification, cls_str)

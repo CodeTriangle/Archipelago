@@ -1,6 +1,9 @@
 from collections import defaultdict
 from random import Random
 import itertools
+import typing
+
+from BaseClasses import ItemClassification
 
 from .metadata import IncludeOptions
 from .locations import LocationData
@@ -8,7 +11,7 @@ from .items import ItemData, ItemPoolEntry, ProgressiveChainEntry, ProgressiveIt
 from .world import WorldData
 
 
-ItemPool = dict[ItemData, int]
+ItemPool = dict[tuple[ItemData, typing.Optional[ItemClassification]], int]
 
 
 class Pools:
@@ -35,7 +38,7 @@ class Pools:
     event_pool: set[LocationData]
 
     item_pools: dict[str, ItemPool]
-    _item_pool_lists: dict[str, tuple[list[ItemData], list[int]]]
+    _item_pool_lists: dict[str, tuple[list[tuple[ItemData, typing.Optional[ItemClassification]]], list[int]]]
 
     progressive_chains: dict[str, list[ItemData]]
     item_progressive_replacements: dict[str, list[tuple[str, int]]]
@@ -74,7 +77,7 @@ class Pools:
             counter = defaultdict(lambda: 0)
             for entry in pool:
                 if self.__should_include(entry.metadata):
-                    counter[entry.item] += entry.quantity
+                    counter[entry.item, entry.classification] += entry.quantity
 
             self.item_pools[name] = counter
 
@@ -93,7 +96,7 @@ class Pools:
                     prog_item = world_data.progressive_items[chain_name].name
                     self.item_progressive_replacements[entry.item.name].append((prog_item, idx + 1))
 
-            self.item_pools[f"pool:{chain_name}"] = { item: 1 for item in item_list }
+            self.item_pools[f"pool:{chain_name}"] = { (item, None): 1 for item in item_list }
 
 
 
@@ -135,6 +138,6 @@ class Pools:
 
         return result
 
-    def pull_items_from_pool(self, name: str, rand: Random, k=1) -> list[ItemData]:
+    def pull_items_from_pool(self, name: str, rand: Random, k=1) -> list[tuple[ItemData, typing.Optional[ItemClassification]]]:
         population, weights = self._item_pool_lists[name]
         return rand.choices(population, cum_weights=weights, k=k)

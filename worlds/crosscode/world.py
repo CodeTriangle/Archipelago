@@ -87,7 +87,7 @@ class CrossCodeWorld(World):
     }
 
     include_options: IncludeOptions
-    required_items: Counter[ItemData]
+    required_items: Counter[tuple[ItemData, typing.Optional[ItemClassification]]]
 
     region_dict: dict[str, Region]
     logic_mode: str
@@ -205,7 +205,7 @@ class CrossCodeWorld(World):
         pool_count = Counter(self.get_filler_pool_names(k))
         result: list[ItemData] = []
         for name, cnt in pool_count.items():
-            result.extend(self.pools.pull_items_from_pool(name, self.random, cnt))
+            result.extend(x[0] for x in self.pools.pull_items_from_pool(name, self.random, cnt))
         return result
 
     def get_filler_items(self, k: int = 1) -> list[CrossCodeItem]:
@@ -299,11 +299,11 @@ class CrossCodeWorld(World):
 
         if self.options.shop_rando.value:
             if self.options.shop_receive_mode == ShopReceiveMode.option_per_item_type:
-                self.required_items.update(self.world_data.shop_unlock_by_id.values())
+                self.required_items.update((x, None) for x in self.world_data.shop_unlock_by_id.values())
             if self.options.shop_receive_mode == ShopReceiveMode.option_per_shop:
-                self.required_items.update(self.world_data.shop_unlock_by_shop.values())
+                self.required_items.update((x, None) for x in self.world_data.shop_unlock_by_shop.values())
             if self.options.shop_receive_mode == ShopReceiveMode.option_per_slot:
-                self.required_items.update(self.world_data.shop_unlock_by_shop_and_id.values())
+                self.required_items.update((x, None) for x in self.world_data.shop_unlock_by_shop_and_id.values())
 
         if self.options.vt_shade_lock.value in [1, 2]:
             self.variables["vtShadeLock"].append("shades")
@@ -326,7 +326,7 @@ class CrossCodeWorld(World):
             start_inventory["Disc of Flora"] = 1
 
         if self.options.start_with_pet.value:
-            chosen_pet = self.pools.pull_items_from_pool("pets", self.random)[0]
+            chosen_pet, _ = self.pools.pull_items_from_pool("pets", self.random)[0]
             start_inventory[chosen_pet.name] = 1
 
         if self.options.chest_lock_randomization.value:
@@ -522,7 +522,7 @@ class CrossCodeWorld(World):
                 # use this item as a replacement.
                 replaced[item_to_skip.name].append(item)
 
-        for data, quantity in self.required_items.items():
+        for (data, cls), quantity in self.required_items.items():
             # if the item needs to be a keyring, limit its quantity to one.
             if self.options.keyrings.value and data.item.name in self.world_data.keyring_items:
                 quantity = 1
@@ -530,6 +530,9 @@ class CrossCodeWorld(World):
             for _ in range(quantity):
                 # create the item
                 item = CrossCodeItem(self.player, data)
+
+                if cls is not None:
+                    item.classification = cls
 
                 # if there is an item to replace this with, do so.
                 if item.name in replaced and len(replaced[item.name]) > 0:

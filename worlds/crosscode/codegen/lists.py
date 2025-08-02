@@ -6,7 +6,7 @@ from collections import defaultdict
 from enum import StrEnum
 import typing
 
-from BaseClasses import ItemClassification
+from BaseClasses import Item, ItemClassification
 
 from .parse import JsonParser
 from .context import Context
@@ -444,9 +444,16 @@ class ListInfo:
         pool: list[ItemPoolEntry] = []
         for data in raw:
             item = self.__add_reward(data["item"])
+
+            if "classification" in data:
+                cls = self.json_parser.parse_classification(data["classification"])
+            else:
+                cls = None
+
             pool.append(ItemPoolEntry(
                 item=item,
                 quantity=data.get("quantity", 1),
+                classification=cls,
                 metadata=data.get("metadata", None)
             ))
 

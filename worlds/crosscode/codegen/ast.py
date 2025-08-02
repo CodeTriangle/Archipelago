@@ -252,6 +252,17 @@ def create_expression_item_pool_entry(entry: ItemPoolEntry):
         ]
     )
 
+    if entry.classification is not None:
+        ast_item.keywords.append(
+            ast.keyword(
+                arg="classification",
+                value=ast.Attribute(
+                    value=ast.Name("ItemClassification"),
+                    attr=entry.classification.name,
+                )
+            )
+        )
+
     if entry.metadata is not None:
         keys: list[ast.expr | None] = [ast.Constant(k) for k in entry.metadata.keys()]
         values: list[ast.expr] = [ast.Constant(k) for k in entry.metadata.values()]

@@ -5,6 +5,8 @@
 
 import typing
 
+from BaseClasses import ItemClassification
+
 from .items import items_dict
 from .types.items import ItemData, ItemPoolEntry
 from .types.condition import *

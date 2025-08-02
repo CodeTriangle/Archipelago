@@ -45,6 +45,7 @@ class ItemData:
 class ItemPoolEntry:
     item: ItemData
     quantity: int
+    classification: typing.Optional[ItemClassification] = None
     metadata: typing.Optional[IncludeOptions] = None
 
 @dataclass
