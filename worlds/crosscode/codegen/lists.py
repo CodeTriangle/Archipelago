@@ -348,6 +348,14 @@ class ListInfo:
             "en_US": f"Unlocks \\c[3]all item slots\\c[0] in the shop \\c[3]{real_name}\\c[0]."
         }
 
+        shop_unlocks = self.item_groups.setdefault(f"Shop Unlocks", [])
+        if by_shop_item not in shop_unlocks:
+            shop_unlocks.append(by_shop_item)
+
+        global_item_group = self.item_groups.setdefault("Global Slot Unlocks", [])
+        slots_item_group = self.item_groups.setdefault("Slot Unlocks", [])
+        this_shop_item_group = self.item_groups.setdefault(f"Slot Unlocks: {shop_base_name}", [])
+
         for item_name in raw_shop["slots"]:
             item_data = self.ctx.rando_data["items"][item_name]
 
@@ -379,6 +387,9 @@ class ListInfo:
             by_shop_and_id_name = f"Slot Unlock: {item_name} ({shop_display_name})"
             by_shop_and_id_item = self.__add_shop_unlock_item(by_shop_and_id_name)
             self.shop_unlock_by_shop_and_id[shop_name, item_id] = by_shop_and_id_item
+
+            slots_item_group.append(by_shop_and_id_item)
+            this_shop_item_group.append(by_shop_and_id_item)
 
             self.descriptions[by_shop_and_id_item.combo_id] = {
                 "en_US": f"Unlocks the slot selling \\c[3]{item_name}\\c[0] in \\c[3]{real_name}\\c[0]."
@@ -412,6 +423,8 @@ class ListInfo:
                 by_id_item = self.__add_shop_unlock_item(by_id_name)
                 self.shop_unlock_by_id[item_id] = by_id_item
                 self.global_shop_locations[item_id] = global_location
+
+                global_item_group.append(by_id_item)
 
                 self.locations_data[global_location.name] = global_location
 
