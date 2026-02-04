@@ -78,8 +78,8 @@ class CrossCodeWorld(World):
     }
 
     item_name_groups = {
-        name: { entry.item.name for entry in entries }
-        for name, entries in world_data.item_pools_template.items()
+        name: {data.name for data in entry}
+        for name, entry in world_data.item_groups.items()
     }
 
     location_name_groups = {
@@ -114,13 +114,13 @@ class CrossCodeWorld(World):
     pools: Pools
 
     _filler_pool_names: list[str] = [
-        "fillerCommonCons",
-        "fillerCommonDrop",
-        "fillerRareCons",
-        "fillerRareDrop",
-        "fillerEpicCons",
-        "fillerEpicDrop",
-        "fillerLegendary",
+        "Common Consumables",
+        "Common Drops",
+        "Rare Consumables",
+        "Rare Drops",
+        "Epic Consumables",
+        "Epic Drops",
+        "Legendary Consumables",
     ]
 
     _filler_pool_weights: list[int]
@@ -305,7 +305,7 @@ class CrossCodeWorld(World):
             self.enabled_chain_names |= self._equip_chain_names
 
         self.required_items = Counter()
-        self.required_items.update(self.pools.item_pools["required"])
+        self.required_items.update(self.pools.item_pools["Required"])
 
         for name in self._equip_chain_names:
             self.required_items.update(self.pools.item_pools[f"pool:{name}"])
@@ -339,7 +339,7 @@ class CrossCodeWorld(World):
             start_inventory["Disc of Flora"] = 1
 
         if self.options.start_with_pet.value:
-            chosen_pet = self.pools.pull_items_from_pool("pets", self.random)[0]
+            chosen_pet = self.pools.pull_items_from_pool("Pets", self.random)[0]
             start_inventory[chosen_pet.name] = 1
 
         if self.options.chest_lock_randomization.value:

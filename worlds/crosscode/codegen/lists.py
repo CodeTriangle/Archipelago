@@ -52,6 +52,7 @@ class ListInfo:
     dynamic_items: dict[str, ItemData]
 
     item_pools: dict[str, list[ItemPoolEntry]]
+    item_groups: dict[str, list[ItemData]]
 
     reward_amounts: dict[str, int]
 
@@ -96,6 +97,7 @@ class ListInfo:
         self.dynamic_items = {}
 
         self.item_pools = {}
+        self.item_groups = {}
 
         self.reward_amounts = {}
 
@@ -152,6 +154,8 @@ class ListInfo:
             self.items_dict[name, 1] = ItemData(data, 1, BASE_ID + RESERVED_ITEM_IDS + data.item_id)
 
         self.__add_progressive_chains(file["progressiveChains"])
+
+        self.__add_item_group_list(self.ctx.rando_data["itemGroups"])
 
         self.__add_vars(self.ctx.rando_data["vars"])
 
@@ -441,10 +445,15 @@ class ListInfo:
         for name, raw_item in item_list.items():
             self.__add_item_data(name, raw_item)
 
-    def __add_item_pool(self, name: str, raw: list[dict[str, typing.Any]]):
+    def __add_item_pool(self, name: str, raw: dict[str, typing.Any] | list[dict[str, typing.Any]], make_group: bool = True):
         """
         Add an item pool to the list of item pools.
         """
+
+        if isinstance(raw, dict):
+            self.__add_item_pool(name, raw["items"], raw.get("group", True))
+            return
+
         pool: list[ItemPoolEntry] = []
         for data in raw:
             item = self.__add_reward(data["item"])
@@ -456,12 +465,22 @@ class ListInfo:
 
         self.item_pools[name] = pool
 
-    def __add_item_pool_list(self, raw: dict[str, list[dict[str, typing.Any]]]):
+        if make_group:
+            self.item_groups[name] = [e.item for e in pool]
+
+    def __add_item_pool_list(self, raw: dict[str, dict[str, typing.Any] | list[dict[str, typing.Any]]]):
         """
         Add a list of item pools to the list of item pools.
         """
         for name, pool in raw.items():
             self.__add_item_pool(name, pool)
+
+    def __add_item_group(self, name: str, raw: list[list[typing.Any]]):
+        self.item_groups[name] = [self.__add_reward(item) for item in raw]
+
+    def __add_item_group_list(self, raw: dict[str, list[list[typing.Any]]]):
+        for name, pool in raw.items():
+            self.__add_item_group(name, pool)
 
     def __add_reward(self, reward: list[dict[str, typing.Any]]) -> ItemData:
         """

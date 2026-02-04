@@ -11,3 +11,9 @@ item_pools_template: dict[str, list[ItemPoolEntry]] = {
     "{{name}}": {{pool | emit_list("item_pool_entry") | indent(4)}},
     {% endfor %}
 }
+
+item_groups: dict[str, list[ItemData]] = {
+    {% for name, group in item_groups.items() -%}
+    "{{name}}": {{group | emit_list("item_ref") | indent(4)}},
+    {% endfor %}
+}

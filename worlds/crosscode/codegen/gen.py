@@ -140,6 +140,7 @@ class FileGenerator:
 
         item_pools_complete = template.render(
             item_pools=self.lists.item_pools,
+            item_groups=self.lists.item_groups,
             **self.common_args
         )
 

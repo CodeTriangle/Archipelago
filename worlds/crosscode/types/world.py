@@ -38,6 +38,7 @@ class WorldData:
 
     # item_pools.py
     item_pools_template: dict[str, list[ItemPoolEntry]]
+    item_groups: dict[str, list[ItemData]]
 
     # prog_items.py
     progressive_chains: dict[str, ProgressiveItemChain]
