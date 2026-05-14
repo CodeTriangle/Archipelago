@@ -101,8 +101,9 @@ class OrCondition(Condition):
 class AndCondition(Condition):
     subconditions: list[Condition]
 
-    def satisfied(self, state: CollectionState, player: int, location: int | None, args: LogicDict) -> bool:
-        return all(map(lambda x: x.satisfied(state, player, location, args), self.subconditions))
+    def satisfied(self, player: int, location: int | None, args: LogicDict) -> typing.Callable[[CollectionState], bool]:
+        callbacks = [x.satisfied(player, location, args) for x in self.subconditions]
+        return lambda state: all(map(lambda x: x(state), callbacks))
 
 @dataclass
 class VariableCondition(Condition):
@@ -133,10 +134,9 @@ class VariableEntryCondition(Condition):
     value: str
     desired: bool
 
-    def satisfied(self, state: CollectionState, player: int, location: int | None, args: LogicDict) -> bool:
-        variables = args["variables"]
-
-        return (self.value in variables[self.name]) == self.desired
+    def satisfied(self, player: int, location: int | None, args: LogicDict) -> typing.Callable[[CollectionState], bool]:
+        valid = (self.value in args["variables"][self.name]) == self.desired
+        return lambda _: valid
 
 @dataclass
 class ChestKeyCondition(Condition):
@@ -181,14 +181,16 @@ class ShopSlotCondition(Condition):
 class BotanicsCompletionCondition(Condition):
     amount: int
 
-    def satisfied(self, state: CollectionState, player: int, location: int | None, args: LogicDict) -> bool:
-        collected = sum([
-            amount
-            for region, amount in args["region_botanics_amounts"].items()
-            if state.can_reach_region(region, player)
-        ])
+    def satisfied(self, player: int, location: int | None, args: LogicDict) -> typing.Callable[[CollectionState], bool]:
+        def satisfied_internal(state: CollectionState):
+            collected = sum([
+                amount
+                for region, amount in args["region_botanics_amounts"].items()
+                if state.can_reach_region(region, player)
+            ])
 
-        return collected >= self.amount
+            return collected >= self.amount
+        return satisfied_internal
 
 class NeverCondition(Condition):
     def satisfied(self, player: int, location: int | None, args: LogicDict) -> typing.Callable[[CollectionState], bool]:
