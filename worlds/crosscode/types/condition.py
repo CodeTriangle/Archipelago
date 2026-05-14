@@ -1,6 +1,6 @@
 import typing
 import abc
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from BaseClasses import CollectionState
 from ..options import ShopReceiveMode
@@ -51,16 +51,24 @@ class ItemCondition(Condition):
 @dataclass
 class QuestCondition(Condition):
     quest_name: str
+    event_name: str = field(init=False)
+
+    def __post_init__(self):
+        self.event_name = f"{self.quest_name} (Event)"
 
     def satisfied(self, player: int, location: int | None, args: LogicDict) -> typing.Callable[[CollectionState], bool]:
-        return lambda state: state.has(f"{self.quest_name} (Event)", player)
+        return lambda state: state.has(self.event_name, player)
 
 @dataclass
 class LocationCondition(Condition):
     location_name: str
+    event_name: str = field(init=False)
+
+    def __post_init__(self):
+        self.event_name = f"{self.location_name} (Event)"
 
     def satisfied(self, player: int, location: int | None, args: LogicDict) -> typing.Callable[[CollectionState], bool]:
-        return lambda state: state.has(f"{self.location_name} (Event)", player)
+        return lambda state: state.has(self.event_name, player)
 
 @dataclass
 class RegionCondition(Condition):
