@@ -351,14 +351,17 @@ class ListInfo:
 
         by_shop_name =  f"Shop Unlock: {shop_base_name}"
         by_shop_item = self.__add_shop_unlock_item(by_shop_name)
-        self.shop_unlock_by_shop[shop_name] = ItemPoolEntry(by_shop_item, 1, metadata)
-        self.descriptions[by_shop_item.combo_id] = {
-            "en_US": f"Unlocks \\c[3]all item slots\\c[0] in the shop \\c[3]{real_name}\\c[0]."
-        }
+        if shop_name not in self.shop_unlock_by_shop:
+            # if the shop unlock already exists do nothing
+            # THIS IS A HACK and MUST BE REPLACED with a more permanent solution when metadata is phased out
+            self.shop_unlock_by_shop[shop_name] = ItemPoolEntry(by_shop_item, 1, metadata)
+            self.descriptions[by_shop_item.combo_id] = {
+                "en_US": f"Unlocks \\c[3]all item slots\\c[0] in the shop \\c[3]{real_name}\\c[0]."
+            }
 
-        shop_unlocks = self.item_groups.setdefault(f"Shop Unlocks", [])
-        if by_shop_item not in shop_unlocks:
-            shop_unlocks.append(by_shop_item)
+            shop_unlocks = self.item_groups.setdefault(f"Shop Unlocks", [])
+            if by_shop_item not in shop_unlocks:
+                shop_unlocks.append(by_shop_item)
 
         global_item_group = self.item_groups.setdefault("Global Slot Unlocks", [])
         slots_item_group = self.item_groups.setdefault("Slot Unlocks", [])
