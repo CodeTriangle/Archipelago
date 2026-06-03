@@ -549,7 +549,7 @@ single_items_dict: dict[str, SingleItemData] = {
     'Old Bones': SingleItemData(item_id=180, name='Old Bones', classification=ItemClassification.filler, unique=True),
     'Helix Relic': SingleItemData(item_id=181, name='Helix Relic', classification=ItemClassification.filler, unique=True),
     'Lucid Shard': SingleItemData(item_id=182, name='Lucid Shard', classification=ItemClassification.filler, unique=True),
-    'Everlasting Amber': SingleItemData(item_id=183, name='Everlasting Amber', classification=ItemClassification.filler, unique=True),
+    'Everlasting Amber': SingleItemData(item_id=183, name='Everlasting Amber', classification=ItemClassification.progression, unique=True),
     'Weird Hillkat Tech': SingleItemData(item_id=184, name='Weird Hillkat Tech', classification=ItemClassification.progression, unique=True),
     'Crystal Leek': SingleItemData(item_id=185, name='Crystal Leek', classification=ItemClassification.filler, unique=True),
     'Arid Lumber': SingleItemData(item_id=186, name='Arid Lumber', classification=ItemClassification.filler, unique=True),

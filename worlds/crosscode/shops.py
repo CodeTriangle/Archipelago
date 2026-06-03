@@ -525,7 +525,7 @@ shop_unlock_by_shop = {
     'basinMushroom': ItemPoolEntry(item=items_dict['Shop Unlock: Calzone Shop', 1], quantity=1, metadata={'shop': True}),
     'sapphireWeapons': ItemPoolEntry(item=items_dict['Shop Unlock: Ridge Weapons', 1], quantity=1, metadata={'shop': True}),
     'sapphireItems': ItemPoolEntry(item=items_dict['Shop Unlock: Ridge Items', 1], quantity=1, metadata={'shop': True}),
-    'rhombusWeapons1': ItemPoolEntry(item=items_dict['Shop Unlock: Rhombus Weapons', 1], quantity=1, metadata={'dlc': True, 'shop': True}),
+    'rhombusWeapons1': ItemPoolEntry(item=items_dict['Shop Unlock: Rhombus Weapons', 1], quantity=1, metadata={'shop': True}),
     'rhombusItems1': ItemPoolEntry(item=items_dict['Shop Unlock: Rhombus Items', 1], quantity=1, metadata={'shop': True}),
     'rhombusCurios': ItemPoolEntry(item=items_dict['Shop Unlock: Rhombus Curios', 1], quantity=1, metadata={'shop': True}),
     'rhombusBacker': ItemPoolEntry(item=items_dict['Shop Unlock: Rhombus Backer Items', 1], quantity=1, metadata={'shop': True}),
