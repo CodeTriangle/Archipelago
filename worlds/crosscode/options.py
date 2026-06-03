@@ -262,6 +262,13 @@ class AllowBoosterGrinding(Toggle):
     """
     display_name = "Allow Booster Grinding"
 
+class ChestReveal(Toggle):
+    """
+    If enabled, shows the category of all chests without having to reach the room chests are in first.
+    If disabled, the player must reach the room with chests to know what category the chests are.
+    """
+    display_name = "Chest Reveal"
+
 class RhombusHubUnlock(Toggle):
     """
     If enabled, allows traveling to areas out of order from the hub in Rhombus Square. Allows skipping areas such as
@@ -576,6 +583,7 @@ class CrossCodeOptions(PerGameCommonOptions):
     progressive_equipment: ProgressiveEquipment
     keyrings: Keyrings
     allow_booster_grinding: AllowBoosterGrinding
+    chest_reveal: ChestReveal
 
     shade_shuffle: ShadeShuffle
     element_shuffle: ElementShuffle

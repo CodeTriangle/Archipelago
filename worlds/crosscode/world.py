@@ -794,6 +794,7 @@ class CrossCodeWorld(World):
                 "closedGaia": self.options.closed_gaia.value,
                 "vtSkip": bool(self.options.vt_skip.value),
                 "keyrings": [self.world_data.single_items_dict[name].item_id for name in self.logic_dict["keyrings"]],
+                "chestReveal": bool(self.options.chest_reveal.value),
                 "allowBoosterGrinding": bool(self.options.allow_booster_grinding),
                 "questRando": bool(self.options.quest_rando.value),
                 "hiddenQuestRewardMode": self.options.hidden_quest_reward_mode.current_key,
