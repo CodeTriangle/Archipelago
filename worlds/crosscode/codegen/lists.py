@@ -17,6 +17,7 @@ from ..types.items import ItemData, ProgressiveItemChainSingle, SingleItemData, 
 from ..types.locations import AccessInfo, LocationData
 from ..types.condition import Condition, NeverCondition, RegionCondition, OrCondition, AndCondition, ShopSlotCondition
 from ..types.shops import ShopData
+from ..types.traders import TraderData, SingleTrade
 
 class LocationCategory(StrEnum):
     """
@@ -65,6 +66,14 @@ class ListInfo:
     shop_unlock_by_shop: dict[str, ItemPoolEntry]
     shop_unlock_by_shop_and_id: dict[tuple[str, int], ItemPoolEntry]
     global_slot_region_conditions_list: dict[str, list[Condition]]
+
+    trader_data: dict[str, TraderData]
+    per_trader_locations: dict[str, dict[int, LocationData]]
+    global_trader_locations: dict[int, LocationData]
+    trader_unlock_by_id: dict[int, ItemPoolEntry]
+    trader_unlock_by_trader: dict[str, ItemPoolEntry]
+    trader_unlock_by_trader_and_id: dict[tuple[str, int], ItemPoolEntry]
+    global_trade_region_conditions_list: dict[str, list[Condition]]
 
     region_botanics_amounts: dict[str, dict[str, int]] # { mode => { region => number of plants } }
     botanics_internal_names_to_ids: dict[str, int]
@@ -461,6 +470,16 @@ class ListInfo:
     def __add_shop_list(self, loc_list: dict[str, dict[str, typing.Any]]):
         for name, raw_shop in loc_list.items():
             self.__add_shop(name, raw_shop)
+
+    def __add_trader(self, internal_name: str, raw_trader: dict[str, typing.Any]):
+        trader_name: str = raw_trader["location"]["trader"]
+        area = raw_trader["location"]["area"]
+        area_name = self.ctx.area_names[area]
+
+        metadata = raw_trader["metadata"]
+        metadata["trader"] = True
+
+        access_info = self.json_parser.parse_location_access_info(raw_trader)
 
     def __add_item_data_list(self, item_list: dict[str, dict[str, typing.Any]]):
         """
