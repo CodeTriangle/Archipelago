@@ -168,6 +168,15 @@ class ShopSlotCondition(Condition):
         return True
 
 @dataclass
+class SingleTradeCondition(Condition):
+    trader_name: str
+    item_id: int
+
+    def satisfied(self, state: CollectionState, player: int, location: int | None, args: LogicDict) -> bool:
+        # XXX: need to implement this as tradesanity gets further implemented
+        return True
+
+@dataclass
 class BotanicsCompletionCondition(Condition):
     amount: float
 
