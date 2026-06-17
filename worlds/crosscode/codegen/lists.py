@@ -38,25 +38,74 @@ class ListInfo:
     marker_generator: MarkerGenerator
 
     current_location_code: int
+    """
+    An incrementing counter containing the next location code to dynamically assign to a location.
+    Should not be referenced except by calling `__get_or_allocate_location_id`.
+    """
     current_item_code: int
+    """
+    An incrementing counter containing the next item code to dynamically assign to an item.
+    Should not be referenced except by calling `__get_or_allocate_item_id`.
+    """
 
     locations_data: dict[str, LocationData]
+    """
+    A dict associating location names with LocationData instances.
+    """
     events_data: dict[str, LocationData]
+    """
+    A dict associating event names with LocationData instances.
+    """
     pool_locations: list[LocationData]
+    """
+    A list of locations that should be assumed to be added to the pool at generation time.
+
+    If you do not add locations to this list, they will not be included in the world when generating.
+    You will have to write your own code to conditionally include them in the world.
+    This is sometimes desired, such as with shops, which are complicated due to how many options they have.
+    """
     location_groups: dict[str, list[LocationData]]
+    """
+    A dict of location groups by name. This maps to the Archipelago concept (except that in AP, they just want names).
+    """
 
     locked_locations: list[int]
+    """
+    A list of chests (by ID) that have locks on them in game.
+    """
 
     single_items_dict: dict[str, SingleItemData]
+    """
+    Maps item name to SingleItemData.
+    """
     items_dict: dict[tuple[str, int], ItemData]
+    """
+    Maps item name and quantity to ItemData.
+    """
     dynamic_items: dict[str, ItemData]
+    """
+    A dict of items with dynamically allocated IDs.
+    If you use __get_or_allocate_location_id, you should add the item to this list.
+    """
 
     item_pools: dict[str, list[ItemPoolEntry]]
+    """
+    Item pools are roughly analagous to item groups except that they can have weights or quantities.
+    """
     item_groups: dict[str, list[ItemData]]
+    """
+    A dict of location groups by name. This maps to the Archipelago concept (except that in AP, they just want names).
+    """
 
     reward_amounts: dict[str, int]
+    """
+    Number of rewards given by each location (not investigated anywhere)
+    """
 
     variable_definitions: dict[str, dict[str, list[Condition]]]
+    """
+    List of variable condition definitions.
+    """
 
     shop_data: dict[str, ShopData]
     per_shop_locations: dict[str, dict[int, LocationData]]
