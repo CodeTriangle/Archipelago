@@ -14,10 +14,14 @@ class AccessInfo:
 @dataclass
 class LocationData:
     name: str
+    """The Archipelago item name"""
     code: typing.Optional[int]
+    """The Archipelago item ID"""
     access: AccessInfo
     area: typing.Optional[str] = None
+    """The in-game area (i.e. rookie-harbor for Rookie Harbor)"""
     metadata: typing.Optional[IncludeOptions] = None
+    """Metadata (used to decide whether to include this location)"""
 
     def __hash__(self):
         # Every LocationData instance will have a unique name, so we should not
