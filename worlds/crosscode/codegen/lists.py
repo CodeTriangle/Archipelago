@@ -15,7 +15,11 @@ from .markers import Marker, MarkerGenerator
 
 from ..types.items import ItemData, ProgressiveItemChainSingle, SingleItemData, ItemPoolEntry, ProgressiveItemChain
 from ..types.locations import AccessInfo, LocationData
-from ..types.condition import Condition, NeverCondition, RegionCondition, OrCondition, AndCondition, ShopSlotCondition
+from ..types.condition import (
+    Condition, NeverCondition, RegionCondition,
+    OrCondition, AndCondition, ShopSlotCondition,
+    SingleTradeCondition,
+)
 from ..types.shops import ShopData
 from ..types.traders import TraderData, SingleTrade
 
@@ -120,6 +124,14 @@ class ListInfo:
         self.shop_unlock_by_shop = {}
         self.shop_unlock_by_shop_and_id = {}
         self.global_slot_region_conditions_list = {}
+
+        self.trader_data = {}
+        self.per_trader_locations = defaultdict(dict)
+        self.global_trader_locations = {}
+        self.trader_unlock_by_id = {}
+        self.trader_unlock_by_trader = {}
+        self.trader_unlock_by_trader_and_id = {}
+        self.global_trade_region_conditions_list = {}
 
         self.region_botanics_amounts = defaultdict(lambda: defaultdict(lambda: 0))
         self.botanics_internal_names_to_ids = {}
@@ -472,6 +484,7 @@ class ListInfo:
             self.__add_shop(name, raw_shop)
 
     def __add_trader(self, internal_name: str, raw_trader: dict[str, typing.Any]):
+        # is it possible to simplify this code by combining it with the shop code?
         trader_name: str = raw_trader["location"]["trader"]
         area = raw_trader["location"]["area"]
         area_name = self.ctx.area_names[area]
@@ -480,6 +493,80 @@ class ListInfo:
         metadata["trader"] = True
 
         access_info = self.json_parser.parse_location_access_info(raw_trader)
+
+        # it's empty, but since it's a defaultdict[list], we get an empty list
+        # so we can modify it in-place and it'll get reflected
+        locs = self.per_trader_locations[trader_name]
+
+        unlock = f"Trader Unlock: {trader_name}"
+        # the desired behaviour is identical for shops and traders, so can reuse
+        unlock_item = self.__add_shop_unlock_item(unlock)
+        if trader_name not in self.trader_unlock_by_trader:
+            self.trader_unlock_by_trader[trader_name] = ItemPoolEntry(unlock_item, 1, metadata)
+            self.descriptions[unlock_item.combo_id] = {
+                # oh no the french are invading
+                "en_US": fr"Unlocks \c[3]all trades\c[0] for trader \c[3]{trader_name}\c[0]."
+            }
+
+            trader_unlocks = self.item_groups.setdefault("Trader Unlocks", [])
+            if unlock_item not in trader_unlocks:
+                trader_unlocks.append(unlock_item)
+
+        global_item_group = self.item_groups.setdefault("Global Trader Unlocks", [])
+        trader_area_group = self.item_groups.setdefault(f"Trader Unlocks: {area_name}", [])
+
+        trade_unlocks_group = self.item_groups.setdefault("Trade Unlocks", [])
+        this_trader_unlocks = self.item_groups.setdefault(f"Trade Unlocks: {trader_name}", [])
+
+        for trade_name, trade in raw_trader["trades"].items():
+            t_, name, count = trade["reward"]
+            item_data = self.ctx.rando_data["items"][name]
+            if t_ != "item": # all trades should give an item
+                continue
+
+            trade_loc_name = f"Trade: {trade_name} ({trader_name})"
+            locid = self.__get_or_allocate_location_id(trade_loc_name)
+
+            item_id = item_data["id"]
+
+            trade_location = LocationData(
+                name=trade_loc_name,
+                code=locid,
+                area=area,
+                metadata=metadata,
+                access=AccessInfo(
+                    region={rn: trader_name for rn in access_info.region},
+                    cond=[SingleTradeCondition(trader_name, item_id)]
+                )
+            )
+
+            self.location_groups[area_name].append(trade_location)
+            self.location_groups[f"{area_name} Traders"].append(trade_location)
+
+            locs[item_id] = trade_location
+            self.locations_data[trade_location.name] = trade_location
+
+            global_location = self.global_trader_locations.get(item_id)
+
+            by_trader_and_id_name = f"Trade Unlock: {trade_name} ({trader_name})"
+            by_trader_and_id_item = self.__add_shop_unlock_item(by_trader_and_id_name)
+            self.trader_unlock_by_trader_and_id[internal_name, item_id]
+
+            self.descriptions[by_trader_and_id_item.combo_id] = {
+                "en_US": fr"Unlocks the trade \c[3]{trade_name}\c[0] by trader \c[3]{trader_name}\c[0]."
+            }
+
+            # TODO: finish this method
+            # the goal is to have four lists: 
+            # - every trader
+            # - every trader in a given area
+            # - every trade
+            # - every trade for a given trader
+            # for the area, we want the logically-grouped ones, e.g. "Autumn's Rise"
+            # which would include every trader in Obelisk, but not those in Rookie Harbor
+            # it would also be nice to add that to shops, but that's for later
+
+
 
     def __add_item_data_list(self, item_list: dict[str, dict[str, typing.Any]]):
         """
