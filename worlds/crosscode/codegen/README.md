@@ -424,3 +424,51 @@ to be resiliant and not crash the codegen
 if errors occur when loading the APWorld.
 Just fix the template
 and it should start loading again.
+
+## After codegen (`world_data.py`, `types/world.py`)
+
+Now, let's assume you just added a new template
+or a new element to an existing template
+and you want to use it in APWorld code.
+If you were to simply import that module
+and use the definition from there,
+that would work in the majority of cases
+but it would break the guarantee made
+in the previous section
+that errors derived from broken templates
+do not cause generation to fail.
+
+Instead, I circumvent all of this
+using the `WorldData` class.
+All generated elements are placed
+into an instance of `WorldData`
+instead of being used directly.
+This is for two reasons:
+
+1. First, the instantiation
+of a `WorldData` instance
+can be placed in a try-except block
+so that any error occurring
+throughout the process
+is not fatal to the loading of
+the `world.crosscode` module.
+(Note that errors due to an uninitialized `WorldData`
+are still caught early
+in the generation phase,
+if a generation is attempted.)
+
+2. Second, this allows some flexibility
+with the source of the `WorldData` instance.
+Currently, alternate methods of producing
+a `WorldData` instance are unimplemented,
+but theoretically, it would be possible
+to construct a `WorldData` from a `ListInfo`
+and skip the intermediate step of writing
+to files after codegen.
+
+So, if you add variables or files
+to be created by codegen,
+make sure to modify the type definition
+of the `WorldData` class
+and the instantiation of that class
+in `world_data.py`.
