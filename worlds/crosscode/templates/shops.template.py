@@ -1,6 +1,7 @@
 {{generated_comment | indent("# ", True)}}
 
 from .items import items_dict
+from .types.items import ItemPoolEntry
 from .types.locations import AccessInfo, LocationData
 from .types.shops import ShopData
 from .types.condition import *
@@ -16,8 +17,8 @@ per_shop_locations: dict[str, dict[int, LocationData]] = {
 
 global_shop_locations: dict[int, LocationData] = {{ global_shop_locations.items() | emit_dict("constant", "location_ref") }}
 
-shop_unlock_by_id = {{ shop_unlock_by_id.items() | emit_dict("constant", "item_ref") }}
+shop_unlock_by_id = {{ shop_unlock_by_id.items() | emit_dict("constant", "item_pool_entry") }}
 
-shop_unlock_by_shop = {{ shop_unlock_by_shop.items() | emit_dict("constant", "item_ref") }}
+shop_unlock_by_shop = {{ shop_unlock_by_shop.items() | emit_dict("constant", "item_pool_entry") }}
 
-shop_unlock_by_shop_and_id = {{ shop_unlock_by_shop_and_id.items() | emit_dict("tuple", "item_ref") }}
+shop_unlock_by_shop_and_id = {{ shop_unlock_by_shop_and_id.items() | emit_dict("tuple", "item_pool_entry") }}
