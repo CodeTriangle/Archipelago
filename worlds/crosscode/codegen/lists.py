@@ -8,12 +8,13 @@ import typing
 
 from BaseClasses import ItemClassification
 
-from .parse import JsonParser
+from .parse import JsonParser, JsonParserError
 from .context import Context
 from .util import BASE_ID, DYNAMIC_ITEM_AREA_OFFSET, RESERVED_ITEM_IDS
 from .markers import Marker, MarkerGenerator
 
 from ..types.items import ItemData, ProgressiveItemChainSingle, SingleItemData, ItemPoolEntry, ProgressiveItemChain
+from ..types.enemies import Enemy
 from ..types.locations import AccessInfo, LocationData
 from ..types.condition import Condition, NeverCondition, RegionCondition, OrCondition, AndCondition, ShopSlotCondition
 from ..types.shops import ShopData
@@ -69,6 +70,8 @@ class ListInfo:
     region_botanics_amounts: dict[str, dict[str, int]] # { mode => { region => number of plants } }
     botanics_internal_names_to_ids: dict[str, int]
 
+    enemies: dict[str, Enemy]
+
     progressive_chains: dict[str, ProgressiveItemChain]
     progressive_items: dict[str, ItemData]
 
@@ -114,6 +117,8 @@ class ListInfo:
 
         self.region_botanics_amounts = defaultdict(lambda: defaultdict(lambda: 0))
         self.botanics_internal_names_to_ids = {}
+
+        self.enemies = {}
 
         self.json_parser = JsonParser(self.ctx)
         self.json_parser.single_items_dict = self.single_items_dict
@@ -164,6 +169,8 @@ class ListInfo:
         self.__add_item_group_list(self.ctx.rando_data["itemGroups"])
 
         self.__add_botanics(file["botanics"])
+
+        self.__add_enemies(file["enemies"])
 
         self.__add_vars(self.ctx.rando_data["vars"])
 
@@ -543,6 +550,53 @@ class ListInfo:
     def __add_botanics(self, raw: dict[str, dict[str, typing.Any]]):
         for name, plant in raw.items():
             self.__add_plant(name, plant)
+
+    def __add_enemy(self, raw: dict[str, typing.Any]):
+        try:
+            name = raw["name"]
+            area = raw["area"]
+            internal_name = raw["id"]
+            level = raw["level"]
+        except KeyError:
+            raise JsonParserError(raw, raw, "", f"Enemy specification lacks an essential parameter: {raw}")
+
+        try:
+            first_encounter_access = grind_access = self.json_parser.parse_location_access_info(raw)
+        except JsonParserError:
+            if "firstEncounter" in raw:
+                first_encounter_access = self.json_parser.parse_location_access_info(raw["firstEncounter"])
+            else:
+                raise JsonParserError(raw, raw, "first encounter", f"Enemy must at least have a first encounter")
+
+            if "grindAccess" in raw:
+                grind_access = self.json_parser.parse_location_access_info(raw["grindAccess"])
+            else:
+                grind_access = None
+
+        first_encounter_event = LocationData(
+            name="First Encounter: {name} (Event)",
+            code=None,
+            access=first_encounter_access,
+            area=area,
+            metadata=raw.get("metadata", None),
+        )
+
+        self.events_data[first_encounter_event.name] = first_encounter_event
+
+        if grind_access is not None:
+            grind_access_event = LocationData(
+                name="Grind Access: {name} (Event)",
+                code=None,
+                access=grind_access,
+                area=area,
+                metadata=raw.get("metadata", None),
+            )
+
+            self.events_data[grind_access_event.name] = grind_access_event
+
+    def __add_enemies(self, raw: list[dict[str, typing.Any]]):
+        for enemy in raw:
+            self.__add_enemy(enemy)
 
     def __add_reward(self, reward: list[dict[str, typing.Any]]) -> ItemData:
         """
