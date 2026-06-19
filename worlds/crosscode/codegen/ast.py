@@ -19,7 +19,11 @@ def create_expression_condition(condition: Condition) -> ast.Call:
     result = ast.Call(
         func=ast.Name(condition.__class__.__name__),
         args=[],
-        keywords=[ast.keyword(arg=key, value=ast.Constant(value)) for key, value in condition.__dict__.items()],
+        keywords=[
+            ast.keyword(arg=key, value=ast.Constant(value))
+            for key, value in condition.__dict__.items()
+            if condition.__dataclass_fields__[key].init
+        ],
     )
     ast.fix_missing_locations(result)
 
