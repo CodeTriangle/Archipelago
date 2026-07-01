@@ -20,6 +20,7 @@ def create_expression_dataclass(cls) -> ast.Call:
             ast.keyword(arg=key, value=ast.Constant(value))
             for key, value in cls.__dict__.items()
             if cls.__dataclass_fields__[key].init
+            # and cls.__dataclass_fields__[key].default != value
         ],
     )
     ast.fix_missing_locations(result)
