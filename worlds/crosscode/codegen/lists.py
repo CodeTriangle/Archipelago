@@ -568,34 +568,48 @@ class ListInfo:
             else:
                 raise JsonParserError(raw, raw, "first encounter", f"Enemy must at least have a first encounter")
 
-            if "grindAccess" in raw:
-                grind_access = self.json_parser.parse_location_access_info(raw["grindAccess"])
+            if "grind" in raw:
+                grind_access = self.json_parser.parse_location_access_info(raw["grind"])
             else:
                 grind_access = None
 
+        metadata = raw.get("metadata", {})
         first_encounter_event = LocationData(
-            name="First Encounter: {name} (Event)",
+            name=f"First Encounter: {name} (Event)",
             code=None,
             access=first_encounter_access,
             area=area,
-            metadata=raw.get("metadata", None),
+            metadata=metadata | { "kill": True },
         )
 
         self.events_data[first_encounter_event.name] = first_encounter_event
 
         if grind_access is not None:
-            grind_access_event = LocationData(
-                name="Grind Access: {name} (Event)",
+            grind_event = LocationData(
+                name=f"Grind: {name} (Event)",
                 code=None,
                 access=grind_access,
                 area=area,
-                metadata=raw.get("metadata", None),
+                metadata=metadata | { "combat": True },
             )
 
-            self.events_data[grind_access_event.name] = grind_access_event
+            self.events_data[grind_event.name] = grind_event
+        else:
+            grind_event = None
 
-    def __add_enemies(self, raw: list[dict[str, typing.Any]]):
-        for enemy in raw:
+        enemy = Enemy(
+            name=name,
+            area=area,
+            internal_name=internal_name,
+            level=level,
+            first_encounter_event_name=first_encounter_event.name,
+            grind_event_name=grind_event.name if grind_event is not None else None
+        )
+
+        self.enemies[name] = enemy
+
+    def __add_enemies(self, raw: dict[str, dict[str, typing.Any]]):
+        for enemy in raw.values():
             self.__add_enemy(enemy)
 
     def __add_reward(self, reward: list[dict[str, typing.Any]]) -> ItemData:

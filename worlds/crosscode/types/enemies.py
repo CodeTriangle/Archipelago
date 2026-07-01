@@ -20,9 +20,9 @@ class Enemy:
     """The enemy's name in the game files"""
     level: int
     """The enemy's base level in vanilla"""
-    first_encounter_event: LocationData
+    first_encounter_event_name: str
     """The event that unlocks whether you can fight one instance of the enemy (for killsanity)"""
-    grind_access_event: LocationData | None = field(default=None)
+    grind_event_name: str | None = field(default=None)
     """The event that unlocks whether you can grind the enemy -- if null, enemy cannot be grinded"""
     booster: Booster | None = field(default=None)
     """If the enemy can be boosted, the details about that"""
