@@ -560,9 +560,9 @@ class ListInfo:
         except KeyError:
             raise JsonParserError(raw, raw, "", f"Enemy specification lacks an essential parameter: {raw}")
 
-        try:
+        if "region" in raw:
             first_encounter_access = grind_access = self.json_parser.parse_location_access_info(raw)
-        except JsonParserError:
+        else:
             if "firstEncounter" in raw:
                 first_encounter_access = self.json_parser.parse_location_access_info(raw["firstEncounter"])
             else:
