@@ -624,6 +624,7 @@ class ListInfo:
         )
 
         self.locations_data[kill_loc_name] = kill_location
+        self.pool_locations.append(kill_location)
 
     def __add_enemies(self, raw: dict[str, dict[str, typing.Any]]):
         for enemy in raw.values():
