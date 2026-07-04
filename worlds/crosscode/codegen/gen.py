@@ -271,6 +271,10 @@ class FileGenerator:
                     "byShopAndId": defaultdict(dict)
                 },
             },
+            "enemies": {
+                enemy.internal_name: { "kill": self.lists.locations_data[f"Killsanity: {enemy.name}"].code }
+                for enemy in self.lists.enemies.values()
+            },
             "botanics": self.lists.botanics_internal_names_to_ids,
             "descriptions": self.lists.descriptions,
             "markers": self.lists.markers

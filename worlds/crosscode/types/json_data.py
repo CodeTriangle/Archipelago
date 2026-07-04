@@ -38,9 +38,13 @@ class ExportShopInfo(TypedDict):
     locations: ExportShopLocationsInfo
     unlocks: ExportShopUnlocksInfo
 
+class ExportEnemyInfo(TypedDict):
+    kill: int
+
 class ExportInfo(TypedDict):
     items: dict[str, ExportRoomInfo]
     quests: dict[str, typing.Any]
     shops: ExportShopInfo
     descriptions: dict[int, dict[str, str]]
     markers: dict[int, list[dict[str, typing.Any]]]
+    enemies: dict[str, ExportEnemyInfo]
