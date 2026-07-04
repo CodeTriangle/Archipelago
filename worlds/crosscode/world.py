@@ -171,6 +171,8 @@ class CrossCodeWorld(World):
             "chest": True,
             "quest": bool(self.options.quest_rando.value),
             "botanics": bool(self.options.botanity.value),
+            "combat": False,
+            "kill": bool(self.options.killsanity.value),
         }
 
     def create_location(self, location: str, event_from_location: bool = False) -> CrossCodeLocation:

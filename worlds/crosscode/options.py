@@ -208,6 +208,11 @@ class ShopDialogHints(DefaultOnToggle):
     """
     display_name = "Shop Dialog Hints"
 
+class Killsanity(Toggle):
+    """
+    If enabled, killing every enemy is a check.
+    """
+
 class Botanity(Toggle):
     """
     If enabled, acquiring all the information about each plant by collecting drops is a location.
@@ -571,6 +576,8 @@ class CrossCodeOptions(PerGameCommonOptions):
     shop_send_mode: ShopSendMode
     shop_receive_mode: ShopReceiveMode
 
+    killsanity: Killsanity
+
     botanity: Botanity
 
     start_with_green_leaf_shade: StartWithGreenLeafShade
@@ -626,6 +633,12 @@ option_groups: list[OptionGroup] = [
             ShopDialogHints,
             ShopSendMode,
             ShopReceiveMode
+        ]
+    ),
+    OptionGroup(
+        name="Killsanity",
+        options=[
+            Killsanity,
         ]
     ),
     OptionGroup(

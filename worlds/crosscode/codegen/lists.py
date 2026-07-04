@@ -609,7 +609,7 @@ class ListInfo:
         self.enemies[name] = enemy
 
         kill_loc_name = f"Killsanity: {name}"
-        kill_loc_id = self.__get_or_allocate_location_id(name)
+        kill_loc_id = self.__get_or_allocate_location_id(kill_loc_name)
         kill_location = LocationData(
             name=kill_loc_name,
             code=kill_loc_id,
