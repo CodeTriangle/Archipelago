@@ -16,7 +16,7 @@ from .markers import Marker, MarkerGenerator
 from ..types.items import ItemData, ProgressiveItemChainSingle, SingleItemData, ItemPoolEntry, ProgressiveItemChain
 from ..types.enemies import Enemy
 from ..types.locations import AccessInfo, LocationData
-from ..types.condition import Condition, NeverCondition, RegionCondition, OrCondition, AndCondition, ShopSlotCondition
+from ..types.condition import Condition, ItemCondition, NeverCondition, RegionCondition, OrCondition, AndCondition, ShopSlotCondition
 from ..types.shops import ShopData
 
 class LocationCategory(StrEnum):
@@ -607,6 +607,23 @@ class ListInfo:
         )
 
         self.enemies[name] = enemy
+
+        kill_loc_name = f"Killsanity: {name}"
+        kill_loc_id = self.__get_or_allocate_location_id(name)
+        kill_location = LocationData(
+            name=kill_loc_name,
+            code=kill_loc_id,
+            access=AccessInfo(
+                region={ name: "Menu" for name in first_encounter_access.region },
+                cond=[
+                    ItemCondition(first_encounter_event.name)
+                ],
+            ),
+            area=raw["area"],
+            metadata=metadata | { "kill": True },
+        )
+
+        self.locations_data[kill_loc_name] = kill_location
 
     def __add_enemies(self, raw: dict[str, dict[str, typing.Any]]):
         for enemy in raw.values():
