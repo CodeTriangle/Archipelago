@@ -555,6 +555,7 @@ class ListInfo:
         try:
             name = raw["name"]
             area = raw["area"]
+            area_name = self.ctx.area_names[area]
             internal_name = raw["id"]
             level = raw["level"]
         except KeyError:
@@ -623,8 +624,16 @@ class ListInfo:
             metadata=metadata | { "kill": True },
         )
 
+        if area != None:
+            try:
+                self.location_groups[area_name].append(kill_location)
+                self.location_groups[f"{area_name} Kills"].append(kill_location)
+            except KeyError:
+                print(f"Cannot add location '{name}' in area '{area}'")
+
         self.locations_data[kill_loc_name] = kill_location
         self.pool_locations.append(kill_location)
+        self.location_groups["Kills"].append(kill_location)
 
     def __add_enemies(self, raw: dict[str, dict[str, typing.Any]]):
         for enemy in raw.values():
