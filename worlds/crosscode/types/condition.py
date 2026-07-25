@@ -3,9 +3,11 @@ import abc
 from dataclasses import dataclass, field
 
 from BaseClasses import CollectionState
+from worlds.crosscode.util import maximum_gap
 from ..options import ShopReceiveMode
 
 from .items import ItemPoolEntry
+from .enemies import Enemy
 
 class LogicDict(typing.TypedDict):
     mode: str
@@ -20,6 +22,8 @@ class LogicDict(typing.TypedDict):
     shop_unlock_by_shop_and_id: dict[tuple[str, int], ItemPoolEntry]
     region_botanics_amounts: dict[str, int]
     botanics_completion_amount: int
+    enemies: dict[str, Enemy]
+    maximum_grind_gap: int
 
 class Condition(abc.ABC):
     @abc.abstractmethod
@@ -199,6 +203,25 @@ class BotanicsCompletionCondition(Condition):
             ])
 
             return collected / args["botanics_completion_amount"] >= self.amount
+        return satisfied_internal
+
+@dataclass
+class LevelCondition(Condition):
+    level: int
+
+    def satisfied(self, player: int, location: int | None, args: LogicDict) -> typing.Callable[[CollectionState], bool]:
+        def satisfied_internal(state: CollectionState):
+            levels = [0 for _ in range(self.level)]
+            for enemy in args["enemies"].values():
+                if (
+                    enemy.grind_event_name is not None and
+                    enemy.level < self.level and
+                    state.has(enemy.grind_event_name, player)
+                ):
+                    levels[enemy.level] += 1
+
+            return maximum_gap(levels) <= args["maximum_grind_gap"]
+
         return satisfied_internal
 
 class NeverCondition(Condition):

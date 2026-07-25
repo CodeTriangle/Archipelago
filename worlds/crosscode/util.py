@@ -2,6 +2,7 @@
 Everyone's favorite part of every python library: miscellaneous utility functions anc classes.
 """
 
+import functools
 import typing
 
 K = typing.TypeVar("K")
@@ -36,3 +37,19 @@ class KeyDefaultDict(dict[K, V]):
             raise KeyError( key )
         ret = self[key] = self.default_factory(key)
         return ret
+
+def maximum_gap(counter: list[int]) -> int:
+    """
+    Calculates the maximum number of consecutive elements in a list that are zero.
+    """
+
+    # in the tuple, the first element represents the current largest known gap
+    # and the second element represents the gap that is currently being calculated
+    def gapfun(t: tuple[int, int], d: int) -> tuple[int, int]:
+        return (max(t[0], t[1] + 1), t[1] + 1) if not d else (t[0], 0)
+
+    return functools.reduce(
+        gapfun,
+        counter,
+        initial=(0, 0)
+    )[0]
