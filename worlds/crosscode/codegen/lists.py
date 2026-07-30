@@ -515,6 +515,9 @@ class ListInfo:
         global_item_group = self.item_groups.setdefault("Global Trader Unlocks", [])
         trader_area_group = self.item_groups.setdefault(f"Trader Unlocks: {area_name}", [])
 
+        global_item_group.append(unlock_item)
+        trader_area_group.append(unlock_item)
+
         trade_unlocks_group = self.item_groups.setdefault("Trade Unlocks", [])
         this_trader_unlocks = self.item_groups.setdefault(f"Trade Unlocks: {trader_name}", [])
 
@@ -543,30 +546,19 @@ class ListInfo:
             self.location_groups[area_name].append(trade_location)
             self.location_groups[f"{area_name} Traders"].append(trade_location)
 
+            trade_unlocks_group.append(trade_location)
+            this_trader_unlocks.append(trade_location)
+
             locs[item_id] = trade_location
             self.locations_data[trade_location.name] = trade_location
-
-            global_location = self.global_trader_locations.get(item_id)
 
             by_trader_and_id_name = f"Trade Unlock: {trade_name} ({trader_name})"
             by_trader_and_id_item = self.__add_shop_unlock_item(by_trader_and_id_name)
             self.trader_unlock_by_trader_and_id[internal_name, item_id]
 
             self.descriptions[by_trader_and_id_item.combo_id] = {
-                "en_US": fr"Unlocks the trade \c[3]{trade_name}\c[0] by trader \c[3]{trader_name}\c[0]."
+                "en_US": fr"Unlocks the trade \c[3]{trade_name}\c[0] from trader \c[3]{trader_name}\c[0]."
             }
-
-            # TODO: finish this method
-            # the goal is to have four lists: 
-            # - every trader
-            # - every trader in a given area
-            # - every trade
-            # - every trade for a given trader
-            # for the area, we want the logically-grouped ones, e.g. "Autumn's Rise"
-            # which would include every trader in Obelisk, but not those in Rookie Harbor
-            # it would also be nice to add that to shops, but that's for later
-
-
 
     def __add_item_data_list(self, item_list: dict[str, dict[str, typing.Any]]):
         """
