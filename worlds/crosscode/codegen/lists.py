@@ -127,11 +127,10 @@ class ListInfo:
 
         self.trader_data = {}
         self.per_trader_locations = defaultdict(dict)
-        self.global_trader_locations = {}
-        self.trader_unlock_by_id = {}
+        self.trader_unlock_by_id = {} # unused?
         self.trader_unlock_by_trader = {}
         self.trader_unlock_by_trader_and_id = {}
-        self.global_trade_region_conditions_list = {}
+        self.global_trade_region_conditions_list = {} # ?
 
         self.region_botanics_amounts = defaultdict(lambda: defaultdict(lambda: 0))
         self.botanics_internal_names_to_ids = {}
@@ -559,6 +558,13 @@ class ListInfo:
             self.descriptions[by_trader_and_id_item.combo_id] = {
                 "en_US": fr"Unlocks the trade \c[3]{trade_name}\c[0] from trader \c[3]{trader_name}\c[0]."
             }
+
+        self.trader_data[trader_name] = TraderData(
+            internal_name=internal_name,
+            name=trader_name,
+            access=access_info,
+            metadata=metadata,
+        )
 
     def __add_item_data_list(self, item_list: dict[str, dict[str, typing.Any]]):
         """
