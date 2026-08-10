@@ -104,7 +104,7 @@ class CrossCodeWorld(World):
     pre_fill_any_dungeon: list[CrossCodeItem]
 
     dungeon_location_list: dict[str, set[CrossCodeLocation]]
-    dungeon_areas: typing.ClassVar[set[str]] = {"cold-dng", "heat-dng", "shock-dng", "wave-dng", "tree-dng", "final-dng"}
+    dungeon_areas: typing.ClassVar[list[str]] = ["cold-dng", "heat-dng", "shock-dng", "wave-dng", "tree-dng", "final-dng"]
 
     logic_dict: LogicDict
 
@@ -660,10 +660,7 @@ class CrossCodeWorld(World):
 
     def get_pre_fill_items(self) -> list[Item]:
         pre_fill_items = self.pre_fill_any_dungeon.copy()
-        # self.dungeon_areas is a set, so sort for deterministic results. This probably isn't necessary in most cases,
-        # but other apworlds could do whatever they like with the returned list, so it is safer to return a list with a
-        # deterministic order.
-        for dungeon in sorted(self.dungeon_areas):
+        for dungeon in self.dungeon_areas:
             pre_fill_items.extend(self.pre_fill_specific_dungeons[dungeon])
         return pre_fill_items
 
