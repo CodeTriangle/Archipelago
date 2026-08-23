@@ -256,6 +256,8 @@ class MaximumGrindGap(Range):
     range_start = 5
     range_end = 20
 
+    default = 10
+
     display_name = "Maximum Grind Gap"
 
 class Botanity(Toggle):
