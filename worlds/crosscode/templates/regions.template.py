@@ -14,7 +14,6 @@ region_packs: typing.Dict[str, RegionsData] = {
     "{{mode}}": RegionsData(
         starting_region = "{{r.starting_region}}",
         excluded_regions = {{r.excluded_regions}},
-        region_list = {{r.region_list | emit_list("constant") | indent(8)}},
         region_connections = {{r.region_connections | emit_list("region_connection") | indent(8)}},
         goals = {{r.goals.items() | emit_dict("constant", "goal") | indent(8) }}
     ),

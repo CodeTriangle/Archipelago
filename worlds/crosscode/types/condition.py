@@ -74,6 +74,8 @@ class RegionCondition(Condition):
 
         mode: str = world.logic_mode
         if self.target_mode is None or mode == self.target_mode:
+            if self.region_name not in world.multiworld.regions.region_cache[player]:
+                return lambda _: False
             return lambda state: state.can_reach_region(self.region_name, player)
 
         return lambda _: True
@@ -181,10 +183,16 @@ class BotanicsCompletionCondition(Condition):
     amount: float
 
     def satisfied(self, player: int, location: int | None, world: CrossCodeWorld) -> typing.Callable[[CollectionState], bool]:
+        regions = {
+            region: amount
+            for region, amount in world.world_data.region_botanics_amounts[world.logic_mode].items()
+            if region in world.multiworld.regions.region_cache[player]
+        }
+
         def satisfied_internal(state: CollectionState):
             collected = sum([
                 amount
-                for region, amount in world.world_data.region_botanics_amounts[world.logic_mode].items()
+                for region, amount in regions.items()
                 if state.can_reach_region(region, player)
             ])
 
