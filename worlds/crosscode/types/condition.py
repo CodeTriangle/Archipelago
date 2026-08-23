@@ -84,7 +84,14 @@ class RegionCondition(Condition):
 
         mode: str = args["mode"]
         if self.target_mode is None or mode == self.target_mode:
-            return lambda state: state.can_reach_region(self.region_name, player)
+            # BAD BAD BAD
+            # This will check *every time* this condition is called whether the region exists.
+            # I'm only doing this because I know I'm going to optimize it later.
+            # If we still have to check region existence in the refactor we have to calculate it early.
+            def satisfied_internal(state: CollectionState):
+                if self.region_name not in state.multiworld.regions.region_cache[player]:
+                    return False
+                return state.can_reach_region(self.region_name, player)
 
         return lambda _: True
 
@@ -195,7 +202,9 @@ class BotanicsCompletionCondition(Condition):
             collected = sum([
                 amount
                 for region, amount in args["region_botanics_amounts"].items()
-                if state.can_reach_region(region, player)
+                # See the other comment beginning with "BAD BAD BAD" -- this is bad for the same reason
+                if region in state.multiworld.regions.region_cache[player]
+                and state.can_reach_region(region, player)
             ])
 
             return collected / args["botanics_completion_amount"] >= self.amount
