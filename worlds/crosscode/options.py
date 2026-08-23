@@ -209,9 +209,9 @@ class ShopDialogHints(DefaultOnToggle):
     """
     display_name = "Shop Dialog Hints"
 
-class Killsanity(Toggle):
+class MonsterFibulaRandomization(Toggle):
     """
-    If enabled, killing every enemy is a check.
+    If enabled, defeating every enemy is a check.
     """
 
 class CombatLogic(OptionSet):
@@ -621,7 +621,7 @@ class CrossCodeOptions(PerGameCommonOptions):
     shop_send_mode: ShopSendMode
     shop_receive_mode: ShopReceiveMode
 
-    killsanity: Killsanity
+    monster_fibula_randomization: MonsterFibulaRandomization
     allow_booster_grinding: AllowBoosterGrinding
     combat_logic: CombatLogic
     maximum_grind_gap: MaximumGrindGap
@@ -685,7 +685,7 @@ option_groups: list[OptionGroup] = [
     OptionGroup(
         name="Combat",
         options=[
-            Killsanity,
+            MonsterFibulaRandomization,
             CombatLogic,
             MaximumGrindGap,
             AllowBoosterGrinding,

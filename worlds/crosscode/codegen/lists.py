@@ -598,18 +598,7 @@ class ListInfo:
         else:
             grind_event = None
 
-        enemy = Enemy(
-            name=name,
-            area=area,
-            internal_name=internal_name,
-            level=level,
-            first_encounter_event_name=first_encounter_event.name,
-            grind_event_name=grind_event.name if grind_event is not None else None
-        )
-
-        self.enemies[name] = enemy
-
-        kill_loc_name = f"Killsanity: {name}"
+        kill_loc_name = f"Monster Fibula: {name}"
         kill_loc_id = self.__get_or_allocate_location_id(kill_loc_name)
         kill_location = LocationData(
             name=kill_loc_name,
@@ -624,16 +613,27 @@ class ListInfo:
             metadata=metadata | { "kill": True },
         )
 
-        if area != None:
-            try:
-                self.location_groups[area_name].append(kill_location)
-                self.location_groups[f"{area_name} Kills"].append(kill_location)
-            except KeyError:
-                print(f"Cannot add location '{name}' in area '{area}'")
+        enemy = Enemy(
+            name=name,
+            area=area,
+            internal_name=internal_name,
+            level=level,
+            first_encounter_event_name=first_encounter_event.name,
+            grind_event_name=grind_event.name if grind_event is not None else None
+        )
 
         self.locations_data[kill_loc_name] = kill_location
         self.pool_locations.append(kill_location)
-        self.location_groups["Kills"].append(kill_location)
+        self.location_groups["Monster Defeats"].append(kill_location)
+
+        if area != None:
+            try:
+                self.location_groups[area_name].append(kill_location)
+                self.location_groups[f"{area_name} Monster Defeats"].append(kill_location)
+            except KeyError:
+                print(f"Cannot add location '{name}' in area '{area}'")
+
+        self.enemies[name] = enemy
 
     def __add_enemies(self, raw: dict[str, dict[str, typing.Any]]):
         for enemy in raw.values():
