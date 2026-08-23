@@ -436,6 +436,9 @@ class CrossCodeWorld(World):
             "shop_unlock_by_shop_and_id": self.world_data.shop_unlock_by_shop_and_id,
             "region_botanics_amounts": self.world_data.region_botanics_amounts[self.logic_mode],
             "botanics_completion_amount": self.options.botanics_completion_amount.value,
+            "enemies": self.world_data.enemies,
+            "combat_logic_flag": self.options.combat_logic.flag(),
+            "maximum_grind_gap": self.options.maximum_grind_gap.value,
         }
 
         # Universal Tracker support

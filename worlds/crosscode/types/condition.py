@@ -1,13 +1,16 @@
+from __future__ import annotations
 import typing
 import abc
 from dataclasses import dataclass, field
 
 from BaseClasses import CollectionState
 from worlds.crosscode.util import maximum_gap
-from ..options import ShopReceiveMode
+from ..options import CombatLogic, ShopReceiveMode
 
 from .items import ItemPoolEntry
-from .enemies import Enemy
+
+if typing.TYPE_CHECKING:
+    from .enemies import Enemy
 
 class LogicDict(typing.TypedDict):
     mode: str
@@ -23,6 +26,7 @@ class LogicDict(typing.TypedDict):
     region_botanics_amounts: dict[str, int]
     botanics_completion_amount: int
     enemies: dict[str, Enemy]
+    combat_logic_flag: CombatLogic.Flag
     maximum_grind_gap: int
 
 class Condition(abc.ABC):
@@ -206,11 +210,11 @@ class BotanicsCompletionCondition(Condition):
         return satisfied_internal
 
 @dataclass
-class LevelCondition(Condition):
+class CombatCondition(Condition):
     level: int
 
     def satisfied(self, player: int, location: int | None, args: LogicDict) -> typing.Callable[[CollectionState], bool]:
-        def satisfied_internal(state: CollectionState):
+        def player_level_satisfied(state: CollectionState):
             levels = [0 for _ in range(self.level)]
             for enemy in args["enemies"].values():
                 if (
@@ -219,10 +223,20 @@ class LevelCondition(Condition):
                     state.has(enemy.grind_event_name, player)
                 ):
                     levels[enemy.level] += 1
-
             return maximum_gap(levels) <= args["maximum_grind_gap"]
 
-        return satisfied_internal
+        def equip_level_satisfied(state: CollectionState):
+            max(item for item in state.prog_items[player])
+            return True
+
+        if args["combat_logic_flag"] == CombatLogic.Flag.PLAYER | CombatLogic.Flag.EQUIP:
+            return lambda state: equip_level_satisfied(state) and player_level_satisfied(state)
+        elif args["combat_logic_flag"] == CombatLogic.Flag.PLAYER:
+            return player_level_satisfied
+        elif args["combat_logic_flag"] == CombatLogic.Flag.EQUIP:
+            return equip_level_satisfied
+        else:
+            return lambda: True
 
 class NeverCondition(Condition):
     def satisfied(self, player: int, location: int | None, args: LogicDict) -> typing.Callable[[CollectionState], bool]:

@@ -3,6 +3,7 @@ This module provides the options and option dataclass for the Options dataclass.
 """
 
 from dataclasses import dataclass
+from enum import IntFlag
 
 from Options import Choice, DefaultOnToggle, NamedRange, OptionGroup, OptionSet, PerGameCommonOptions, Toggle, Range
 
@@ -221,6 +222,10 @@ class CombatLogic(OptionSet):
     If equipment_level is included, then you must have received equipment of high enough level to take on the check.
     """
 
+    class Flag(IntFlag):
+        PLAYER = 0x1
+        EQUIP = 0x2
+
     display_name = "Combat Logic"
 
     default = {
@@ -232,6 +237,12 @@ class CombatLogic(OptionSet):
         "player_level",
         "equipment_level",
     }
+
+    def flag(self) -> Flag:
+        return (
+            (CombatLogic.Flag.PLAYER if "player_level" in self.value else CombatLogic.Flag(0)) |
+            (CombatLogic.Flag.EQUIP if "equipment_level" in self.value else CombatLogic.Flag(0))
+        )
 
 class MaximumGrindGap(Range):
     """
@@ -612,6 +623,7 @@ class CrossCodeOptions(PerGameCommonOptions):
 
     killsanity: Killsanity
     allow_booster_grinding: AllowBoosterGrinding
+    combat_logic: CombatLogic
     maximum_grind_gap: MaximumGrindGap
 
     botanity: Botanity
@@ -673,11 +685,10 @@ option_groups: list[OptionGroup] = [
     OptionGroup(
         name="Combat",
         options=[
-            AllowBoosterGrinding,
             Killsanity,
             CombatLogic,
-            AllowBoosterGrinding,
             MaximumGrindGap,
+            AllowBoosterGrinding,
         ]
     ),
     OptionGroup(

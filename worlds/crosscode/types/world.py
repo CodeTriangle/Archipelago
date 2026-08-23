@@ -5,6 +5,7 @@ from .locations import LocationData
 from .regions import RegionsData
 from .shops import ShopData
 from .condition import Condition
+from .enemies import Enemy
 
 @dataclass
 class WorldData:
@@ -36,6 +37,9 @@ class WorldData:
     shop_unlock_by_id: dict[int, ItemPoolEntry]
     shop_unlock_by_shop: dict[str, ItemPoolEntry]
     shop_unlock_by_shop_and_id: dict[tuple[str, int], ItemPoolEntry]
+
+    # enemies.py
+    enemies: dict[str, Enemy]
 
     # item_pools.py
     item_pools_template: dict[str, list[ItemPoolEntry]]
