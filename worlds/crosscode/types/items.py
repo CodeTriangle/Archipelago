@@ -7,11 +7,17 @@ import typing
 from BaseClasses import Item, ItemClassification
 
 @dataclass
+class EquipmentData:
+    equip_type: str
+    level: int
+
+@dataclass
 class SingleItemData:
     name: str
     item_id: int
     classification: ItemClassification
     unique: bool = False
+    equip_data: EquipmentData | None = None
 
 def get_combo_id(item: SingleItemData, amount: int) -> int:
     return BASE_ID + RESERVED_ITEM_IDS + NUM_ITEMS * (amount - 1) + item.item_id

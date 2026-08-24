@@ -3,8 +3,9 @@ This module provides the options and option dataclass for the Options dataclass.
 """
 
 from dataclasses import dataclass
+from enum import IntFlag
 
-from Options import Choice, DefaultOnToggle, NamedRange, OptionGroup, PerGameCommonOptions, Toggle, Range
+from Options import Choice, DefaultOnToggle, NamedRange, OptionGroup, OptionSet, PerGameCommonOptions, Toggle, Range
 
 # class LogicMode(Choice):
 #     """
@@ -207,6 +208,57 @@ class ShopDialogHints(DefaultOnToggle):
     non-filler shop items.
     """
     display_name = "Shop Dialog Hints"
+
+class MonsterFibulaRandomization(Toggle):
+    """
+    If enabled, defeating every enemy is a check.
+    """
+
+class CombatLogic(OptionSet):
+    """
+    Determines what must be done to consider a combat check in logic. If in doubt, leave this default.
+
+    If player_level is included, then you must have enough enemies in logic to grind to the level in question.
+    If equipment_level is included, then you must have received equipment of high enough level to take on the check.
+    """
+
+    class Flag(IntFlag):
+        PLAYER = 0x1
+        EQUIP = 0x2
+
+    display_name = "Combat Logic"
+
+    default = {
+        "player_level",
+        "equipment_level",
+    }
+
+    valid_keys = {
+        "player_level",
+        "equipment_level",
+    }
+
+    def flag(self) -> Flag:
+        return (
+            (CombatLogic.Flag.PLAYER if "player_level" in self.value else CombatLogic.Flag(0)) |
+            (CombatLogic.Flag.EQUIP if "equipment_level" in self.value else CombatLogic.Flag(0))
+        )
+
+class MaximumGrindGap(Range):
+    """
+    The maximum amount the player can be underleveled to consider checks that require combat in logic. For instance,
+    if this value is set at 10, then you may be required to fight enemies 10 levels over your current level.
+
+    When player level logic is on, this determines the maximum gap between enemy levels you are willing to grind.
+    When equipment level logic is on, this determines how close your highest received equipment must be.
+    """
+
+    range_start = 5
+    range_end = 20
+
+    default = 10
+
+    display_name = "Maximum Grind Gap"
 
 class Botanity(Toggle):
     """
@@ -571,6 +623,11 @@ class CrossCodeOptions(PerGameCommonOptions):
     shop_send_mode: ShopSendMode
     shop_receive_mode: ShopReceiveMode
 
+    monster_fibula_randomization: MonsterFibulaRandomization
+    allow_booster_grinding: AllowBoosterGrinding
+    combat_logic: CombatLogic
+    maximum_grind_gap: MaximumGrindGap
+
     botanity: Botanity
 
     start_with_green_leaf_shade: StartWithGreenLeafShade
@@ -582,7 +639,6 @@ class CrossCodeOptions(PerGameCommonOptions):
     progressive_area_unlocks: ProgressiveAreaUnlocks
     progressive_equipment: ProgressiveEquipment
     keyrings: Keyrings
-    allow_booster_grinding: AllowBoosterGrinding
     chest_reveal: ChestReveal
 
     shade_shuffle: ShadeShuffle
@@ -626,6 +682,15 @@ option_groups: list[OptionGroup] = [
             ShopDialogHints,
             ShopSendMode,
             ShopReceiveMode
+        ]
+    ),
+    OptionGroup(
+        name="Combat",
+        options=[
+            MonsterFibulaRandomization,
+            CombatLogic,
+            MaximumGrindGap,
+            AllowBoosterGrinding,
         ]
     ),
     OptionGroup(

@@ -147,7 +147,7 @@ class Pools:
 
         result = True
 
-        for var in ("dlc", "trade", "shop", "arena", "chest", "quest", "botanics"):
+        for var in ("dlc", "trade", "shop", "arena", "chest", "quest", "botanics", "combat", "kill"):
             val = metadata.get(var)
 
             if val is None:

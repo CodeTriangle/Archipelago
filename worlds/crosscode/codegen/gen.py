@@ -215,6 +215,20 @@ class FileGenerator:
         with open(os.path.join(self.world_dir, "shops.py"), "w", encoding="utf8") as f:
             f.write(locations_complete)
 
+    def generate_python_file_enemies(self):
+        """
+        Generates enemies.py, which provides a list of enemies.
+        """
+        template = self.environment.get_template("enemies.template.py")
+
+        locations_complete = template.render(
+            enemies=self.lists.enemies.items(),
+            **self.common_args
+        )
+
+        with open(os.path.join(self.world_dir, "enemies.py"), "w", encoding="utf8") as f:
+            f.write(locations_complete)
+
 
     def generate_python_files(self) -> None:
         """
@@ -228,6 +242,7 @@ class FileGenerator:
         self.generate_python_file_regions()
         self.generate_python_file_vars()
         self.generate_python_file_shops()
+        self.generate_python_file_enemies()
 
     def generate_mod_files(self):
         """
@@ -255,6 +270,10 @@ class FileGenerator:
                     "byShop": {},
                     "byShopAndId": defaultdict(dict)
                 },
+            },
+            "enemies": {
+                enemy.internal_name: { "kill": self.lists.locations_data[f"Monster Fibula: {enemy.name}"].code }
+                for enemy in self.lists.enemies.values()
             },
             "botanics": self.lists.botanics_internal_names_to_ids,
             "descriptions": self.lists.descriptions,
