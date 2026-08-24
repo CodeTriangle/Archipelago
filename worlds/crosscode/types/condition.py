@@ -217,9 +217,26 @@ class CombatCondition(Condition):
                     levels[enemy.level] += 1
             return maximum_gap(levels) <= world.options.maximum_grind_gap
 
-        def equip_level_satisfied(state: CollectionState):
-            max(item for item in state.prog_items[player])
-            return True
+        if world.options.progressive_equipment.value:
+            def equip_level_satisfied(state: CollectionState):
+                return True
+        else:
+            def equip_level_satisfied(state: CollectionState):
+                maxima = { "HEAD": 0, "FEET": 0, "TORSO": 0 }
+                max_arm = [0, 0]
+                for item_name in state.prog_items[player]:
+                    item = world.world_data.items_by_full_name[item_name]
+                    equip_data = item.item.equip_data
+                    if equip_data is None:
+                        continue
+                    if equip_data.equip_type == "ARM":
+                        max_arm.append(equip_data.level)
+                        max_arm.sort()
+                        max_arm.pop()
+                        continue
+                    maxima[equip_data.equip_type] = max(maxima[equip_data.equip_type], equip_data.level)
+                average_level = sum(maxima.values()) + sum(max_arm) / 6
+                return average_level + world.options.maximum_grind_gap >= self.level
 
         if world.combat_logic_flag == CombatLogic.Flag.PLAYER | CombatLogic.Flag.EQUIP:
             return lambda state: equip_level_satisfied(state) and player_level_satisfied(state)
