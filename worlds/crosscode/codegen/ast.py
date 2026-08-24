@@ -176,6 +176,12 @@ def create_expression_single_item(data: SingleItemData):
             value=ast.Constant(True)
         ))
 
+    if data.equip_data is not None:
+        ast_item.keywords.append(ast.keyword(
+            arg="equip_data",
+            value=create_expression_dataclass(data.equip_data)
+        ))
+
     ast.fix_missing_locations(ast_item)
     return ast_item
 

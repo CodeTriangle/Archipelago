@@ -10,7 +10,7 @@ from BaseClasses import ItemClassification
 from .context import Context
 from .util import BASE_ID, RESERVED_ITEM_IDS, get_item_classification
 
-from ..types.items import ItemData, ProgressiveChainEntry, ProgressiveItemChain, ProgressiveItemChainSingle, ProgressiveItemChainMulti, ProgressiveItemSubchain, SingleItemData
+from ..types.items import ItemData, ProgressiveChainEntry, ProgressiveItemChain, ProgressiveItemChainSingle, ProgressiveItemChainMulti, ProgressiveItemSubchain, SingleItemData, EquipmentData
 from ..types.locations import AccessInfo, Condition
 from ..types.regions import Goal, RegionConnection, RegionsData
 from ..types.condition import *
@@ -227,6 +227,12 @@ class JsonParser:
                 item=single_item,
                 amount=1
             )
+
+            if db_entry.get("type", None) == "EQUIP" and raw.get("providesLevels", True):
+                single_item.equip_data = EquipmentData(
+                    equip_type=db_entry["equipType"],
+                    level=self.ctx.item_data[single_item.item_id]["level"],
+                )
 
         return single_item, item
 

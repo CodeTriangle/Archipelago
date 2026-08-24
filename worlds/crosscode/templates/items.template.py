@@ -4,7 +4,7 @@ from collections import defaultdict
 from BaseClasses import ItemClassification
 from worlds.crosscode.types.items import get_info_from_full_name
 from .util import KeyDefaultDict
-from .types.items import ItemData, SingleItemData
+from .types.items import EquipmentData, ItemData, SingleItemData
 
 num_items = {{num_items}}
 
