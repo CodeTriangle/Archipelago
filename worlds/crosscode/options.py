@@ -570,6 +570,7 @@ class CrossCodeOptions(PerGameCommonOptions):
     goal: Goal
     enable_dlc: EnableDLC
     circuit_overrides: CircuitOverrides
+    progressive_sp_unlocks: ProgressiveSPUnlocks
     vt_shade_lock: VTShadeLock
     vw_meteor_passage: VWMeteorPassage
     vt_skip: VTSkip
@@ -596,7 +597,6 @@ class CrossCodeOptions(PerGameCommonOptions):
     rhombus_hub_unlock: RhombusHubUnlock
     progressive_area_unlocks: ProgressiveAreaUnlocks
     progressive_equipment: ProgressiveEquipment
-    progressive_sp_unlocks: ProgressiveSPUnlocks
     keyrings: Keyrings
     allow_booster_grinding: AllowBoosterGrinding
     chest_reveal: ChestReveal
