@@ -295,7 +295,7 @@ class CrossCodeWorld(World):
             )
 
         if (
-            self.options.goal.value == self.options.goal.option_facilityx and
+            self.options.goal.value == self.options.goal.option_facility_x and
             not self.options.quest_rando.value
         ):
             raise OptionError(

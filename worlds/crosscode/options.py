@@ -34,7 +34,7 @@ class Goal(Choice):
     option_creator = 0
     option_monkey = 1
     option_observatory = 2
-    option_facilityx = 3
+    option_facility_x = 3
     option_diorbis = 4
     default = 0
 
