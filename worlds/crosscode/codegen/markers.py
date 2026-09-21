@@ -131,6 +131,10 @@ class MarkerGenerator:
         mx = tx * 8
         my = ty * 8
 
+        if "markerOverrides" in raw_loc:
+            mx += raw_loc["markerOverrides"].get("offsetX", 0)
+            my += raw_loc["markerOverrides"].get("offsetY", 0)
+
         settings = {}
 
         if raw_entity["type"] == "Chest":
