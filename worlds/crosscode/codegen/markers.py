@@ -134,7 +134,8 @@ class MarkerGenerator:
         settings = {}
 
         if raw_entity["type"] == "Chest":
-            settings["defaultClearance"] = raw_loc.get("visualClearance", raw_loc.get("clearance", "Default"))
+            overrides = raw_loc.get("markerOverrides", raw_loc)
+            settings["defaultClearance"] = overrides.get("clearance", "Default")
 
         return {
             "type": raw_entity["type"],
