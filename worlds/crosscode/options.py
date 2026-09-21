@@ -27,6 +27,7 @@ class Goal(Choice):
     [Monkey] Ascend the Grand Krys'kajo and defeat the Son of the East.
     [Observatory] Complete all five A Promise is a Promise quests and uncover the secret of the Observatory.
     [Di'orbis] Descend Ku'lero temple and defeat the Gods of Shape. Requires DLC to be enabled.
+    [FacilityX] Obtain four encrypted keys and enter the Facility X. Requires Quest Randomizer to be enabled.
     """
     display_name = "Goal"
 
@@ -34,6 +35,7 @@ class Goal(Choice):
     option_monkey = 1
     option_observatory = 2
     option_diorbis = 3
+    option_facilityx = 4
     default = 0
 
 
