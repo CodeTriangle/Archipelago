@@ -68,10 +68,13 @@ class MarkerGenerator:
         map = self.__load_map(map_name, meta.get("dlc", False))
 
         raw_entity = None
-        for entity in map["entities"]:
-            if entity["settings"].get("mapId", None) == map_id:
-                raw_entity = entity
-                break
+        if "markerOverrides" in raw_loc and "entity" in raw_loc["markerOverrides"]:
+            raw_entity = raw_loc["markerOverrides"]["entity"]
+        else:
+            for entity in map["entities"]:
+                if entity["settings"].get("mapId", None) == map_id:
+                    raw_entity = entity
+                    break
 
         if raw_entity is None:
             return None
