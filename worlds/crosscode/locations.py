@@ -346,7 +346,7 @@ locations_data = [
     LocationData(code=3235824335, name="So'najiz U1: Trial of Persistence Upper Right", area='wave-dng', access=AccessInfo(region={'linear': '26.5', 'open': 'open14.2'}, cond=[ChestKeyCondition(default_level='Default')])),
     LocationData(code=3235824336, name="So'najiz U1: Trial of Persistence Rightmost", area='wave-dng', access=AccessInfo(region={'open': 'open10.Left'}, cond=[ChestKeyCondition(default_level='Default')])),
     LocationData(code=3235824337, name="So'najiz U1: Trial of Persistence Upper Left", area='wave-dng', access=AccessInfo(region={'linear': '26.5', 'open': 'open14.2'}, cond=[ChestKeyCondition(default_level='Silver')])),
-    LocationData(code=3235824338, name="So'najiz U1: Trial of Persistence Lower Left", area='wave-dng', access=AccessInfo(region={'linear': '26.5', 'open': 'open14.3'})),
+    LocationData(code=3235824338, name="So'najiz U1: Trial of Persistence Lower Left", area='wave-dng', access=AccessInfo(region={'linear': '26.5', 'open': 'open14.2'})),
     LocationData(code=3235824339, name="So'najiz U1: Moving Attraction", area='wave-dng', access=AccessInfo(region={'open': 'open14.1'}, cond=[ChestKeyCondition(default_level='Default')])),
     LocationData(code=3235824340, name="So'najiz U1: Slowing Attraction", area='wave-dng', access=AccessInfo(region={'open': 'open10.Left'}, cond=[ItemCondition(item_name="So'najiz Key", amount=3), ChestKeyCondition(default_level='Default')])),
     LocationData(code=3235824341, name="So'najiz U1: Standing Attraction", area='wave-dng', access=AccessInfo(region={'open': 'open14.1'}, cond=[ChestKeyCondition(default_level='Default')])),
