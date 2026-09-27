@@ -571,6 +571,10 @@ class CrossCodeWorld(World):
             self.multiworld.itempool.append(self.create_item("Circuit Override"))
         num_needed_items -= self.options.circuit_overrides.value
 
+        for _ in range(self.options.progressive_sp_unlocks.value):
+            self.multiworld.itempool.append(self.create_item("SP Upgrade"))
+        num_needed_items -= self.options.progressive_sp_unlocks.value
+
         if self.options.shop_rando.value:
             if self.options.shop_send_mode.value == ShopSendMode.option_per_item_type:
                 num_needed_items += len(self.pools.global_shop_location_pool)

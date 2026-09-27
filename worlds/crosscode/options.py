@@ -249,6 +249,21 @@ class StartWithPet(DefaultOnToggle):
     """
     display_name = "Start with Pet"
 
+class ProgressiveSPUnlocks(NamedRange):
+    """
+    Number of Progressive SP Unlocks to be shuffled into the pool.
+    """
+    display_name = "Progressive SP Unlocks"
+
+    range_start = 1
+    range_end = 12
+
+    default = 2
+    special_range_names = {
+        "vanilla": 2,
+        "dlc": 3,
+    }
+
 class Keyrings(Toggle):
     """
     If enabled, all keys for each dungeon will be replaced with a singular item that unlocks every door in that dungeon.
@@ -555,6 +570,7 @@ class CrossCodeOptions(PerGameCommonOptions):
     goal: Goal
     enable_dlc: EnableDLC
     circuit_overrides: CircuitOverrides
+    progressive_sp_unlocks: ProgressiveSPUnlocks
     vt_shade_lock: VTShadeLock
     vw_meteor_passage: VWMeteorPassage
     vt_skip: VTSkip
