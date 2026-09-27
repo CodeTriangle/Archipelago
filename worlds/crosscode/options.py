@@ -6,7 +6,7 @@ from dataclasses import dataclass
 
 from Options import Choice, DefaultOnToggle, NamedRange, OptionGroup, PerGameCommonOptions, Toggle, Range, OptionCounter
 
-TRAPS_LIST = ['Bomb Trap', 'Laser Of Doom Trap', 'Ice Cage Trap', 'Drunk Trap', 'Naked Trap', 'Override Trap', 'Forgetfulness Trap', 'Overload Trap', 'Poverty Trap', 'Element Swap Trap', 'Combo Breaker Trap', 'Zoom Trap', 'Zoom Out Trap', 'SP Trap', 'Landmark Trap', 'Artless Trap', 'Winded Trap', 'Clumsy Trap']
+TRAPS_LIST = ["Bomb Trap", "Laser Of Doom Trap", "Drunk Trap", "Naked Trap", "Override Trap", "Forgetfulness Trap", "Overload Trap", "Poverty Trap", "Element Swap Trap", "Combo Breaker Trap", "Zoom Trap", "Zoom Out Trap", "SP Trap", "Landmark Trap", "Artless Trap", "Winded Trap", "Clumsy Trap", "Burglar's Rope Trap", "Full Course Trap", "Death Trap", "Rotate Trap", "Full Rotate Trap", "Voidout Trap", "Slip Trap"]
 
 # class LogicMode(Choice):
 #     """
