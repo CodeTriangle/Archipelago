@@ -86,6 +86,7 @@ region_packs: typing.Dict[str, RegionsData] = {
             'creator': Goal(region='open18', condition=[ItemCondition(item_name='Heat', amount=1), ItemCondition(item_name='Cold', amount=1), ItemCondition(item_name='Shock', amount=1), ItemCondition(item_name='Wave', amount=1), VariableCondition(name='vtShadeLock')]),
             'monkey': Goal(region='open15.3', condition=None),
             'observatory': Goal(region='open2', condition=[LocationCondition(location_name='The Observatory')]),
+            'facility_x': Goal(region='open16.1', condition=[ItemCondition(item_name='Encrypted Key', amount=4), RegionCondition(target_mode='open', region_name='open3'), RegionCondition(target_mode='open', region_name='open5'), RegionCondition(target_mode='open', region_name='open9'), RegionCondition(target_mode='open', region_name='open10.Right')]),
             'diorbis': Goal(region='openDLC_DungeonBoss', condition=None),
         }
     ),
