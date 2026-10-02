@@ -193,6 +193,22 @@ class CrossCodeWorld(World):
         """
         return CrossCodeItem(self.player, self.world_data.items_by_full_name[name])
 
+    def get_trap_items(self, k: int = 1) -> list[CrossCodeItem]:
+        """
+        Get a list of CrossCodeItem instances chosen randomly from the weighted trap pools.
+        """
+        k = int(k * (self.options.trap_percentage / 100))
+        names: list[str] = list(self.options.trap_weights.value.keys())
+        weights: list[int] = list(self.options.trap_weights.value.values())
+
+        trap_pool = self.random.choices(names, weights=weights, k=k)
+
+        result: list[CrossCodeItem] = []
+        for trap in trap_pool:
+            result.append(self.create_item(trap))
+        
+        return result
+
     def get_filler_pool_names(self, k: int = 1) -> list[str]:
         """
         Get a list of filler pools from which you can pull.
@@ -204,12 +220,13 @@ class CrossCodeWorld(World):
         Generate a random filler item name based on the weighted filler pools.
         """
         return self.pools.pull_items_from_pool(self.get_filler_pool_names()[0], self.random)[0].name
-
+    
     def get_filler_item_data(self, k: int = 1) -> list[ItemData]:
         """
         Get a list of item data instances chosen randomly from the weighted filler pools.
         """
         pool_count = Counter(self.get_filler_pool_names(k))
+
         result: list[ItemData] = []
         for name, cnt in pool_count.items():
             result.extend(self.pools.pull_items_from_pool(name, self.random, cnt))
@@ -648,6 +665,12 @@ class CrossCodeWorld(World):
 
                 if add_to_pool:
                     self.multiworld.itempool.append(item)
+
+        # Add traps into the pool depending on the filler replace percentage. Having trap weights set to 0 will 
+        if sum(self.options.trap_weights.values()) and self.options.trap_percentage >= 0:
+            trap_pool = self.get_trap_items(num_needed_items)
+            self.multiworld.itempool.extend(trap_pool)
+            num_needed_items -= len(trap_pool)    
 
         # Add filler items to fill up the pool.
         self.multiworld.itempool.extend(self.get_filler_items(num_needed_items))
