@@ -295,6 +295,14 @@ class CrossCodeWorld(World):
             )
 
         if (
+            self.options.goal.value == self.options.goal.option_facility_x and
+            not self.options.quest_rando.value
+        ):
+            raise OptionError(
+                "Facility X goal requires quest randomization to be enabled"
+            )
+            
+        if (
             self.options.goal.value == self.options.goal.option_diorbis and
             not self.options.enable_dlc.value
         ):
