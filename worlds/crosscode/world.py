@@ -529,11 +529,18 @@ class CrossCodeWorld(World):
                 self.region_dict[conn.region_to] = Region(conn.region_to, self.player, self.multiworld)
             if conn.region_from not in self.region_dict:
                 self.region_dict[conn.region_from] = Region(conn.region_from, self.player, self.multiworld)
+            callback = condition_satisfied(self.player, conn.cond, None, self) if conn.cond is not None else None
             self.region_dict[conn.region_from].connect(
                 self.region_dict[conn.region_to],
                 f"{conn.region_from} => {conn.region_to}",
-                condition_satisfied(self.player, conn.cond, None, self) if conn.cond is not None else None
+                callback
             )
+            if conn.bidirectional:
+                self.region_dict[conn.region_to].connect(
+                    self.region_dict[conn.region_from],
+                    f"{conn.region_from} <= {conn.region_to}",
+                    callback
+                )
 
             self.create_event_conditions(conn.cond)
 
