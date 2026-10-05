@@ -26,7 +26,7 @@ from .types.regions import RegionsData
 from .types.metadata import IncludeOptions
 from .types.pools import Pools
 from .types.slot import SlotData
-from .options import CrossCodeOptions, ShopReceiveMode, ShopSendMode, StartWithDiscs, ProgressiveAreaUnlocks, option_groups, TrapWeights, init_options_with_world_data
+from .options import CrossCodeOptions, ShopReceiveMode, ShopSendMode, StartWithDiscs, ProgressiveAreaUnlocks, option_groups
 
 cclogger = logging.getLogger(__name__)
 
@@ -844,5 +844,3 @@ class CrossCodeWorld(World):
     @staticmethod
     def interpret_slot_data(slot_data: SlotData) -> SlotData:
         return slot_data
-
-init_options_with_world_data(CrossCodeWorld.world_data)

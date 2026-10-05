@@ -1,15 +1,12 @@
 """
 This module provides the options and option dataclass for the Options dataclass.
 """
-from __future__ import annotations
-import typing
 
 from dataclasses import dataclass
 
 from Options import Choice, DefaultOnToggle, NamedRange, OptionGroup, PerGameCommonOptions, Toggle, Range, OptionCounter
 
-if typing.TYPE_CHECKING:
-    from worlds.crosscode.types.world import WorldData
+TRAPS_LIST = ["Bomb Trap", "Laser Of Doom Trap", "Drunk Trap", "Naked Trap", "Override Trap", "Forgetfulness Trap", "Overload Trap", "Poverty Trap", "Element Swap Trap", "Combo Breaker Trap", "Zoom Trap", "Zoom Out Trap", "SP Trap", "Landmark Trap", "Artless Trap", "Winded Trap", "Clumsy Trap", "Burglar's Rope Trap", "Full Course Trap", "Death Trap", "Rotate Trap", "Full Rotate Trap", "Voidout Trap", "Slip Trap"]
 
 # class LogicMode(Choice):
 #     """
@@ -256,11 +253,11 @@ class StartWithPet(DefaultOnToggle):
     """
     display_name = "Start with Pet"
 
-class SPUpgrades(NamedRange):
+class ProgressiveSPUnlocks(NamedRange):
     """
-    Number of SP Upgrades to be shuffled into the pool.
+    Number of Progressive SP Unlocks to be shuffled into the pool.
     """
-    display_name = "SP Upgrades"
+    display_name = "Progressive SP Unlocks"
 
     range_start = 1
     range_end = 12
@@ -574,6 +571,8 @@ class TrapWeights(OptionCounter):
     """
     display_name = "Trap Weights"
     min = 0
+    valid_keys = TRAPS_LIST
+    default = {trap: 0 for trap in TRAPS_LIST }
 
     def weights_pair(self) -> tuple[list[str], list[int]]:
         return list(self.value.keys()), list(self.value.values())
@@ -588,10 +587,6 @@ class TrapPercentage(Range):
     range_end = 100
     default = 5
 
-def init_options_with_world_data(world_data: WorldData):
-    TrapWeights.valid_keys = [item.name for item in world_data.items_dict.values() if "Trap" in item.name]
-    TrapWeights.default = {item.name: 0 for item in world_data.items_dict.values() if "Trap" in item.name}
-
 @dataclass
 class CrossCodeOptions(PerGameCommonOptions):
     """
@@ -601,7 +596,7 @@ class CrossCodeOptions(PerGameCommonOptions):
     goal: Goal
     enable_dlc: EnableDLC
     circuit_overrides: CircuitOverrides
-    sp_upgrades: SPUpgrades
+    progressive_sp_unlocks: ProgressiveSPUnlocks
     vt_shade_lock: VTShadeLock
     vw_meteor_passage: VWMeteorPassage
     vt_skip: VTSkip
