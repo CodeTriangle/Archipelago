@@ -217,6 +217,48 @@ class VariableEntryCondition(StatelessCondition):
         return valid
 
 @dataclass
+class OptionCondition(StatelessCondition):
+    name: str
+    operator: str | None = None
+    value: typing.Any = None
+
+    def check_stateless(self, player: int, location: int | None, world: CrossCodeWorld) -> bool:
+        retrieved_value = getattr(world.options, self.name).value
+        match self.operator:
+            case None:
+                return bool(retrieved_value)
+            case '==' | '=':
+                return retrieved_value == self.value
+            case '!=':
+                return retrieved_value != self.value
+            case '<':
+                return retrieved_value < self.value
+            case '>':
+                return retrieved_value > self.value
+            case '<=':
+                return retrieved_value <= self.value
+            case '>=':
+                return retrieved_value >= self.value
+            case '&':
+                return bool(retrieved_value & self.value)
+            case '!&':
+                return not bool(retrieved_value & self.value)
+            case '|':
+                return bool(retrieved_value | self.value)
+        raise RuntimeError(f"Unrecognized operator in option condition: {self.operator}")
+
+@dataclass
+class OptionMethodCondition(StatelessCondition):
+    name: str
+    method: str
+    args: list[typing.Any]
+
+    def check_stateless(self, player: int, location: int | None, world: CrossCodeWorld) -> bool:
+        option = getattr(world.options, self.name)
+        func = getattr(option, self.method)
+        return func(*self.args)
+
+@dataclass
 class ChestKeyCondition(StatefulCondition):
     default_level: str
 
@@ -291,6 +333,8 @@ __all__ = [
     "AndCondition",
     "VariableCondition",
     "VariableEntryCondition",
+    "OptionCondition",
+    "OptionMethodCondition",
     "ChestKeyCondition",
     "ShopSlotCondition",
     "BotanicsCompletionCondition",
