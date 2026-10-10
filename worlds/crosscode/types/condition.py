@@ -4,7 +4,9 @@ import abc
 from dataclasses import dataclass, field
 
 from BaseClasses import CollectionState
+
 from ..options import ShopReceiveMode
+from ..util import OptionOperator
 
 from .items import ItemPoolEntry
 
@@ -219,7 +221,7 @@ class VariableEntryCondition(StatelessCondition):
 @dataclass
 class OptionCondition(StatelessCondition):
     name: str
-    operator: str | None = None
+    operator: OptionOperator | None = None
     value: typing.Any = None
 
     def check_stateless(self, player: int, location: int | None, world: CrossCodeWorld) -> bool:
@@ -227,23 +229,23 @@ class OptionCondition(StatelessCondition):
         match self.operator:
             case None:
                 return bool(retrieved_value)
-            case '==' | '=':
+            case OptionOperator.EQ:
                 return retrieved_value == self.value
-            case '!=':
+            case OptionOperator.NE:
                 return retrieved_value != self.value
-            case '<':
+            case OptionOperator.LT:
                 return retrieved_value < self.value
-            case '>':
+            case OptionOperator.GT:
                 return retrieved_value > self.value
-            case '<=':
+            case OptionOperator.LE:
                 return retrieved_value <= self.value
-            case '>=':
+            case OptionOperator.GE:
                 return retrieved_value >= self.value
-            case '&':
+            case OptionOperator.AND:
                 return bool(retrieved_value & self.value)
-            case '!&':
+            case OptionOperator.NAND:
                 return not bool(retrieved_value & self.value)
-            case '|':
+            case OptionOperator.OR:
                 return bool(retrieved_value | self.value)
         raise RuntimeError(f"Unrecognized operator in option condition: {self.operator}")
 
@@ -255,7 +257,7 @@ class OptionMethodCondition(StatelessCondition):
 
     def check_stateless(self, player: int, location: int | None, world: CrossCodeWorld) -> bool:
         option = getattr(world.options, self.name)
-        func = getattr(option, self.method)
+        func = getattr(option, "option_method_" + self.method)
         return func(*self.args)
 
 @dataclass

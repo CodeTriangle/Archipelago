@@ -1,6 +1,7 @@
 """
 Everyone's favorite part of every python library: miscellaneous utility functions anc classes.
 """
+from enum import StrEnum
 
 import typing
 
@@ -36,3 +37,14 @@ class KeyDefaultDict(dict[K, V]):
             raise KeyError( key )
         ret = self[key] = self.default_factory(key)
         return ret
+
+class OptionOperator(StrEnum):
+    EQ = '=='
+    NE = '!='
+    LT = '<'
+    GT = '>'
+    LE = '<='
+    GE = '>='
+    AND = '&'
+    NAND = '!&'
+    OR = '|'
