@@ -221,7 +221,7 @@ class VariableEntryCondition(StatelessCondition):
 @dataclass
 class OptionCondition(StatelessCondition):
     name: str
-    operator: OptionOperator | None = None
+    operator: str | None = None
     value: typing.Any = None
 
     def check_stateless(self, player: int, location: int | None, world: CrossCodeWorld) -> bool:

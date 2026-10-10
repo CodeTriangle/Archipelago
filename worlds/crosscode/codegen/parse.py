@@ -1,6 +1,7 @@
 """
 Provides a memoizing parser for the JSON data.
 """
+from worlds.crosscode.util import OptionOperator
 import string
 import typing
 
@@ -113,10 +114,10 @@ class JsonParser:
             elif cond[0] == "var":
                 if num_args == 1:
                     result.append(VariableCondition(cond[1]))
-                elif num_args == 2:
-                    result.append(VariableEntryCondition(cond[1], cond[2], True))
-                elif num_args == 3:
-                    result.append(VariableEntryCondition(cond[1], cond[2], cond[3]))
+                # elif num_args == 2:
+                #     result.append(VariableEntryCondition(cond[1], cond[2], True))
+                # elif num_args == 3:
+                #     result.append(VariableEntryCondition(cond[1], cond[2], cond[3]))
                 else:
                     raise JsonParserError(
                         raw,
@@ -124,6 +125,33 @@ class JsonParser:
                         "location condition",
                         f"expected 1 argument, not {num_args}"
                     )
+
+            elif cond[0] == "option":
+                if num_args == 1:
+                    result.append(OptionCondition(cond[1]))
+                elif num_args == 2:
+                    result.append(OptionCondition(cond[1], "==", cond[2]))
+                elif num_args == 3:
+                    if cond[2] not in OptionOperator._value2member_map_:
+                        raise JsonParserError(raw, cond, "option condition", f"invalid operator {cond[2]}")
+                    result.append(OptionCondition(cond[1], cond[2], cond[3]))
+                else:
+                    raise JsonParserError(
+                        raw,
+                        cond,
+                        "location condition",
+                        f"expected 1-3 arguments, not {num_args}"
+                    )
+
+            elif cond[0] == "option_method":
+                if num_args < 2:
+                    raise JsonParserError(raw, cond, "option condition", "not enough arguments")
+                else:
+                    result.append(OptionMethodCondition(
+                        name=cond[1],
+                        method=cond[2],
+                        args=cond[3:]
+                    ))
 
             elif cond[0] == "shop_slot":
                 if num_args == 2:
