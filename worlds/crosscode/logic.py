@@ -22,3 +22,14 @@ def condition_satisfied(
     callbacks = [c.satisfied(player, location, world) for c in conditions]
 
     return lambda state: all(map(lambda x: x(state), callbacks))
+
+def check_stateless(
+    player: int,
+    conditions: list[Condition],
+    location: int | None,
+    world: CrossCodeWorld
+) -> bool:
+    """
+    Return whether the condition is true in a stateless fashion.
+    """
+    return all(c.check_stateless(player, location, world) for c in conditions)

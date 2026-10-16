@@ -1,6 +1,6 @@
 import re
 from typing_extensions import Union
-from .metadata import IncludeOptions
+from .condition import Condition
 from ..codegen.util import BASE_ID, NUM_ITEMS, RESERVED_ITEM_IDS
 from dataclasses import dataclass, field
 import typing
@@ -45,12 +45,12 @@ class ItemData:
 class ItemPoolEntry:
     item: ItemData
     quantity: int
-    metadata: typing.Optional[IncludeOptions] = None
+    include: typing.Optional[list[Condition]] = None
 
 @dataclass
 class ProgressiveChainEntry:
     item: ItemData
-    metadata: typing.Optional[IncludeOptions] = None
+    include: typing.Optional[list[Condition]] = None
 
 @dataclass
 class ProgressiveItemChainSingle:
@@ -59,8 +59,8 @@ class ProgressiveItemChainSingle:
 
 @dataclass
 class ProgressiveItemSubchain:
-    metadata: IncludeOptions | None
     chain: list[ProgressiveChainEntry]
+    include: typing.Optional[list[Condition]] = None
 
 @dataclass
 class ProgressiveItemChainMulti:

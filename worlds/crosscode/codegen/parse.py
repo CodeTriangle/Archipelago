@@ -184,6 +184,14 @@ class JsonParser:
         # Return None if there are no conditions
         return result
 
+    def parse_include_condition(self, raw: dict[str, typing.Any]) -> typing.Optional[list[Condition]]:
+        input_condition = None
+        if "includeCondition" in raw:
+            input_condition = self.parse_condition(raw["includeCondition"])
+            if not all(c.is_stateless for c in input_condition):
+                raise RuntimeError("Cannot use non-stateless conditions in include condition")
+        return input_condition
+
     def parse_location_access_info(self, raw: dict[str, typing.Any]) -> AccessInfo:
         """
         Take the "clearance", "region", and "condition" keys of a dict and parse them into an instance of AccessInfo.
@@ -301,11 +309,11 @@ class JsonParser:
             if "item" not in entry:
                 raise JsonParserError(entry, None, "progressive chain entry", "Need an 'item' property")
 
-            metadata = entry.get("condition", None)
+            include = self.parse_include_condition(entry)
 
             items.append(ProgressiveChainEntry(
                 item=self.parse_reward(entry["item"]),
-                metadata=metadata,
+                include=include,
             ))
 
         return items
@@ -314,12 +322,15 @@ class JsonParser:
         subchains = []
 
         for entry in raw:
-            metadata = entry.get("metadata", None)
+            include = self.parse_include_condition(entry)
             itemlist = entry.get("content", None)
             if type(itemlist) != list:
                 raise JsonParserError(raw, itemlist, "progressive subchain", f"Need a list of item entries")
 
-            subchains.append(ProgressiveItemSubchain(metadata, self.__parse_progressive_itemlist(itemlist)))
+            subchains.append(ProgressiveItemSubchain(
+                chain=self.__parse_progressive_itemlist(itemlist),
+                include=include,
+            ))
 
         return subchains
 
@@ -380,12 +391,14 @@ class JsonParser:
 
         bidirectional = raw.get("bidirectional", True)
 
+        include = self.parse_include_condition(raw)
+
         return RegionConnection(
             region_from=region_from,
             region_to=region_to,
             cond=condition,
             bidirectional=bidirectional,
-            metadata=raw.get("metadata", None)
+            include=include,
         )
 
     def parse_regions_data(self, raw: dict[str, typing.Any]) -> RegionsData:

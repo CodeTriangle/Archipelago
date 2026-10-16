@@ -234,7 +234,7 @@ class ListInfo:
 
         location_names: list[str] = []
 
-        metadata = raw_loc.get("metadata", None)
+        include = self.json_parser.parse_include_condition(raw_loc)
 
         access_info = self.json_parser.parse_location_access_info(raw_loc)
 
@@ -253,7 +253,7 @@ class ListInfo:
                 name=full_name,
                 code=locid,
                 area=area,
-                metadata=metadata,
+                include=include,
                 access=access_info
             )
 
@@ -283,7 +283,7 @@ class ListInfo:
                 name=f"{name} (Event)",
                 code=None,
                 area=None,
-                metadata=metadata,
+                include=include,
                 access=access_info,
             )
             self.events_data[event_name] = event
@@ -343,8 +343,7 @@ class ListInfo:
 
         real_name = dbentry["name"]["en_US"]
 
-        metadata = raw_shop.get("metadata", {})
-        metadata["shop"] = True
+        include = self.json_parser.parse_include_condition(raw_shop)
         access_info = self.json_parser.parse_location_access_info(raw_shop)
 
         shop_locs = self.per_shop_locations[shop_display_name]
@@ -352,9 +351,7 @@ class ListInfo:
         by_shop_name =  f"Shop Unlock: {shop_base_name}"
         by_shop_item = self.__add_shop_unlock_item(by_shop_name)
         if shop_name not in self.shop_unlock_by_shop:
-            # if the shop unlock already exists do nothing
-            # THIS IS A HACK and MUST BE REPLACED with a more permanent solution when metadata is phased out
-            self.shop_unlock_by_shop[shop_name] = ItemPoolEntry(by_shop_item, 1, metadata)
+            self.shop_unlock_by_shop[shop_name] = ItemPoolEntry(by_shop_item, 1, include)
             self.descriptions[by_shop_item.combo_id] = {
                 "en_US": f"Unlocks \\c[3]all item slots\\c[0] in the shop \\c[3]{real_name}\\c[0]."
             }
@@ -380,7 +377,7 @@ class ListInfo:
                 name=slot_location_name,
                 code=locid,
                 area=area,
-                metadata=metadata,
+                include=include,
                 access=AccessInfo(
                     region={ name: shop_display_name for name in access_info.region },
                     cond=[ShopSlotCondition(shop_name, item_id)],
@@ -397,7 +394,7 @@ class ListInfo:
 
             by_shop_and_id_name = f"Slot Unlock: {item_name} ({shop_display_name})"
             by_shop_and_id_item = self.__add_shop_unlock_item(by_shop_and_id_name)
-            self.shop_unlock_by_shop_and_id[shop_name, item_id] = ItemPoolEntry(by_shop_and_id_item, 1, metadata)
+            self.shop_unlock_by_shop_and_id[shop_name, item_id] = ItemPoolEntry(by_shop_and_id_item, 1, include)
 
             slots_item_group.append(by_shop_and_id_item)
             this_shop_item_group.append(by_shop_and_id_item)
@@ -421,7 +418,7 @@ class ListInfo:
                     name=item_type_location_name,
                     code=locid,
                     area=None,
-                    metadata=metadata,
+                    include=include,
                     access=AccessInfo(
                         region={ name: "Menu" for name in access_info.region },
                         cond=[
@@ -432,7 +429,7 @@ class ListInfo:
 
                 by_id_name = f"Global Slot Unlock: {item_name}"
                 by_id_item = self.__add_shop_unlock_item(by_id_name)
-                self.shop_unlock_by_id[item_id] = ItemPoolEntry(by_id_item, 1, metadata)
+                self.shop_unlock_by_id[item_id] = ItemPoolEntry(by_id_item, 1, include)
                 self.global_shop_locations[item_id] = global_location
 
                 global_item_group.append(by_id_item)
@@ -455,7 +452,7 @@ class ListInfo:
             internal_name=shop_name,
             name=shop_display_name,
             access=access_info,
-            metadata=metadata
+            include=include,
         )
 
     def __add_shop_list(self, loc_list: dict[str, dict[str, typing.Any]]):
@@ -481,10 +478,12 @@ class ListInfo:
         pool: list[ItemPoolEntry] = []
         for data in raw:
             item = self.__add_reward(data["item"])
+            include = self.json_parser.parse_include_condition(data)
+
             pool.append(ItemPoolEntry(
                 item=item,
                 quantity=data.get("quantity", 1),
-                metadata=data.get("metadata", None)
+                include=include,
             ))
 
         self.item_pools[name] = pool
@@ -513,7 +512,7 @@ class ListInfo:
         name = f"Botanics: {name}"
         area = raw["location"].get("area", None)
         internal_name = raw["location"].get("name", None)
-        metadata = { "botanics": True } | raw.get("metadata", {})
+        include = self.json_parser.parse_include_condition(raw)
         area_name = self.ctx.area_names[area]
         code = self.__get_or_allocate_location_id(name)
 
@@ -522,7 +521,7 @@ class ListInfo:
             code=code,
             access=AccessInfo(region=raw["region"], cond=None),
             area=area,
-            metadata=metadata,
+            include=include,
         )
 
         self.botanics_internal_names_to_ids[internal_name] = code

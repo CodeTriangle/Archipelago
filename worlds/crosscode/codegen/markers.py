@@ -65,8 +65,6 @@ class MarkerGenerator:
             return None
         extension = loc_data.get("extension", "")
 
-        meta = raw_loc.get("metadata", {})
-
         map = self.__load_map(map_name, extension)
 
         raw_entity = None

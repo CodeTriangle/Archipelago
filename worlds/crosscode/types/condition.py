@@ -5,10 +5,8 @@ from dataclasses import dataclass, field
 
 from BaseClasses import CollectionState
 
-from ..options import ShopReceiveMode
+from ..options import ShopReceiveMode, DUMMY_OPTIONS
 from ..util import OptionOperator
-
-from .items import ItemPoolEntry
 
 if typing.TYPE_CHECKING:
     from ..world import CrossCodeWorld
@@ -225,7 +223,11 @@ class OptionCondition(StatelessCondition):
     value: typing.Any = None
 
     def check_stateless(self, player: int, location: int | None, world: CrossCodeWorld) -> bool:
-        retrieved_value = getattr(world.options, self.name).value
+        if self.name in DUMMY_OPTIONS:
+            retrieved_value = DUMMY_OPTIONS[self.name]
+        else:
+            retrieved_value = getattr(world.options, self.name).value
+
         match self.operator:
             case None:
                 return bool(retrieved_value)

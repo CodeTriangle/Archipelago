@@ -20,6 +20,7 @@ def create_expression_dataclass(cls) -> ast.Call:
             ast.keyword(arg=key, value=ast.Constant(value))
             for key, value in cls.__dict__.items()
             if cls.__dataclass_fields__[key].init
+            and value != cls.__dataclass_fields__[key].default
         ],
     )
     ast.fix_missing_locations(result)
@@ -109,13 +110,10 @@ def create_expression_location(data: LocationData) -> ast.Call:
     if data.area is not None:
         ast_item.keywords.append(ast.keyword(arg="area", value=ast.Constant(data.area)))
 
-    if data.metadata is not None:
+    if data.include is not None:
         ast_item.keywords.append(ast.keyword(
-            arg="metadata",
-            value=ast.Dict(
-                keys=[ast.Constant(x) for x in data.metadata.keys()],
-                values=[ast.Constant(x) for x in data.metadata.values()],
-            )
+            arg="include",
+            value=create_expression_condition_list(data.include)
         ))
 
     ast_item.keywords.append(ast.keyword("access", create_expression_access_info(data.access)))
@@ -241,17 +239,10 @@ def create_expression_progressive_chain_entry(entry: ProgressiveChainEntry):
         ]
     )
 
-    if entry.metadata is not None:
-        # this will never be none, but it must claim that it can be to satisfy the typing gods
-        keys: list[ast.expr | None] = [ast.Constant(k) for k in entry.metadata.keys()]
-        values: list[ast.expr] = [ast.Constant(k) for k in entry.metadata.values()]
-
+    if entry.include is not None:
         ast_item.keywords.append(ast.keyword(
-            arg="metadata",
-            value=ast.Dict(
-                keys=keys,
-                values=values,
-            )
+            arg="include",
+            value=create_expression_condition_list(entry.include)
         ))
 
     ast.fix_missing_locations(ast_item)
@@ -276,16 +267,10 @@ def create_expression_item_pool_entry(entry: ItemPoolEntry):
         ]
     )
 
-    if entry.metadata is not None:
-        keys: list[ast.expr | None] = [ast.Constant(k) for k in entry.metadata.keys()]
-        values: list[ast.expr] = [ast.Constant(k) for k in entry.metadata.values()]
-
+    if entry.include is not None:
         ast_item.keywords.append(ast.keyword(
-            arg="metadata",
-            value=ast.Dict(
-                keys=keys,
-                values=values,
-            )
+            arg="include",
+            value=create_expression_condition_list(entry.include)
         ))
 
     ast.fix_missing_locations(ast_item)
@@ -319,17 +304,10 @@ def create_expression_region_connection(conn: RegionConnection):
             ast.keyword("bidirectional", ast.Constant(conn.bidirectional))
         )
 
-    if conn.metadata is not None:
-        # this will never be none, but it must claim that it can be to satisfy the typing gods
-        keys: list[ast.expr | None] = [ast.Constant(k) for k in conn.metadata.keys()]
-        values: list[ast.expr] = [ast.Constant(k) for k in conn.metadata.values()]
-
+    if conn.include is not None:
         ast_region.keywords.append(ast.keyword(
-            arg="metadata",
-            value=ast.Dict(
-                keys=keys,
-                values=values,
-            )
+            arg="include",
+            value=create_expression_condition_list(conn.include)
         ))
 
     ast.fix_missing_locations(ast_region)
@@ -381,13 +359,10 @@ def create_expression_shop(data: ShopData) -> ast.Call:
         ]
     )
 
-    if data.metadata is not None:
+    if data.include is not None:
         ast_item.keywords.append(ast.keyword(
-            arg="metadata",
-            value=ast.Dict(
-                keys=[ast.Constant(x) for x in data.metadata.keys()],
-                values=[ast.Constant(x) for x in data.metadata.values()],
-            )
+            arg="include",
+            value=create_expression_condition_list(data.include)
         ))
 
     ast_item.keywords.append(ast.keyword("access", create_expression_access_info(data.access)))
