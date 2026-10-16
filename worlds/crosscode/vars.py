@@ -8,10 +8,10 @@ from .types.condition import *
 variable_definitions: dict[str, dict[str, list[Condition]]] = {
     "vtShadeLock": {
         "shades": [
-            ItemCondition(item_name='Blue Ice Shade', amount=1),
-            ItemCondition(item_name='Red Flame Shade', amount=1),
-            ItemCondition(item_name='Purple Bolt Shade', amount=1),
-            ItemCondition(item_name='Azure Drop Shade', amount=1),
+            ItemCondition(item_name='Blue Ice Shade'),
+            ItemCondition(item_name='Red Flame Shade'),
+            ItemCondition(item_name='Purple Bolt Shade'),
+            ItemCondition(item_name='Azure Drop Shade'),
         ],"bosses": [
             LocationCondition(location_name='Temple Mine Shade Statue'),
             LocationCondition(location_name="Faj'ro Shade Statue"),
@@ -21,12 +21,12 @@ variable_definitions: dict[str, dict[str, list[Condition]]] = {
     },
     "vwPassage": {
         "meteor": [
-            ItemCondition(item_name='Meteor Shade', amount=1),
+            ItemCondition(item_name='Meteor Shade'),
         ],
     },
     "canGrind": {
         "noShadeWarp": [
-            OrCondition(subconditions=[ItemCondition(item_name='Green Leaf Shade', amount=1), ItemCondition(item_name='Red Flame Shade', amount=1)]),
+            OrCondition(subconditions=[ItemCondition(item_name='Green Leaf Shade'), ItemCondition(item_name='Red Flame Shade')]),
         ],
     },
 }
