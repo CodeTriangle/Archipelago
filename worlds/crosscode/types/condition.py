@@ -4,20 +4,77 @@ import abc
 from dataclasses import dataclass, field
 
 from BaseClasses import CollectionState
-from ..options import ShopReceiveMode
 
-from .items import ItemPoolEntry
+from ..options import ShopReceiveMode, DUMMY_OPTIONS
+from ..util import OptionOperator
 
 if typing.TYPE_CHECKING:
     from ..world import CrossCodeWorld
 
 class Condition(abc.ABC):
+    """
+    An abstract representation of a condition that can be stored once and used in all CrossCode worlds.
+
+    This mimics rule builder but was made far before it and is better-adapted to this world's architecture.
+    """
+
+    is_stateless: bool
+    """
+    A variable that indicates whether this condition is stateless. See check_stateless for more details.
+    """
+
     @abc.abstractmethod
     def satisfied(self, player: int, location: int | None, world: CrossCodeWorld) -> typing.Callable[[CollectionState], bool]:
+        """
+        A function that returns a closure representing whether the condition is satisfied given a collection state
+        full of items.
+
+        You are advised to do as much work before returning the closure as possible as it is only run once per world per
+        condition. This will speed up runtime logic, which will be called repeatedly.
+        """
         pass
 
+    @abc.abstractmethod
+    def check_stateless(self, player: int, location: int | None, world: CrossCodeWorld) -> bool:
+        """
+        A function that returns a bool representing whether the stateless condition is satisfied.
+
+        This function should only be defined if, for the condition, the collection state is immaterial to calculating
+        the satisfaction of the condition; i.e. it will return the same answer no matter what items the player has.
+
+        This function should be defined when possible because several optimizations can be performed if it is. When
+        defining this, the is_stateless flag should be set. You should also consider using the StatelessCondition
+        subclass, which provides a boilerplate satisfied method.
+        """
+        pass
+
+class StatefulCondition(Condition):
+    """
+    A condition whose truth value varies depending on the collection state of the multiworld.
+
+    This subclass simply fills out a default check_stateless that fails.
+    """
+
+    is_stateless = False
+
+    def check_stateless(self, player: int, location: int | None, world: CrossCodeWorld) -> bool:
+        raise RuntimeError("Attempted to statically check a stateful condition")
+
+class StatelessCondition(Condition):
+    """
+    A condition whose truth value does not vary depending on the collection state of the multiworld.
+
+    This subclass simply fills out a default satisfied that defers to the check_stateless.
+    """
+
+    is_stateless = True
+
+    def satisfied(self, player: int, location: int | None, world: CrossCodeWorld) -> typing.Callable[[CollectionState], bool]:
+        value = self.check_stateless(player, location, world)
+        return lambda _: value
+
 @dataclass
-class ItemCondition(Condition):
+class ItemCondition(StatefulCondition):
     item_name: str
     amount: int = 1
 
@@ -40,7 +97,7 @@ class ItemCondition(Condition):
         return lambda state: state.has(self.item_name, player, target)
 
 @dataclass
-class QuestCondition(Condition):
+class QuestCondition(StatefulCondition):
     quest_name: str
     event_name: str = field(init=False)
 
@@ -51,7 +108,7 @@ class QuestCondition(Condition):
         return lambda state: state.has(self.event_name, player)
 
 @dataclass
-class LocationCondition(Condition):
+class LocationCondition(StatefulCondition):
     location_name: str
     event_name: str = field(init=False)
 
@@ -62,7 +119,7 @@ class LocationCondition(Condition):
         return lambda state: state.has(self.event_name, player)
 
 @dataclass
-class RegionCondition(Condition):
+class RegionCondition(StatefulCondition):
     target_mode: typing.Optional[str]
     region_name: str
 
@@ -81,7 +138,7 @@ class RegionCondition(Condition):
         return lambda _: True
 
 @dataclass
-class AnyElementCondition(Condition):
+class AnyElementCondition(StatefulCondition):
     def satisfied(self, player: int, location: int | None, world: CrossCodeWorld) -> typing.Callable[[CollectionState], bool]:
         return lambda state: any([
             state.has("Heat", player),
@@ -94,20 +151,40 @@ class AnyElementCondition(Condition):
 class OrCondition(Condition):
     subconditions: list[Condition]
 
+    def __post_init__(self):
+        self.is_stateless = all(c.is_stateless for c in self.subconditions)
+
     def satisfied(self, player: int, location: int | None, world: CrossCodeWorld) -> typing.Callable[[CollectionState], bool]:
+        if self.is_stateless: # optimization: if all subconditions are stateless, precompute the sum value.
+            return lambda _: self.check_stateless(player, location, world)
         callbacks = [x.satisfied(player, location, world) for x in self.subconditions]
         return lambda state: any(map(lambda x: x(state), callbacks))
+
+    def check_stateless(self, player: int, location: int | None, world: CrossCodeWorld) -> bool:
+        if not self.is_stateless:
+            raise RuntimeError("Tried to statelessly check an or condition that has non-stateless subconditions")
+        return any(c.check_stateless(player, location, world) for c in self.subconditions)
 
 @dataclass
 class AndCondition(Condition):
     subconditions: list[Condition]
 
+    def __post_init__(self):
+        self.is_stateless = all(isinstance(c, StatelessCondition) for c in self.subconditions)
+
     def satisfied(self, player: int, location: int | None, world: CrossCodeWorld) -> typing.Callable[[CollectionState], bool]:
+        if self.is_stateless: # optimization: if all subconditions are stateless, precompute the sum value.
+            return lambda _: self.check_stateless(player, location, world)
         callbacks = [x.satisfied(player, location, world) for x in self.subconditions]
         return lambda state: all(map(lambda x: x(state), callbacks))
 
+    def check_stateless(self, player: int, location: int | None, world: CrossCodeWorld) -> bool:
+        if not self.is_stateless:
+            raise RuntimeError("Tried to statelessly check an and condition that has non-stateless subconditions")
+        return all(c.check_stateless(player, location, world) for c in self.subconditions)
+
 @dataclass
-class VariableCondition(Condition):
+class VariableCondition(StatefulCondition):
     name: str
 
     def satisfied(self, player: int, location: int | None, world: CrossCodeWorld) -> typing.Callable[[CollectionState], bool]:
@@ -130,17 +207,63 @@ class VariableCondition(Condition):
         return lambda state: all(map(lambda x: x(state), callbacks))
 
 @dataclass
-class VariableEntryCondition(Condition):
+class VariableEntryCondition(StatelessCondition):
     name: str
     value: str
     desired: bool
 
-    def satisfied(self, player: int, location: int | None, world: CrossCodeWorld) -> typing.Callable[[CollectionState], bool]:
+    def check_stateless(self, player: int, location: int | None, world: CrossCodeWorld) -> bool:
         valid = (self.value in world.variables[self.name]) == self.desired
-        return lambda _: valid
+        return valid
 
 @dataclass
-class ChestKeyCondition(Condition):
+class OptionCondition(StatelessCondition):
+    name: str
+    operator: str | None = None
+    value: typing.Any = None
+
+    def check_stateless(self, player: int, location: int | None, world: CrossCodeWorld) -> bool:
+        if self.name in DUMMY_OPTIONS:
+            retrieved_value = DUMMY_OPTIONS[self.name]
+        else:
+            retrieved_value = getattr(world.options, self.name).value
+
+        match self.operator:
+            case None:
+                return bool(retrieved_value)
+            case OptionOperator.EQ:
+                return retrieved_value == self.value
+            case OptionOperator.NE:
+                return retrieved_value != self.value
+            case OptionOperator.LT:
+                return retrieved_value < self.value
+            case OptionOperator.GT:
+                return retrieved_value > self.value
+            case OptionOperator.LE:
+                return retrieved_value <= self.value
+            case OptionOperator.GE:
+                return retrieved_value >= self.value
+            case OptionOperator.AND:
+                return bool(retrieved_value & self.value)
+            case OptionOperator.NAND:
+                return not bool(retrieved_value & self.value)
+            case OptionOperator.OR:
+                return bool(retrieved_value | self.value)
+        raise RuntimeError(f"Unrecognized operator in option condition: {self.operator}")
+
+@dataclass
+class OptionMethodCondition(StatelessCondition):
+    name: str
+    method: str
+    args: list[typing.Any]
+
+    def check_stateless(self, player: int, location: int | None, world: CrossCodeWorld) -> bool:
+        option = getattr(world.options, self.name)
+        func = getattr(option, "option_method_" + self.method)
+        return func(*self.args)
+
+@dataclass
+class ChestKeyCondition(StatefulCondition):
     default_level: str
 
     clearance_items: typing.ClassVar[dict[str, str]] =  {
@@ -163,7 +286,7 @@ class ChestKeyCondition(Condition):
         return lambda state: state.has(ChestKeyCondition.clearance_items[level], player)
 
 @dataclass
-class ShopSlotCondition(Condition):
+class ShopSlotCondition(StatefulCondition):
     shop_name: str
     item_id: int
 
@@ -179,7 +302,7 @@ class ShopSlotCondition(Condition):
         return lambda _: True
 
 @dataclass
-class BotanicsCompletionCondition(Condition):
+class BotanicsCompletionCondition(StatefulCondition):
     amount: float
 
     def satisfied(self, player: int, location: int | None, world: CrossCodeWorld) -> typing.Callable[[CollectionState], bool]:
@@ -199,9 +322,9 @@ class BotanicsCompletionCondition(Condition):
             return collected / world.options.botanics_completion_amount >= self.amount
         return satisfied_internal
 
-class NeverCondition(Condition):
-    def satisfied(self, player: int, location: int | None, world: CrossCodeWorld) -> typing.Callable[[CollectionState], bool]:
-        return lambda _: False
+class NeverCondition(StatelessCondition):
+    def check_stateless(self, player: int, location: int | None, world: CrossCodeWorld) -> bool:
+        return False
 
 __all__ = [
     "Condition",
@@ -214,6 +337,8 @@ __all__ = [
     "AndCondition",
     "VariableCondition",
     "VariableEntryCondition",
+    "OptionCondition",
+    "OptionMethodCondition",
     "ChestKeyCondition",
     "ShopSlotCondition",
     "BotanicsCompletionCondition",

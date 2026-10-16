@@ -1,6 +1,7 @@
 """
 Provides a memoizing parser for the JSON data.
 """
+from worlds.crosscode.util import OptionOperator
 import string
 import typing
 
@@ -113,10 +114,10 @@ class JsonParser:
             elif cond[0] == "var":
                 if num_args == 1:
                     result.append(VariableCondition(cond[1]))
-                elif num_args == 2:
-                    result.append(VariableEntryCondition(cond[1], cond[2], True))
-                elif num_args == 3:
-                    result.append(VariableEntryCondition(cond[1], cond[2], cond[3]))
+                # elif num_args == 2:
+                #     result.append(VariableEntryCondition(cond[1], cond[2], True))
+                # elif num_args == 3:
+                #     result.append(VariableEntryCondition(cond[1], cond[2], cond[3]))
                 else:
                     raise JsonParserError(
                         raw,
@@ -124,6 +125,33 @@ class JsonParser:
                         "location condition",
                         f"expected 1 argument, not {num_args}"
                     )
+
+            elif cond[0] == "option":
+                if num_args == 1:
+                    result.append(OptionCondition(cond[1]))
+                elif num_args == 2:
+                    result.append(OptionCondition(cond[1], "==", cond[2]))
+                elif num_args == 3:
+                    if cond[2] not in OptionOperator._value2member_map_:
+                        raise JsonParserError(raw, cond, "option condition", f"invalid operator {cond[2]}")
+                    result.append(OptionCondition(cond[1], cond[2], cond[3]))
+                else:
+                    raise JsonParserError(
+                        raw,
+                        cond,
+                        "location condition",
+                        f"expected 1-3 arguments, not {num_args}"
+                    )
+
+            elif cond[0] == "option_method":
+                if num_args < 2:
+                    raise JsonParserError(raw, cond, "option condition", "not enough arguments")
+                else:
+                    result.append(OptionMethodCondition(
+                        name=cond[1],
+                        method=cond[2],
+                        args=cond[3:]
+                    ))
 
             elif cond[0] == "shop_slot":
                 if num_args == 2:
@@ -155,6 +183,14 @@ class JsonParser:
 
         # Return None if there are no conditions
         return result
+
+    def parse_include_condition(self, raw: dict[str, typing.Any]) -> typing.Optional[list[Condition]]:
+        input_condition = None
+        if "includeCondition" in raw:
+            input_condition = self.parse_condition(raw["includeCondition"])
+            if not all(c.is_stateless for c in input_condition):
+                raise RuntimeError("Cannot use non-stateless conditions in include condition")
+        return input_condition
 
     def parse_location_access_info(self, raw: dict[str, typing.Any]) -> AccessInfo:
         """
@@ -273,11 +309,11 @@ class JsonParser:
             if "item" not in entry:
                 raise JsonParserError(entry, None, "progressive chain entry", "Need an 'item' property")
 
-            metadata = entry.get("condition", None)
+            include = self.parse_include_condition(entry)
 
             items.append(ProgressiveChainEntry(
                 item=self.parse_reward(entry["item"]),
-                metadata=metadata,
+                include=include,
             ))
 
         return items
@@ -286,12 +322,15 @@ class JsonParser:
         subchains = []
 
         for entry in raw:
-            metadata = entry.get("metadata", None)
+            include = self.parse_include_condition(entry)
             itemlist = entry.get("content", None)
             if type(itemlist) != list:
                 raise JsonParserError(raw, itemlist, "progressive subchain", f"Need a list of item entries")
 
-            subchains.append(ProgressiveItemSubchain(metadata, self.__parse_progressive_itemlist(itemlist)))
+            subchains.append(ProgressiveItemSubchain(
+                chain=self.__parse_progressive_itemlist(itemlist),
+                include=include,
+            ))
 
         return subchains
 
@@ -352,12 +391,14 @@ class JsonParser:
 
         bidirectional = raw.get("bidirectional", True)
 
+        include = self.parse_include_condition(raw)
+
         return RegionConnection(
             region_from=region_from,
             region_to=region_to,
             cond=condition,
             bidirectional=bidirectional,
-            metadata=raw.get("metadata", None)
+            include=include,
         )
 
     def parse_regions_data(self, raw: dict[str, typing.Any]) -> RegionsData:

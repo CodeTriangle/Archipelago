@@ -1,12 +1,17 @@
+import typing
 from collections import defaultdict
 from random import Random
 import itertools
 
-from .metadata import IncludeOptions
 from .locations import LocationData
 from .items import ItemData, ItemPoolEntry, ProgressiveChainEntry, ProgressiveItemChain, ProgressiveItemChainMulti, ProgressiveItemChainSingle
+from ..options import CrossCodeOptions
 from .shops import ShopData
-from .world import WorldData
+from ..logic import check_stateless
+from .condition import Condition
+
+if typing.TYPE_CHECKING:
+    from ..world import CrossCodeWorld
 
 
 ItemPool = dict[ItemData, int]
@@ -30,7 +35,7 @@ class Pools:
     is not.
     """
 
-    options: IncludeOptions
+    world: "CrossCodeWorld"
 
     location_pool: list[LocationData]
     event_pool: list[LocationData]
@@ -55,8 +60,8 @@ class Pools:
     progressive chain.
     """
 
-    def __init__(self, world_data: WorldData, opts: IncludeOptions):
-        self.options = opts
+    def __init__(self, world: "CrossCodeWorld"):
+        self.world = world
         self.location_pool = []
         self.event_pool = []
         self.per_shop_location_pool = {}
@@ -66,20 +71,22 @@ class Pools:
         self.progressive_chains = {}
         self.item_progressive_replacements = defaultdict(list)
 
+        world_data = world.world_data
+
         weights = {}
 
         for loc in world_data.pool_locations:
-            if self.should_include(loc.metadata):
+            if self.should_include(loc.include):
                 self.location_pool.append(loc)
 
         for ev in world_data.events_dict.values():
-            if self.should_include(ev.metadata):
+            if self.should_include(ev.include):
                 self.event_pool.append(ev)
 
         for name, pool in world_data.item_pools_template.items():
             counter = defaultdict(lambda: 0)
             for entry in pool:
-                if self.should_include(entry.metadata):
+                if self.should_include(entry.include):
                     counter[entry.item] += entry.quantity
 
             self.item_pools[name] = counter
@@ -92,12 +99,12 @@ class Pools:
         for shop_name, locations in world_data.per_shop_locations.items():
             shop_locations = []
             for loc in locations.values():
-                if self.should_include(loc.metadata):
+                if self.should_include(loc.include):
                     shop_locations.append(loc)
             self.per_shop_location_pool[shop_name] = shop_locations
 
         for loc in world_data.global_shop_locations.values():
-            if self.should_include(loc.metadata):
+            if self.should_include(loc.include):
                 self.global_shop_location_pool.append(loc)
 
         for shop_pool, pool_name in (
@@ -105,14 +112,14 @@ class Pools:
                 (world_data.shop_unlock_by_shop, "shop_unlock_by_shop"),
                 (world_data.shop_unlock_by_shop_and_id, "shop_unlock_by_shop_and_id")
         ):
-            self.item_pools[pool_name] = { entry.item: 1 for entry in shop_pool.values() if self.should_include(entry.metadata) }
+            self.item_pools[pool_name] = { entry.item: 1 for entry in shop_pool.values() if self.should_include(entry.include) }
 
         for chain_name, chain in world_data.progressive_chains.items():
             item_list: list[ItemData] = []
             self.progressive_chains[chain_name] = item_list
             items = self.locate_chain(chain)
             for idx, entry in enumerate(items):
-                if self.should_include(entry.metadata):
+                if self.should_include(entry.include):
                     item_list.append(entry.item)
                     prog_item = world_data.progressive_items[chain_name].name
                     self.item_progressive_replacements[entry.item.name].append((prog_item, idx + 1))
@@ -127,37 +134,18 @@ class Pools:
 
         if isinstance(chain, ProgressiveItemChainMulti):
             for subchain in chain.subchains:
-                if subchain.metadata is None:
+                if subchain.include is None:
                     return subchain.chain
-                if self.should_include(subchain.metadata):
+                if self.should_include(subchain.include):
                     return subchain.chain
 
             return []
 
-    def should_include(self, metadata: IncludeOptions | None) -> bool:
-        # Technically the class allows metadata to be None.
-        # So we'll assign a local variable and use that instead.
-        if metadata is None:
+    def should_include(self, include: list[Condition] | None) -> bool:
+        if include is None:
             return True
 
-        # This is where we check the item conditions.
-        # These are manually coded for now.
-        # The default is to include the item.
-        # Return false if at any point it is discovered we shouldn't.
-
-        result = True
-
-        for var in ("dlc", "trade", "shop", "arena", "chest", "quest", "botanics"):
-            val = metadata.get(var)
-
-            if val is None:
-                continue
-
-            if val != self.options.get(var):
-                result = False
-                break
-
-        return result
+        return check_stateless(self.world.player, include, None, self.world)
 
     def pull_items_from_pool(self, name: str, rand: Random, k=1) -> list[ItemData]:
         population, weights = self._item_pool_lists[name]

@@ -2,7 +2,6 @@ import typing
 from dataclasses import dataclass, field
 
 from BaseClasses import Location, Region
-from .metadata import IncludeOptions
 
 from .condition import Condition
 
@@ -17,7 +16,7 @@ class LocationData:
     code: typing.Optional[int]
     access: AccessInfo
     area: typing.Optional[str] = None
-    metadata: typing.Optional[IncludeOptions] = None
+    include: typing.Optional[list[Condition]] = None
 
     def __hash__(self):
         # Every LocationData instance will have a unique name, so we should not

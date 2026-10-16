@@ -23,7 +23,6 @@ from .types.locations import CrossCodeLocation, LocationData
 from .types.condition import Condition, LocationCondition
 from .types.world import WorldData
 from .types.regions import RegionsData
-from .types.metadata import IncludeOptions
 from .types.pools import Pools
 from .types.slot import SlotData
 from .options import CrossCodeOptions, ShopReceiveMode, ShopSendMode, StartWithDiscs, ProgressiveAreaUnlocks, option_groups
@@ -87,7 +86,6 @@ class CrossCodeWorld(World):
         for name, entries in world_data.location_groups.items()
     }
 
-    include_options: IncludeOptions
     required_items: Counter[ItemData]
 
     region_dict: dict[str, Region]
@@ -112,8 +110,6 @@ class CrossCodeWorld(World):
     location_events: dict[str, Location]
 
     variables: dict[str, list[str]]
-
-    pools_cache: typing.ClassVar[dict[tuple[tuple[str, object], ...], Pools]] = {}
 
     pools: Pools
 
@@ -158,21 +154,6 @@ class CrossCodeWorld(World):
         'legsOffensive',
         'legs'
     }
-
-    def get_include_options(self) -> IncludeOptions:
-        """
-        The metadata dict is a dict that will be matched against the `metadata` fields in the ItemPoolEntry and Location
-        classes to check for inclusion.
-        """
-        return {
-            "dlc": bool(self.options.enable_dlc.value),
-            "trade": False,
-            "shop": bool(self.options.shop_rando.value),
-            "arena": False,
-            "chest": True,
-            "quest": bool(self.options.quest_rando.value),
-            "botanics": bool(self.options.botanity.value),
-        }
 
     def create_location(self, location: str, event_from_location: bool = False) -> CrossCodeLocation:
         """
@@ -260,14 +241,7 @@ class CrossCodeWorld(World):
         if hasattr(self, "pools"):
             return
 
-        self.include_options = self.get_include_options()
-
-        include_options_tuple = tuple(self.include_options.items())
-
-        if include_options_tuple in self.pools_cache:
-            self.pools = self.pools_cache[include_options_tuple]
-        else:
-            self.pools_cache[include_options_tuple] = self.pools = Pools(self.world_data, self.include_options)
+        self.pools = Pools(self)
 
         common = self.options.common_pool_weight.value
         rare = self.options.rare_pool_weight.value
@@ -498,7 +472,7 @@ class CrossCodeWorld(World):
     def create_shops(self):
         # don't filter the shop pool - the regions must always exist to prevent generation errors
         for shop_name, shop in self.world_data.shops_dict.items():
-            if not self.pools.should_include(shop.metadata):
+            if not self.pools.should_include(shop.include):
                 continue
             region = Region(shop_name, self.player, self.multiworld)
             self.multiworld.regions.append(region)
@@ -523,7 +497,7 @@ class CrossCodeWorld(World):
         self.location_events = {}
 
         for conn in self.region_pack.region_connections:
-            if not self.pools.should_include(conn.metadata):
+            if not self.pools.should_include(conn.include):
                 continue
             if conn.region_to not in self.region_dict:
                 self.region_dict[conn.region_to] = Region(conn.region_to, self.player, self.multiworld)

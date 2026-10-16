@@ -59,6 +59,40 @@ class TestItemConditions(CrossCodeTestBase):
     #             for item, _ in connection.cond.items:
     #                 assert(item in single_items_dict)
 
+class TestStatelessConditions(CrossCodeTestBase):
+    def assertOptionCondition(self, cond: OptionCondition, value: bool = True):
+        self.assertTrue(cond.is_stateless, "Condition is not stateless")
+        self.assertEqual(
+            cond.check_stateless(self.player, None, self.world),
+            value
+        )
+
+    trues = [
+        OptionCondition("vw_meteor_passage"),
+        OptionCondition("vt_skip"),
+        OptionCondition("closed_gaia", "==", 0),
+        OptionCondition("start_with_discs", "&", 1),
+    ]
+
+    falses = [
+        OptionCondition("start_with_discs", "&", 2)
+    ]
+
+    def test_option_conditions(self):
+        for opt in self.trues:
+            self.assertOptionCondition(opt)
+        for opt in self.falses:
+            self.assertOptionCondition(opt, False)
+
+    def test_and_or_conditions(self):
+        andcond = AndCondition(self.trues)
+        self.assertTrue(andcond.is_stateless)
+        self.assertTrue(andcond.check_stateless)
+
+        orcond = OrCondition(self.falses)
+        self.assertTrue(orcond.is_stateless)
+        self.assertTrue(orcond.check_stateless)
+
 '''class TestLocationConditions(CrossCodeTestBase):
     auto_construct = False
     locations_dict = {location.name: location for location in [*locations_data, *events_data]}

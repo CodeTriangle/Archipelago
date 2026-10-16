@@ -2,7 +2,6 @@ from dataclasses import dataclass, field
 import typing
 
 from .condition import Condition
-from .metadata import IncludeOptions
 
 @dataclass
 class RegionConnection:
@@ -10,7 +9,7 @@ class RegionConnection:
     region_to: str
     cond: typing.Optional[list[Condition]]
     bidirectional: bool = True
-    metadata: typing.Optional[IncludeOptions] = None
+    include: typing.Optional[list[Condition]] = None
 
 @dataclass
 class Goal:
