@@ -568,6 +568,10 @@ class DropWeight(Range):
 class TrapWeights(OptionCounter):
     """
     Controls the likelihood of choosing a specific trap when filling the world.
+
+    Please note: some traps may have accessibility concerns or may have long-term negative effects on your game. See the
+    following webpage for advisories:
+    https://github.com/CodeTriangle/CCMultiworldRandomizer/wiki/Traps
     """
     display_name = "Trap Weights"
     min = 0
