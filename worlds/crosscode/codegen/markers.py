@@ -27,15 +27,16 @@ class MarkerGenerator:
         self.map_cache = {}
         self.area_cache = {}
 
-    def __load_map(self, name: str, dlc: bool) -> dict[str, typing.Any]:
+    def __load_map(self, name: str, extension: str) -> dict[str, typing.Any]:
         try:
             return self.map_cache[name]
         except KeyError:
             pass
 
         path = name.replace(".", "/")
-        in_dlc = dlc and os.path.exists(f"worlds/crosscode/data/assets/extension/post-game/data/maps/{path}.json")
-        with open(f"worlds/crosscode/data/assets{"/extension/post-game" if in_dlc else ""}/data/maps/{path}.json") as f:
+        
+        in_extension = extension and os.path.exists(f"worlds/crosscode/data/assets/extension/{extension}/data/maps/{path}.json")
+        with open(f"worlds/crosscode/data/assets{"/extension/" + extension if in_extension else ""}/data/maps/{path}.json") as f:
             self.map_cache[name] = json.load(f)
 
         return self.map_cache[name]
@@ -62,16 +63,20 @@ class MarkerGenerator:
         map_id = loc_data.get("mapId", None)
         if map_id is None:
             return None
-            
+        extension = loc_data.get("extension", "")
+
         meta = raw_loc.get("metadata", {})
 
-        map = self.__load_map(map_name, meta.get("dlc", False))
+        map = self.__load_map(map_name, extension)
 
         raw_entity = None
-        for entity in map["entities"]:
-            if entity["settings"].get("mapId", None) == map_id:
-                raw_entity = entity
-                break
+        if "markerOverrides" in raw_loc and "entity" in raw_loc["markerOverrides"]:
+            raw_entity = raw_loc["markerOverrides"]["entity"]
+        else:
+            for entity in map["entities"]:
+                if entity["settings"].get("mapId", None) == map_id:
+                    raw_entity = entity
+                    break
 
         if raw_entity is None:
             return None
@@ -131,10 +136,17 @@ class MarkerGenerator:
         mx = tx * 8
         my = ty * 8
 
+        if "markerOverrides" in raw_loc:
+            mx += raw_loc["markerOverrides"].get("offsetX", 0)
+            my += raw_loc["markerOverrides"].get("offsetY", 0)
+
         settings = {}
 
         if raw_entity["type"] == "Chest":
-            settings["defaultClearance"] = raw_loc.get("clearance", "Default");
+            if "markerOverrides" in raw_loc and "clearance" in raw_loc["markerOverrides"]:
+                settings["defaultClearance"] = raw_loc["markerOverrides"]["clearance"]
+            else:
+                settings["defaultClearance"] = raw_loc["clearance"]
 
         return {
             "type": raw_entity["type"],
