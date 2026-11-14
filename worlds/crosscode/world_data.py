@@ -9,6 +9,7 @@ from .items import single_items_dict, items_dict, items_by_full_name, keyring_it
 from .shops import shop_dict, per_shop_locations, global_shop_locations, shop_unlock_by_id, shop_unlock_by_shop, \
     shop_unlock_by_shop_and_id
 from .locations import locations_dict, events_dict, locked_locations, pool_locations, location_groups
+from .enemies import enemies
 from .item_pools import item_pools_template, item_groups
 from .prog_items import progressive_chains, progressive_items
 from .vars import variable_definitions
@@ -33,6 +34,7 @@ static_world_data = WorldData(
     shop_unlock_by_id=shop_unlock_by_id,
     shop_unlock_by_shop=shop_unlock_by_shop,
     shop_unlock_by_shop_and_id=shop_unlock_by_shop_and_id,
+    enemies=enemies,
     item_pools_template=item_pools_template,
     item_groups=item_groups,
     progressive_chains=progressive_chains,

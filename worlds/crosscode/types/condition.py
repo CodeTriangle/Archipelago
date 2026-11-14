@@ -4,11 +4,13 @@ import abc
 from dataclasses import dataclass, field
 
 from BaseClasses import CollectionState
-from ..options import ShopReceiveMode
+from worlds.crosscode.util import maximum_gap
+from ..options import CombatLogic, ShopReceiveMode
 
 from .items import ItemPoolEntry
 
 if typing.TYPE_CHECKING:
+    from .enemies import Enemy
     from ..world import CrossCodeWorld
 
 class Condition(abc.ABC):
@@ -198,6 +200,52 @@ class BotanicsCompletionCondition(Condition):
 
             return collected / world.options.botanics_completion_amount >= self.amount
         return satisfied_internal
+
+@dataclass
+class CombatCondition(Condition):
+    level: int
+
+    def satisfied(self, player: int, location: int | None, world: CrossCodeWorld) -> typing.Callable[[CollectionState], bool]:
+        def player_level_satisfied(state: CollectionState):
+            levels = [0 for _ in range(self.level)]
+            for enemy in world.world_data.enemies.values():
+                if (
+                    enemy.grind_event_name is not None and
+                    enemy.level < self.level and
+                    state.has(enemy.grind_event_name, player)
+                ):
+                    levels[enemy.level] += 1
+            return maximum_gap(levels) <= world.options.maximum_grind_gap
+
+        if world.options.progressive_equipment.value:
+            def equip_level_satisfied(state: CollectionState):
+                return True
+        else:
+            def equip_level_satisfied(state: CollectionState):
+                maxima = { "HEAD": 0, "FEET": 0, "TORSO": 0 }
+                max_arm = [0, 0]
+                for item_name in state.prog_items[player]:
+                    item = world.world_data.items_by_full_name[item_name]
+                    equip_data = item.item.equip_data
+                    if equip_data is None:
+                        continue
+                    if equip_data.equip_type == "ARM":
+                        max_arm.append(equip_data.level)
+                        max_arm.sort()
+                        max_arm.pop()
+                        continue
+                    maxima[equip_data.equip_type] = max(maxima[equip_data.equip_type], equip_data.level)
+                average_level = sum(maxima.values()) + sum(max_arm) / 6
+                return average_level + world.options.maximum_grind_gap >= self.level
+
+        if world.combat_logic_flag == CombatLogic.Flag.PLAYER | CombatLogic.Flag.EQUIP:
+            return lambda state: equip_level_satisfied(state) and player_level_satisfied(state)
+        elif world.combat_logic_flag == CombatLogic.Flag.PLAYER:
+            return player_level_satisfied
+        elif world.combat_logic_flag == CombatLogic.Flag.EQUIP:
+            return equip_level_satisfied
+        else:
+            return lambda _: True
 
 class NeverCondition(Condition):
     def satisfied(self, player: int, location: int | None, world: CrossCodeWorld) -> typing.Callable[[CollectionState], bool]:

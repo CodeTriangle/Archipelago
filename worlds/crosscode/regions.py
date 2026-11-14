@@ -34,6 +34,7 @@ region_packs: typing.Dict[str, RegionsData] = {
             RegionConnection(region_from='trail', region_to='valley', cond=[ItemCondition(item_name='Green Leaf Shade', amount=1), ItemCondition(item_name='Blue Ice Shade', amount=1)]),
             RegionConnection(region_from='valley', region_to='bakii', cond=None),
             RegionConnection(region_from='harbor', region_to='bakii', cond=[ItemCondition(item_name='Blue Ice Shade', amount=1), VariableCondition(name='rhombusHubUnlock')]),
+            RegionConnection(region_from='valley', region_to='cursedTemple', cond=[ItemCondition(item_name='Heat', amount=1), ItemCondition(item_name='Cold', amount=1), ItemCondition(item_name='Cursed Coin', amount=1)]),
             RegionConnection(region_from='valley', region_to='fajro.1', cond=[ItemCondition(item_name='Yellow Sand Shade', amount=1)]),
             RegionConnection(region_from='fajro.1', region_to='fajro.2', cond=[ItemCondition(item_name="Faj'ro Key", amount=1), ItemCondition(item_name='Heat', amount=1)]),
             RegionConnection(region_from='fajro.2', region_to='fajro.3', cond=[ItemCondition(item_name="Faj'ro Key", amount=3)]),

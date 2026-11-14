@@ -8,3 +8,5 @@ class IncludeOptions(TypedDict, total=False):
     chest: bool
     quest: bool
     botanics: bool
+    combat: bool
+    kill: bool

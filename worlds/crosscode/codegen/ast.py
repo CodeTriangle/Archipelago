@@ -20,6 +20,7 @@ def create_expression_dataclass(cls) -> ast.Call:
             ast.keyword(arg=key, value=ast.Constant(value))
             for key, value in cls.__dict__.items()
             if cls.__dataclass_fields__[key].init
+            # and cls.__dataclass_fields__[key].default != value
         ],
     )
     ast.fix_missing_locations(result)
@@ -173,6 +174,12 @@ def create_expression_single_item(data: SingleItemData):
         ast_item.keywords.append(ast.keyword(
             arg="unique",
             value=ast.Constant(True)
+        ))
+
+    if data.equip_data is not None:
+        ast_item.keywords.append(ast.keyword(
+            arg="equip_data",
+            value=create_expression_dataclass(data.equip_data)
         ))
 
     ast.fix_missing_locations(ast_item)

@@ -26,7 +26,7 @@ from .types.regions import RegionsData
 from .types.metadata import IncludeOptions
 from .types.pools import Pools
 from .types.slot import SlotData
-from .options import CrossCodeOptions, ShopReceiveMode, ShopSendMode, StartWithDiscs, ProgressiveAreaUnlocks, option_groups
+from .options import CrossCodeOptions, ShopReceiveMode, ShopSendMode, StartWithDiscs, ProgressiveAreaUnlocks, option_groups, CombatLogic
 
 cclogger = logging.getLogger(__name__)
 
@@ -99,6 +99,7 @@ class CrossCodeWorld(World):
     keyrings: set[str]
     shop_receive_mode: int | None
     chest_clearance_levels: dict[int, str]
+    combat_logic_flag: CombatLogic.Flag
 
     pre_fill_specific_dungeons_names: dict[str, set[str]]
     pre_fill_any_dungeon_names: set[str]
@@ -172,6 +173,8 @@ class CrossCodeWorld(World):
             "chest": True,
             "quest": bool(self.options.quest_rando.value),
             "botanics": bool(self.options.botanity.value),
+            "combat": False,
+            "kill": bool(self.options.monster_fibula_randomization.value),
         }
 
     def create_location(self, location: str, event_from_location: bool = False) -> CrossCodeLocation:
@@ -450,6 +453,7 @@ class CrossCodeWorld(World):
         self.keyrings = self.world_data.keyring_items if self.options.keyrings.value else set()
         self.shop_receive_mode = self.options.shop_receive_mode.value if self.options.shop_rando.value else None
         self.chest_clearance_levels = {}
+        self.combat_logic_flag = self.options.combat_logic.flag()
 
         # Universal Tracker support
         # Anything that is generated in a non-standard fashion on my end has to be brought back into scope here from slot data.
